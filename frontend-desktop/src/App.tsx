@@ -14,7 +14,11 @@ import {
   Loader,
   Lock,
   LogOut,
-  Upload
+  Upload,
+  ZoomIn,
+  ZoomOut,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import './App.css'
 
@@ -35,7 +39,8 @@ interface Fauna {
     native_region: string
     lifespan: string
     weight: string
-    fun_facts: string[]
+    shipping_terms?: string
+    warranty_info?: string
     images?: string[]
   }
 }
@@ -111,9 +116,25 @@ function App() {
     native_region: '',
     lifespan: '',
     weight: '',
-    fun_fact_1: '',
-    fun_fact_2: ''
+    shipping_terms: '',
+    warranty_info: ''
   })
+
+  // Dynamic Master dropdown custom inputs
+  const [customClass, setCustomClass] = useState<string>('')
+  const [showCustomClassInput, setShowCustomClassInput] = useState<boolean>(false)
+  const [customHabitat, setCustomHabitat] = useState<string>('')
+  const [showCustomHabitatInput, setShowCustomHabitatInput] = useState<boolean>(false)
+  const [customConservationStatus, setCustomConservationStatus] = useState<string>('')
+  const [showCustomConservationStatusInput, setShowCustomConservationStatusInput] = useState<boolean>(false)
+
+  // Lightbox Galeri Interaktif
+  const [showLightbox, setShowLightbox] = useState<boolean>(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0)
+  const [zoomScale, setZoomScale] = useState<number>(1)
+  const [panPosition, setPanPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState<boolean>(false)
+  const [dragStart, setDragStart] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
 
   // Multi-image management states
   const [crudImages, setCrudImages] = useState<string[]>([''])
@@ -489,9 +510,15 @@ function App() {
       native_region: '',
       lifespan: '',
       weight: '',
-      fun_fact_1: '',
-      fun_fact_2: ''
+      shipping_terms: '',
+      warranty_info: ''
     })
+    setCustomClass('')
+    setShowCustomClassInput(false)
+    setCustomHabitat('')
+    setShowCustomHabitatInput(false)
+    setCustomConservationStatus('')
+    setShowCustomConservationStatusInput(false)
     setCrudImages([''])
     setCrudError(null)
     setShowCrudModal(true)
@@ -516,9 +543,15 @@ function App() {
       native_region: item.detailed_info?.native_region || '',
       lifespan: item.detailed_info?.lifespan || '',
       weight: item.detailed_info?.weight || '',
-      fun_fact_1: item.detailed_info?.fun_facts?.[0] || '',
-      fun_fact_2: item.detailed_info?.fun_facts?.[1] || ''
+      shipping_terms: item.detailed_info?.shipping_terms || '',
+      warranty_info: item.detailed_info?.warranty_info || ''
     })
+    setCustomClass('')
+    setShowCustomClassInput(false)
+    setCustomHabitat('')
+    setShowCustomHabitatInput(false)
+    setCustomConservationStatus('')
+    setShowCustomConservationStatusInput(false)
     const initialImages = item.detailed_info?.images && Array.isArray(item.detailed_info.images) && item.detailed_info.images.length > 0
       ? item.detailed_info.images
       : [item.image_url];
@@ -545,13 +578,33 @@ function App() {
       return
     }
 
+    const selectedClass = showCustomClassInput ? customClass.trim() : crudForm.class
+    const selectedHabitat = showCustomHabitatInput ? customHabitat.trim() : crudForm.habitat
+    const selectedConservationStatus = showCustomConservationStatusInput ? customConservationStatus.trim() : crudForm.conservation_status
+
+    if (!selectedClass) {
+      setCrudError('Kelas hewan wajib diisi.')
+      setCrudLoading(false)
+      return
+    }
+    if (!selectedHabitat) {
+      setCrudError('Habitat hewan wajib diisi.')
+      setCrudLoading(false)
+      return
+    }
+    if (!selectedConservationStatus) {
+      setCrudError('Status konservasi wajib diisi.')
+      setCrudLoading(false)
+      return
+    }
+
     const payload = {
       name: crudForm.name,
       scientific_name: crudForm.scientific_name,
-      class: crudForm.class,
-      habitat: crudForm.habitat,
+      class: selectedClass,
+      habitat: selectedHabitat,
       diet: crudForm.diet,
-      conservation_status: crudForm.conservation_status,
+      conservation_status: selectedConservationStatus,
       price: crudForm.price,
       video_url: crudForm.video_url || null,
       is_shipping_available: crudForm.is_shipping_available,
@@ -561,7 +614,8 @@ function App() {
         native_region: crudForm.native_region,
         lifespan: crudForm.lifespan,
         weight: crudForm.weight,
-        fun_facts: [crudForm.fun_fact_1, crudForm.fun_fact_2].filter(f => f !== ''),
+        shipping_terms: crudForm.shipping_terms,
+        warranty_info: crudForm.warranty_info,
         images: filteredImages
       }
     }
@@ -632,6 +686,36 @@ function App() {
     } finally {
       setUploadingIndex(null)
     }
+  }
+
+  // Formatter helper for Rupiah with dots thousands separator
+  const formatRupiahInput = (num: number) => {
+    if (!num) return '0'
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  }
+
+  const parseRupiahInput = (val: string) => {
+    const clean = val.replace(/\D/g, '')
+    return parseInt(clean) || 0
+  }
+
+  // Get unique options from existing faunas list
+  const getUniqueClasses = () => {
+    const defaultClasses = ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']
+    const existing = faunas.map(f => f.class).filter(Boolean)
+    return Array.from(new Set([...defaultClasses, ...existing]))
+  }
+
+  const getUniqueHabitats = () => {
+    const defaultHabitats = ['Air Tawar', 'Air Laut', 'Darat']
+    const existing = faunas.map(f => f.habitat).filter(Boolean)
+    return Array.from(new Set([...defaultHabitats, ...existing]))
+  }
+
+  const getUniqueConservationStatuses = () => {
+    const defaultStatuses = ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']
+    const existing = faunas.map(f => f.conservation_status).filter(Boolean)
+    return Array.from(new Set([...defaultStatuses, ...existing]))
   }
 
   // Handle Fauna Delete
@@ -1232,6 +1316,7 @@ function App() {
                 {/* Left Column: Media */}
                 <div className="modal-media-col">
                   {/* Main Image Display */}
+                  {/* Main Image Display */}
                   <img 
                     src={
                       (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
@@ -1240,6 +1325,13 @@ function App() {
                     } 
                     alt={selectedFauna.name} 
                     className="modal-main-img" 
+                    onClick={() => {
+                      setLightboxIndex(activeImageIndex)
+                      setZoomScale(1)
+                      setPanPosition({ x: 0, y: 0 })
+                      setShowLightbox(true)
+                    }}
+                    style={{ cursor: 'zoom-in' }}
                     onError={(e) => {
                       e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
                     }}
@@ -1316,6 +1408,27 @@ function App() {
                     </p>
                   </div>
 
+                  {(selectedFauna.detailed_info?.shipping_terms || selectedFauna.detailed_info?.warranty_info) && (
+                    <div className="detail-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#0b0e0c', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', marginTop: '0.5rem' }}>
+                      {selectedFauna.detailed_info?.shipping_terms && (
+                        <div>
+                          <h4 style={{ fontSize: '0.9rem', color: 'var(--primary-hover)', fontWeight: 700, marginBottom: '0.35rem' }}>Ketentuan Pengiriman</h4>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                            {selectedFauna.detailed_info.shipping_terms}
+                          </p>
+                        </div>
+                      )}
+                      {selectedFauna.detailed_info?.warranty_info && (
+                        <div>
+                          <h4 style={{ fontSize: '0.9rem', color: 'var(--secondary)', fontWeight: 700, marginBottom: '0.35rem' }}>Ketentuan Garansi</h4>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                            {selectedFauna.detailed_info.warranty_info}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="detail-section">
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--primary-hover)', fontWeight: 700 }}>Detail Pemeliharaan</h3>
                     <div className="meta-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -1333,19 +1446,6 @@ function App() {
                       </div>
                     </div>
                   </div>
-
-                  {selectedFauna.detailed_info?.fun_facts && selectedFauna.detailed_info.fun_facts.length > 0 && (
-                    <div className="detail-section">
-                      <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--secondary)', fontWeight: 700 }}>Fakta Unik</h3>
-                      <ul className="facts-list">
-                        {selectedFauna.detailed_info.fun_facts.map((fact, i) => (
-                          <li key={i} className="fact-item" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                            &bull; {fact}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -1411,24 +1511,65 @@ function App() {
                     <label className="form-label">Kelas Hewan *</label>
                     <select 
                       className="form-select"
-                      value={crudForm.class}
-                      onChange={(e) => setCrudForm({ ...crudForm, class: e.target.value })}
+                      value={showCustomClassInput ? '__NEW__' : crudForm.class}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomClassInput(true)
+                          setCustomClass('')
+                        } else {
+                          setShowCustomClassInput(false)
+                          setCrudForm({ ...crudForm, class: e.target.value })
+                        }
+                      }}
                     >
-                      <option value="Ikan Hias">Ikan Hias</option>
-                      <option value="Mamalia">Mamalia</option>
-                      <option value="Mamalia Kecil">Mamalia Kecil</option>
+                      {getUniqueClasses().map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
                     </select>
+                    {showCustomClassInput && (
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        style={{ marginTop: '0.5rem' }} 
+                        placeholder="Ketik Kelas Hewan Baru..." 
+                        value={customClass} 
+                        onChange={(e) => setCustomClass(e.target.value)} 
+                        required 
+                      />
+                    )}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Habitat *</label>
                     <select 
                       className="form-select"
-                      value={crudForm.habitat}
-                      onChange={(e) => setCrudForm({ ...crudForm, habitat: e.target.value })}
+                      value={showCustomHabitatInput ? '__NEW__' : crudForm.habitat}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomHabitatInput(true)
+                          setCustomHabitat('')
+                        } else {
+                          setShowCustomHabitatInput(false)
+                          setCrudForm({ ...crudForm, habitat: e.target.value })
+                        }
+                      }}
                     >
-                      <option value="Air Tawar">Air Tawar</option>
-                      <option value="Darat">Darat</option>
+                      {getUniqueHabitats().map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
                     </select>
+                    {showCustomHabitatInput && (
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        style={{ marginTop: '0.5rem' }} 
+                        placeholder="Ketik Habitat Baru..." 
+                        value={customHabitat} 
+                        onChange={(e) => setCustomHabitat(e.target.value)} 
+                        required 
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -1446,14 +1587,35 @@ function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Status Konservasi *</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="Contoh: Tersedia..."
-                      required
-                      value={crudForm.conservation_status}
-                      onChange={(e) => setCrudForm({ ...crudForm, conservation_status: e.target.value })}
-                    />
+                    <select 
+                      className="form-select"
+                      value={showCustomConservationStatusInput ? '__NEW__' : crudForm.conservation_status}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomConservationStatusInput(true)
+                          setCustomConservationStatus('')
+                        } else {
+                          setShowCustomConservationStatusInput(false)
+                          setCrudForm({ ...crudForm, conservation_status: e.target.value })
+                        }
+                      }}
+                    >
+                      {getUniqueConservationStatuses().map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
+                    </select>
+                    {showCustomConservationStatusInput && (
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        style={{ marginTop: '0.5rem' }} 
+                        placeholder="Ketik Status Konservasi Baru..." 
+                        value={customConservationStatus} 
+                        onChange={(e) => setCustomConservationStatus(e.target.value)} 
+                        required 
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -1461,12 +1623,12 @@ function App() {
                   <div className="form-group">
                     <label className="form-label">Harga Satuan (Rupiah) *</label>
                     <input 
-                      type="number" 
+                      type="text" 
                       className="form-input" 
-                      placeholder="Contoh: 150000..."
+                      placeholder="Contoh: 150.000..."
                       required
-                      value={crudForm.price}
-                      onChange={(e) => setCrudForm({ ...crudForm, price: parseInt(e.target.value) || 0 })}
+                      value={formatRupiahInput(crudForm.price)}
+                      onChange={(e) => setCrudForm({ ...crudForm, price: parseRupiahInput(e.target.value) })}
                     />
                   </div>
                   <div className="form-group">
@@ -1616,27 +1778,27 @@ function App() {
                       <span>Bisa Dikirim se-Indonesia</span>
                     </label>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Fakta Menarik 1</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="Tuliskan fakta menarik tentang satwa ini..."
-                      value={crudForm.fun_fact_1}
-                      onChange={(e) => setCrudForm({ ...crudForm, fun_fact_1: e.target.value })}
-                    />
-                  </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Fakta Menarik 2</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="Tuliskan fakta menarik lainnya..."
-                      value={crudForm.fun_fact_2}
-                      onChange={(e) => setCrudForm({ ...crudForm, fun_fact_2: e.target.value })}
+                    <label className="form-label">Ketentuan Pengiriman</label>
+                    <textarea 
+                      rows={2} 
+                      className="form-textarea" 
+                      placeholder="Contoh: Pengiriman via ojek online / kereta api..."
+                      value={crudForm.shipping_terms}
+                      onChange={(e) => setCrudForm({ ...crudForm, shipping_terms: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Ketentuan Garansi</label>
+                    <textarea 
+                      rows={2} 
+                      className="form-textarea" 
+                      placeholder="Contoh: Garansi hidup sampai tujuan dengan video unboxing..."
+                      value={crudForm.warranty_info}
+                      onChange={(e) => setCrudForm({ ...crudForm, warranty_info: e.target.value })}
                     />
                   </div>
                 </div>
@@ -1681,6 +1843,185 @@ function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* LIGHTBOX OVERLAY WITH ZOOM & PAN */}
+      {showLightbox && selectedFauna && (
+        <div 
+          className="modal-overlay" 
+          style={{ background: 'rgba(0,0,0,0.95)', zIndex: 3000, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', userSelect: 'none' }}
+          onClick={() => setShowLightbox(false)}
+        >
+          {/* Close Button */}
+          <button 
+            className="modal-close-btn" 
+            style={{ top: '1.5rem', right: '1.5rem', color: '#fff', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '0.5rem', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }} 
+            onClick={() => setShowLightbox(false)}
+          >
+            <X size={20} />
+          </button>
+
+          {/* Top Control Bar */}
+          <div style={{ position: 'absolute', top: '1.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '1rem', background: 'rgba(0,0,0,0.6)', padding: '0.5rem 1.25rem', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.1)', alignItems: 'center', zIndex: 3100 }} onClick={(e) => e.stopPropagation()}>
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoomScale(prev => Math.max(1, prev - 0.5))
+                if (zoomScale <= 1.5) setPanPosition({ x: 0, y: 0 })
+              }}
+            >
+              <ZoomOut size={16} />
+            </button>
+            <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>Zoom: {zoomScale.toFixed(1)}x</span>
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoomScale(prev => Math.min(4, prev + 0.5))
+              }}
+            >
+              <ZoomIn size={16} />
+            </button>
+            <span style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.2)' }}></span>
+            <span style={{ fontSize: '0.85rem', color: '#fff' }}>
+              {(selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images))
+                ? `${lightboxIndex + 1} / ${selectedFauna.detailed_info.images.length}`
+                : '1 / 1'
+              }
+            </span>
+          </div>
+
+          {/* Main Visual Container */}
+          <div 
+            style={{ width: '80vw', height: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Previous Button */}
+            {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
+              <button
+                type="button"
+                style={{ position: 'absolute', left: '1rem', zIndex: 10, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'var(--transition-smooth)' }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const len = selectedFauna.detailed_info?.images?.length || 1
+                  setLightboxIndex(prev => (prev - 1 + len) % len)
+                  setZoomScale(1)
+                  setPanPosition({ x: 0, y: 0 })
+                }}
+              >
+                <ChevronLeft size={28} />
+              </button>
+            )}
+
+            {/* Next Button */}
+            {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
+              <button
+                type="button"
+                style={{ position: 'absolute', right: '1rem', zIndex: 10, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'var(--transition-smooth)' }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const len = selectedFauna.detailed_info?.images?.length || 1
+                  setLightboxIndex(prev => (prev + 1) % len)
+                  setZoomScale(1)
+                  setPanPosition({ x: 0, y: 0 })
+                }}
+              >
+                <ChevronRight size={28} />
+              </button>
+            )}
+
+            {/* The Zoomable/Pannable Image */}
+            <div 
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+                transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomScale})`,
+                transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                if (zoomScale > 1) {
+                  setIsDragging(true)
+                  setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y })
+                }
+              }}
+              onMouseMove={(e) => {
+                if (isDragging && zoomScale > 1) {
+                  setPanPosition({
+                    x: e.clientX - dragStart.x,
+                    y: e.clientY - dragStart.y
+                  })
+                }
+              }}
+              onMouseUp={() => setIsDragging(false)}
+              onMouseLeave={() => setIsDragging(false)}
+              onDoubleClick={() => {
+                if (zoomScale > 1) {
+                  setZoomScale(1)
+                  setPanPosition({ x: 0, y: 0 })
+                } else {
+                  setZoomScale(2.5)
+                }
+              }}
+            >
+              <img
+                src={
+                  (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
+                    ? (selectedFauna.detailed_info.images[lightboxIndex] || selectedFauna.image_url)
+                    : selectedFauna.image_url
+                }
+                alt={selectedFauna.name}
+                style={{
+                  maxHeight: '100%',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                  pointerEvents: 'none'
+                }}
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Bottom Thumbnails Strip */}
+          {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', zIndex: 10, background: 'rgba(0,0,0,0.6)', padding: '0.5rem', borderRadius: '0.5rem' }} onClick={(e) => e.stopPropagation()}>
+              {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
+                <img
+                  key={idx}
+                  src={imgUrl}
+                  alt=""
+                  onClick={() => {
+                    setLightboxIndex(idx)
+                    setZoomScale(1)
+                    setPanPosition({ x: 0, y: 0 })
+                  }}
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    objectFit: 'cover',
+                    borderRadius: '0.25rem',
+                    border: lightboxIndex === idx ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.2)',
+                    cursor: 'pointer'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>
