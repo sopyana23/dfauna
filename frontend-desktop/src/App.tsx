@@ -1615,10 +1615,9 @@ function App() {
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
                       {!showCustomClassInput && (
-                        <button
-                          type="button"
+                        <div
                           className="btn-secondary"
-                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0, cursor: 'pointer' }}
                           title="Hapus opsi master ini"
                           onClick={(e) => {
                             e.preventDefault();
@@ -1627,7 +1626,7 @@ function App() {
                           }}
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </div>
                       )}
                     </div>
                     {showCustomClassInput && (
@@ -1665,10 +1664,9 @@ function App() {
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
                       {!showCustomHabitatInput && (
-                        <button
-                          type="button"
+                        <div
                           className="btn-secondary"
-                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0, cursor: 'pointer' }}
                           title="Hapus opsi master ini"
                           onClick={(e) => {
                             e.preventDefault();
@@ -1677,7 +1675,7 @@ function App() {
                           }}
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </div>
                       )}
                     </div>
                     {showCustomHabitatInput && (
@@ -1729,10 +1727,9 @@ function App() {
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
                       {!showCustomConservationStatusInput && (
-                        <button
-                          type="button"
+                        <div
                           className="btn-secondary"
-                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0, cursor: 'pointer' }}
                           title="Hapus opsi master ini"
                           onClick={(e) => {
                             e.preventDefault();
@@ -1741,7 +1738,7 @@ function App() {
                           }}
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </div>
                       )}
                     </div>
                     {showCustomConservationStatusInput && (
@@ -1929,10 +1926,9 @@ function App() {
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
                       {!showCustomShippingCoverageInput && (
-                        <button
-                          type="button"
+                        <div
                           className="btn-secondary"
-                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0, cursor: 'pointer' }}
                           title="Hapus opsi master ini"
                           onClick={(e) => {
                             e.preventDefault();
@@ -1941,7 +1937,7 @@ function App() {
                           }}
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </div>
                       )}
                     </div>
                     {showCustomShippingCoverageInput && (

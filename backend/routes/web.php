@@ -13,14 +13,22 @@ Route::get('/{any?}', function () {
     if ($isMobile) {
         $path = public_path('mobile/index.html');
         if (File::exists($path)) {
-            return File::get($path);
+            return response(File::get($path))
+                ->header('Content-Type', 'text/html')
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
         }
         return response("Mobile frontend hasn't been compiled yet. Please run `.\\build-all.ps1` at root.", 200)
             ->header('Content-Type', 'text/html');
     } else {
         $path = public_path('desktop/index.html');
         if (File::exists($path)) {
-            return File::get($path);
+            return response(File::get($path))
+                ->header('Content-Type', 'text/html')
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
         }
         return response("Desktop frontend hasn't been compiled yet. Please run `.\\build-all.ps1` at root.", 200)
             ->header('Content-Type', 'text/html');
