@@ -1,0 +1,26 @@
+# Root GitIgnore for DFauna
+
+# Dependencies
+**/node_modules/
+**/vendor/
+**/dist/
+
+# Environment configurations (Secrets)
+**/.env
+**/.env.production
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# SQLite Databases & Local uploads
+**/database/*.sqlite
+/backend/storage/app/public/fauna/*
+!/backend/storage/app/public/fauna/.gitkeep
+
+# IDE and OS files
+**/.idea/
+**/.vscode/
+**/Thumbs.db
+**/.DS_Store
+*.log

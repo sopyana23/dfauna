@@ -1,0 +1,1690 @@
+import { useState, useEffect } from 'react'
+import { 
+  Search, 
+  Compass, 
+  Plus, 
+  MapPin, 
+  X, 
+  BookOpen, 
+  ShieldAlert, 
+  Trash2, 
+  Edit3, 
+  FileText, 
+  Send,
+  Loader,
+  Lock,
+  LogOut,
+  Upload
+} from 'lucide-react'
+import './App.css'
+
+interface Fauna {
+  id: number
+  name: string
+  scientific_name: string
+  class: string
+  habitat: string
+  diet: string
+  conservation_status: string
+  price: number
+  video_url: string | null
+  is_shipping_available: boolean
+  description: string
+  image_url: string
+  detailed_info?: {
+    native_region: string
+    lifespan: string
+    weight: string
+    fun_facts: string[]
+    images?: string[]
+  }
+}
+
+interface ShopSettings {
+  whatsapp_number: string
+  store_slogan: string
+}
+
+const API_BASE = 'http://localhost:8000/api'
+
+function App() {
+  const [faunas, setFaunas] = useState<Fauna[]>([])
+  const [settings, setSettings] = useState<ShopSettings>({
+    whatsapp_number: '628123456789',
+    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia'
+  })
+  const [selectedFauna, setSelectedFauna] = useState<Fauna | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Navigation: 'catalog' or 'admin'
+  const [view, setView] = useState<'catalog' | 'admin'>('catalog')
+  const [adminTab, setAdminTab] = useState<'items' | 'settings' | 'profile'>('items')
+
+  // Search & Filters
+  const [search, setSearch] = useState<string>('')
+  const [classFilter, setClassFilter] = useState<string>('all')
+  const [habitatFilter, setHabitatFilter] = useState<string>('all')
+
+  // Modals
+  const [showDetailModal, setShowDetailModal] = useState<boolean>(false)
+  const [showCrudModal, setShowCrudModal] = useState<boolean>(false)
+
+  // Authentication State
+  const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
+  const [adminUser, setAdminUser] = useState<{name: string, email: string} | null>(
+    localStorage.getItem('dfauna_user') ? JSON.parse(localStorage.getItem('dfauna_user')!) : null
+  )
+  const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(
+    localStorage.getItem('dfauna_password_changed') === 'true'
+  )
+
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' })
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
+
+  // First-time Password Change Form State
+  const [firstPasswordForm, setFirstPasswordForm] = useState({
+    name: 'Administrator',
+    email: 'admin@dfauna.com',
+    password: '',
+    confirm_password: ''
+  })
+  const [firstPasswordLoading, setFirstPasswordLoading] = useState(false)
+  const [firstPasswordError, setFirstPasswordError] = useState<string | null>(null)
+
+  // CRUD Form State
+  const [crudMode, setCrudMode] = useState<'create' | 'edit'>('create')
+  const [editId, setEditId] = useState<number | null>(null)
+  const [crudForm, setCrudForm] = useState({
+    name: '',
+    scientific_name: '',
+    class: 'Ikan Hias',
+    habitat: 'Air Tawar',
+    diet: '',
+    conservation_status: 'Tersedia (For Sale)',
+    price: 0,
+    video_url: '',
+    is_shipping_available: true,
+    description: '',
+    image_url: '',
+    native_region: '',
+    lifespan: '',
+    weight: '',
+    fun_fact_1: '',
+    fun_fact_2: ''
+  })
+
+  // Multi-image management states
+  const [crudImages, setCrudImages] = useState<string[]>([''])
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0)
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+
+  // Settings Form State
+  const [settingsForm, setSettingsForm] = useState<ShopSettings>({
+    whatsapp_number: '',
+    store_slogan: ''
+  })
+  const [settingsLoading, setSettingsLoading] = useState<boolean>(false)
+  const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
+
+  // Admin Profile Update State
+  const [profileForm, setProfileForm] = useState({
+    name: adminUser?.name || 'Administrator',
+    email: adminUser?.email || 'admin@dfauna.com',
+    password: ''
+  })
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null)
+  const [profileError, setProfileError] = useState<string | null>(null)
+
+  const [crudLoading, setCrudLoading] = useState<boolean>(false)
+  const [crudError, setCrudError] = useState<string | null>(null)
+
+  // Detect URL path to determine Admin Mode
+  useEffect(() => {
+    if (window.location.pathname.startsWith('/admin')) {
+      setView('admin')
+    } else {
+      setView('catalog')
+    }
+
+    // STRICT FLOW: If the user visits the admin page on mount but they haven't completed changing their password,
+    // force them to log in again with the default password.
+    if (localStorage.getItem('dfauna_password_changed') !== 'true') {
+      localStorage.removeItem('dfauna_token')
+      localStorage.removeItem('dfauna_user')
+      localStorage.removeItem('dfauna_password_changed')
+      setToken(null)
+      setAdminUser(null)
+      setIsPasswordChanged(false)
+    }
+  }, [])
+
+  // Lock scroll when modals are open
+  useEffect(() => {
+    if (showDetailModal || showCrudModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [showDetailModal, showCrudModal])
+
+  // Listen to popstate for back navigation support
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.pathname.startsWith('/admin')) {
+        setView('admin')
+      } else {
+        setView('catalog')
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Fetch headers helper
+  const getAuthHeaders = () => {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    }
+  }
+
+  // Load Initial Data
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      // Fetch settings
+      const settingsRes = await fetch(`${API_BASE}/settings`)
+      const settingsData = await settingsRes.json()
+      if (settingsData.success && settingsData.data) {
+        const fetchedSettings = {
+          whatsapp_number: settingsData.data.whatsapp_number || '628123456789',
+          store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium'
+        }
+        setSettings(fetchedSettings)
+        setSettingsForm(fetchedSettings)
+      }
+
+      // Fetch faunas
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
+      if (classFilter !== 'all') params.append('class', classFilter)
+      if (habitatFilter !== 'all') params.append('habitat', habitatFilter)
+
+      const faunaRes = await fetch(`${API_BASE}/fauna?${params.toString()}`)
+      const faunaData = await faunaRes.json()
+      if (faunaData.success) {
+        setFaunas(faunaData.data)
+      } else {
+        setError('Gagal memuat katalog fauna.')
+      }
+    } catch (err) {
+      console.error(err)
+      setError('Koneksi terputus. Pastikan server backend Laravel berjalan di http://localhost:8000.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Reload when query changes
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadData()
+    }, 200)
+    return () => clearTimeout(delayDebounceFn)
+  }, [search, classFilter, habitatFilter])
+
+  // Sync profile form when user state loads
+  useEffect(() => {
+    if (adminUser) {
+      setProfileForm(prev => ({
+        ...prev,
+        name: adminUser.name,
+        email: adminUser.email
+      }))
+      setFirstPasswordForm(prev => ({
+        ...prev,
+        name: adminUser.name,
+        email: adminUser.email
+      }))
+    }
+  }, [adminUser])
+
+  // Auth check helper
+  const handleUnauthorized = () => {
+    localStorage.removeItem('dfauna_token')
+    localStorage.removeItem('dfauna_user')
+    localStorage.removeItem('dfauna_password_changed')
+    setToken(null)
+    setAdminUser(null)
+    setIsPasswordChanged(false)
+    setLoginForm({ email: '', password: '' })
+  }
+
+  // Handle Login Submit
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginLoading(true)
+    setLoginError(null)
+
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(loginForm)
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        localStorage.setItem('dfauna_token', data.token)
+        localStorage.setItem('dfauna_user', JSON.stringify(data.user))
+        localStorage.setItem('dfauna_password_changed', data.is_password_changed ? 'true' : 'false')
+        
+        setToken(data.token)
+        setAdminUser(data.user)
+        setIsPasswordChanged(data.is_password_changed)
+        setLoginForm({ email: '', password: '' })
+      } else {
+        setLoginError(data.message || 'Email atau password salah.')
+      }
+    } catch (err) {
+      console.error(err)
+      setLoginError('Koneksi terputus ke server.')
+    } finally {
+      setLoginLoading(false)
+    }
+  }
+
+  // Handle First-Time Password Submit
+  const handleFirstPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFirstPasswordError(null)
+
+    if (firstPasswordForm.password.length < 6) {
+      setFirstPasswordError('Password baru minimal harus 6 karakter.')
+      return
+    }
+
+    if (firstPasswordForm.password !== firstPasswordForm.confirm_password) {
+      setFirstPasswordError('Konfirmasi password tidak cocok.')
+      return
+    }
+
+    setFirstPasswordLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: firstPasswordForm.name,
+          email: firstPasswordForm.email,
+          password: firstPasswordForm.password
+        })
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        localStorage.setItem('dfauna_user', JSON.stringify(data.user))
+        localStorage.setItem('dfauna_password_changed', 'true')
+        setAdminUser(data.user)
+        setIsPasswordChanged(true)
+      } else {
+        setFirstPasswordError(data.message || 'Gagal mengubah password.')
+      }
+    } catch (err) {
+      console.error(err)
+      setFirstPasswordError('Hubungan ke server terputus.')
+    } finally {
+      setFirstPasswordLoading(false)
+    }
+  }
+
+  // Navigation helpers
+  const goToCatalog = () => {
+    window.history.pushState({}, '', '/')
+    setView('catalog')
+  }
+
+
+
+  // Handle Logout
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE}/logout`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      handleUnauthorized()
+      goToCatalog()
+    }
+  }
+
+  // Handle Admin Profile Update
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setProfileLoading(true)
+    setProfileSuccess(null)
+    setProfileError(null)
+
+    try {
+      const res = await fetch(`${API_BASE}/profile`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(profileForm)
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        localStorage.setItem('dfauna_user', JSON.stringify(data.user))
+        localStorage.setItem('dfauna_password_changed', 'true')
+        setAdminUser(data.user)
+        setIsPasswordChanged(true)
+        setProfileForm(prev => ({ ...prev, password: '' }))
+        setProfileSuccess('Profil admin berhasil diperbarui!')
+        setTimeout(() => setProfileSuccess(null), 2000)
+      } else {
+        if (res.status === 401) {
+          handleUnauthorized()
+        } else if (data.errors) {
+          const firstErr = Object.values(data.errors)[0] as string[]
+          setProfileError(firstErr[0])
+        } else {
+          setProfileError(data.message || 'Gagal memperbarui profil.')
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      setProfileError('Hubungan ke server terputus.')
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
+  // Parse YouTube URL
+  const getYoutubeEmbedUrl = (url: string | null) => {
+    if (!url) return '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) 
+      ? `https://www.youtube.com/embed/${match[2]}` 
+      : '';
+  }
+
+  // Format IDR
+  const formatRupiah = (num: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(num)
+  }
+
+  // Save Settings
+  const handleSettingsSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSettingsLoading(true)
+    setSettingsSuccess(null)
+    try {
+      const res = await fetch(`${API_BASE}/settings`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ settings: settingsForm })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setSettings({
+          whatsapp_number: data.data.whatsapp_number,
+          store_slogan: data.data.store_slogan
+        })
+        setSettingsSuccess('Pengaturan toko berhasil diperbarui!')
+        setTimeout(() => setSettingsSuccess(null), 2000)
+      } else {
+        if (res.status === 401) {
+          handleUnauthorized()
+        } else {
+          alert('Gagal menyimpan pengaturan.')
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Gagal menghubungi backend.')
+    } finally {
+      setSettingsLoading(false)
+    }
+  }
+
+  // Open CRUD modal for create
+  const openCreateModal = () => {
+    setCrudMode('create')
+    setEditId(null)
+    setCrudForm({
+      name: '',
+      scientific_name: '',
+      class: 'Ikan Hias',
+      habitat: 'Air Tawar',
+      diet: '',
+      conservation_status: 'Tersedia (For Sale)',
+      price: 0,
+      video_url: '',
+      is_shipping_available: true,
+      description: '',
+      image_url: '',
+      native_region: '',
+      lifespan: '',
+      weight: '',
+      fun_fact_1: '',
+      fun_fact_2: ''
+    })
+    setCrudImages([''])
+    setCrudError(null)
+    setShowCrudModal(true)
+  }
+
+  // Open CRUD modal for edit
+  const openEditModal = (item: Fauna) => {
+    setCrudMode('edit')
+    setEditId(item.id)
+    setCrudForm({
+      name: item.name,
+      scientific_name: item.scientific_name,
+      class: item.class,
+      habitat: item.habitat,
+      diet: item.diet,
+      conservation_status: item.conservation_status,
+      price: item.price,
+      video_url: item.video_url || '',
+      is_shipping_available: item.is_shipping_available,
+      description: item.description,
+      image_url: item.image_url,
+      native_region: item.detailed_info?.native_region || '',
+      lifespan: item.detailed_info?.lifespan || '',
+      weight: item.detailed_info?.weight || '',
+      fun_fact_1: item.detailed_info?.fun_facts?.[0] || '',
+      fun_fact_2: item.detailed_info?.fun_facts?.[1] || ''
+    })
+    const initialImages = item.detailed_info?.images && Array.isArray(item.detailed_info.images) && item.detailed_info.images.length > 0
+      ? item.detailed_info.images
+      : [item.image_url];
+    setCrudImages(initialImages)
+    setCrudError(null)
+    setShowCrudModal(true)
+  }
+
+  // Handle Fauna Submit (Create / Update)
+  const handleFaunaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCrudLoading(true)
+    setCrudError(null)
+
+    const filteredImages = crudImages.map(img => img.trim()).filter(Boolean)
+    if (filteredImages.length === 0) {
+      setCrudError('Minimal harus menginput 1 foto hewan.')
+      setCrudLoading(false)
+      return
+    }
+    if (filteredImages.length > 5) {
+      setCrudError('Maksimal hanya dapat menginput 5 foto hewan.')
+      setCrudLoading(false)
+      return
+    }
+
+    const payload = {
+      name: crudForm.name,
+      scientific_name: crudForm.scientific_name,
+      class: crudForm.class,
+      habitat: crudForm.habitat,
+      diet: crudForm.diet,
+      conservation_status: crudForm.conservation_status,
+      price: crudForm.price,
+      video_url: crudForm.video_url || null,
+      is_shipping_available: crudForm.is_shipping_available,
+      description: crudForm.description,
+      image_url: filteredImages[0],
+      detailed_info: {
+        native_region: crudForm.native_region,
+        lifespan: crudForm.lifespan,
+        weight: crudForm.weight,
+        fun_facts: [crudForm.fun_fact_1, crudForm.fun_fact_2].filter(f => f !== ''),
+        images: filteredImages
+      }
+    }
+
+    try {
+      const url = crudMode === 'create' 
+        ? `${API_BASE}/fauna` 
+        : `${API_BASE}/fauna/${editId}`
+      const method = crudMode === 'create' ? 'POST' : 'PUT'
+
+      const res = await fetch(url, {
+        method: method,
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setShowCrudModal(false)
+        loadData()
+      } else {
+        if (res.status === 401) {
+          handleUnauthorized()
+        } else if (data.errors) {
+          const firstErr = Object.values(data.errors)[0] as string[]
+          setCrudError(firstErr[0])
+        } else {
+          setCrudError(data.message || 'Terjadi kesalahan sistem.')
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      setCrudError('Koneksi terputus ke server.')
+    } finally {
+      setCrudLoading(false)
+    }
+  }
+
+  // Handle File Upload from Device
+  const handleImageUpload = async (index: number, file: File) => {
+    setUploadingIndex(index)
+    setCrudError(null)
+
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const res = await fetch(`${API_BASE}/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: formData
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        const newImages = [...crudImages]
+        newImages[index] = data.url
+        setCrudImages(newImages)
+      } else {
+        setCrudError(data.message || 'Gagal mengunggah gambar.')
+      }
+    } catch (err) {
+      console.error(err)
+      setCrudError('Koneksi terputus ke server saat mengunggah gambar.')
+    } finally {
+      setUploadingIndex(null)
+    }
+  }
+
+  // Handle Fauna Delete
+  const handleFaunaDelete = async (id: number) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus postingan hewan ini?')) return
+
+    try {
+      const res = await fetch(`${API_BASE}/fauna/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        loadData()
+      } else {
+        if (res.status === 401) {
+          handleUnauthorized()
+        } else {
+          alert(data.message || 'Gagal menghapus postingan.')
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Koneksi terputus.')
+    }
+  }
+
+  // Fetch details
+  const fetchDetails = async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/fauna/${id}`)
+      const data = await res.json()
+      if (data.success) {
+        setSelectedFauna(data.data)
+        setActiveImageIndex(0)
+        setShowDetailModal(true)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Gagal mengambil data detail.')
+    }
+  }
+
+  return (
+    <>
+      <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <header className="app-header">
+        <div className="container header-content">
+          <div className="logo-area">
+            <Compass className="logo-icon" />
+            <div>
+              <h1 className="logo-text">DFauna</h1>
+              <div className="logo-tagline">{settings.store_slogan}</div>
+            </div>
+          </div>
+          <div className="nav-actions">
+            {view !== 'catalog' && (
+              <button 
+                className="btn-primary" 
+                onClick={goToCatalog}
+              >
+                Lihat Katalog
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="container" style={{ paddingBottom: '4rem' }}>
+        {view === 'catalog' ? (
+          /* ========================================================
+             CUSTOMER VIEW
+             ======================================================== */
+          <>
+            {/* Hero Section */}
+            <section className="hero-section">
+              <h2 className="hero-title">
+                Galeri Satwa Hias <span className="hero-highlight">Premium</span>
+              </h2>
+              <p className="hero-desc">
+                Kami menjual ikan hias eksotis dan hewan darat berkualitas tinggi dengan jaminan kesehatan. Melayani pengiriman ke seluruh wilayah Indonesia untuk jenis hewan tertentu dengan packing khusus berstandar tinggi.
+              </p>
+
+              {/* Shipping Guarantee Banner */}
+              <div className="glass-panel" style={{ padding: '1.25rem 2rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', border: '1px solid var(--border-light)', color: 'var(--primary-hover)', backgroundColor: 'var(--bg-card)' }}>
+                <MapPin size={20} />
+                <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                  Melayani Pengiriman Aman se-Indonesia (Khusus Hewan Bertanda Khusus)
+                </span>
+              </div>
+            </section>
+
+            {/* Filter Panel */}
+            <section className="glass-panel controls-panel">
+              <div className="search-wrapper">
+                <Search className="search-icon" />
+                <input 
+                  type="text" 
+                  className="search-input" 
+                  placeholder="Cari satwa hias yang dijual..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="filters-wrapper">
+                <select 
+                  className="filter-select"
+                  value={classFilter}
+                  onChange={(e) => setClassFilter(e.target.value)}
+                >
+                  <option value="all">Semua Kelas</option>
+                  <option value="Ikan Hias">Ikan Hias</option>
+                  <option value="Mamalia">Mamalia</option>
+                  <option value="Mamalia Kecil">Mamalia Kecil</option>
+                </select>
+                <select 
+                  className="filter-select"
+                  value={habitatFilter}
+                  onChange={(e) => setHabitatFilter(e.target.value)}
+                >
+                  <option value="all">Semua Habitat</option>
+                  <option value="Air Tawar">Air Tawar</option>
+                  <option value="Darat">Darat</option>
+                </select>
+              </div>
+            </section>
+
+            {/* Loading & Error States */}
+            {loading && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '1rem' }}>
+                <Loader className="animate-spin" size={40} style={{ color: 'var(--primary)' }} />
+                <p style={{ color: 'var(--text-secondary)' }}>Memuat katalog produk...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                <ShieldAlert size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Masalah Sambungan</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>{error}</p>
+                <button className="btn-secondary" style={{ marginTop: '1.5rem', display: 'inline-flex' }} onClick={loadData}>
+                  Hubungkan Ulang
+                </button>
+              </div>
+            )}
+
+            {/* Animals Grid */}
+            {!loading && !error && (
+              <>
+                {faunas.length === 0 ? (
+                  <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <BookOpen size={48} style={{ marginBottom: '1rem', color: 'var(--text-muted)' }} />
+                    <h3>Tidak ada hewan yang sesuai</h3>
+                    <p style={{ fontSize: '0.9rem' }}>Coba ubah filter pencarian Anda.</p>
+                  </div>
+                ) : (
+                  <div className="fauna-grid">
+                    {faunas.map((fauna) => (
+                      <div 
+                        key={fauna.id} 
+                        className="glass-panel glass-panel-hover fauna-card"
+                        onClick={() => fetchDetails(fauna.id)}
+                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+                      >
+                        <div className="card-image-container" style={{ height: '240px' }}>
+                          <img 
+                            src={fauna.image_url} 
+                            alt={fauna.name} 
+                            className="card-img" 
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                            }}
+                          />
+                          {fauna.is_shipping_available && (
+                            <div className="card-shipping-badge">
+                              Bisa Dikirim
+                            </div>
+                          )}
+                        </div>
+                        <div className="card-body" style={{ padding: '1.25rem 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span className="card-meta" style={{ fontSize: '0.7rem', margin: 0 }}>{fauna.class}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{fauna.habitat}</span>
+                          </div>
+                          <h3 className="card-title" style={{ fontSize: '1.1rem', margin: '0.2rem 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#ffffff' }}>{fauna.name}</h3>
+                          <div className="card-subtitle" style={{ fontSize: '0.8rem', margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' }}>{fauna.scientific_name}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
+                            <div className="card-price" style={{ fontSize: '1.25rem', margin: 0, fontWeight: 800 }}>{formatRupiah(fauna.price)}</div>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
+                              Beli / Detail &rarr;
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          /* ========================================================
+             ADMIN SYSTEM WITH STRICT LOGIN
+             ======================================================== */
+          !token ? (
+            /* ADMIN LOGIN SCREEN (SOLID DESIGN) */
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '420px', margin: '4rem auto', padding: '2.5rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <Lock size={36} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
+                <h2 style={{ fontSize: '1.5rem' }}>Login Administrator</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                  Autentikasi login diperlukan untuk masuk.
+                </p>
+              </div>
+
+              {loginError && (
+                <div className="alert-message alert-error">
+                  {loginError}
+                </div>
+              )}
+
+              <form onSubmit={handleLoginSubmit}>
+                <div className="form-group">
+                  <label className="form-label">Alamat Email Admin *</label>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    placeholder="admin@dfauna.com"
+                    required
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label className="form-label">Kata Sandi *</label>
+                  <input 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="password123"
+                    required
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  className="btn-primary btn-full" 
+                  disabled={loginLoading}
+                >
+                  {loginLoading ? 'Memverifikasi...' : 'Masuk'}
+                </button>
+              </form>
+            </div>
+          ) : !isPasswordChanged ? (
+            /* FIRST TIME PASSWORD REQUIREMENT */
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '460px', margin: '4rem auto', padding: '2.5rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <Lock size={36} style={{ color: 'var(--secondary)', marginBottom: '0.5rem' }} />
+                <h2 style={{ fontSize: '1.5rem' }}>Ganti Password Pertama Kali</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                  Untuk alasan keamanan sistem, Administrator wajib mengubah password bawaan sebelum dapat menggunakan dashboard admin.
+                </p>
+              </div>
+
+              {firstPasswordError && (
+                <div className="alert-message alert-error">
+                  {firstPasswordError}
+                </div>
+              )}
+
+              <form onSubmit={handleFirstPasswordSubmit}>
+                <div className="form-group">
+                  <label className="form-label">Nama Lengkap Admin</label>
+                  <input 
+                    type="text" 
+                    className="form-input"
+                    required
+                    value={firstPasswordForm.name}
+                    onChange={(e) => setFirstPasswordForm({ ...firstPasswordForm, name: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Email Admin</label>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    required
+                    value={firstPasswordForm.email}
+                    onChange={(e) => setFirstPasswordForm({ ...firstPasswordForm, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Password Baru *</label>
+                  <input 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="Minimal 6 karakter..."
+                    required
+                    value={firstPasswordForm.password}
+                    onChange={(e) => setFirstPasswordForm({ ...firstPasswordForm, password: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label className="form-label">Konfirmasi Password Baru *</label>
+                  <input 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="Ketik ulang password baru..."
+                    required
+                    value={firstPasswordForm.confirm_password}
+                    onChange={(e) => setFirstPasswordForm({ ...firstPasswordForm, confirm_password: e.target.value })}
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  className="btn-primary btn-full" 
+                  disabled={firstPasswordLoading}
+                >
+                  {firstPasswordLoading ? 'Memproses...' : 'Perbarui Password & Masuk'}
+                </button>
+              </form>
+            </div>
+          ) : (
+            /* ADMIN DASHBOARD (LOGGED IN & PASSWORD CHANGED) */
+            <div className="glass-panel animate-fade-in" style={{ padding: '2rem', marginTop: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Panel Administrator
+                  </h2>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                    Selamat datang, <strong>{adminUser?.name}</strong> ({adminUser?.email}). Kelola toko dan postingan Anda.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  {adminTab === 'items' && (
+                    <button className="btn-primary" onClick={openCreateModal}>
+                      <Plus size={18} />
+                      Tambah Postingan Baru
+                    </button>
+                  )}
+                  <button className="btn-danger" onClick={handleLogout} style={{ padding: '0.65rem 1rem' }}>
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              </div>
+
+              {/* Tab Selector */}
+              <div className="admin-tabs">
+                <button 
+                  className={`admin-tab ${adminTab === 'items' ? 'active' : ''}`}
+                  onClick={() => setAdminTab('items')}
+                >
+                  Inventaris & Postingan Hewan
+                </button>
+                <button 
+                  className={`admin-tab ${adminTab === 'settings' ? 'active' : ''}`}
+                  onClick={() => setAdminTab('settings')}
+                >
+                  Pengaturan WhatsApp & Toko
+                </button>
+                <button 
+                  className={`admin-tab ${adminTab === 'profile' ? 'active' : ''}`}
+                  onClick={() => setAdminTab('profile')}
+                >
+                  Profil & Password Admin
+                </button>
+              </div>
+
+              {/* Admin Tabs Content */}
+              {adminTab === 'items' && (
+                /* TAB 1: CRUD LIST */
+                loading ? (
+                  <div style={{ padding: '3rem', textAlign: 'center' }}>
+                    <Loader className="animate-spin" style={{ color: 'var(--primary)' }} />
+                  </div>
+                ) : (
+                  <div className="admin-table-container">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Foto</th>
+                          <th>Nama Hewan / Taksonomi</th>
+                          <th>Kelas / Habitat</th>
+                          <th>Harga</th>
+                          <th>Pengiriman</th>
+                          <th>Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {faunas.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                              Belum ada postingan hewan terdaftar.
+                            </td>
+                          </tr>
+                        ) : (
+                          faunas.map((item) => (
+                            <tr key={item.id}>
+                              <td>
+                                <img 
+                                  src={item.image_url} 
+                                  alt={item.name} 
+                                  style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-light)' }} 
+                                />
+                              </td>
+                              <td>
+                                <div style={{ fontWeight: 600 }}>{item.name}</div>
+                                <div style={{ fontStyle: 'italic', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                  {item.scientific_name}
+                                </div>
+                              </td>
+                              <td>
+                                <div>{item.class}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.habitat}</div>
+                              </td>
+                              <td style={{ fontWeight: 700, color: 'var(--secondary)' }}>
+                                {formatRupiah(item.price)}
+                              </td>
+                              <td>
+                                {item.is_shipping_available ? (
+                                  <span className="badge badge-least-concern" style={{ fontSize: '0.7rem' }}>Bisa Dikirim</span>
+                                ) : (
+                                  <span className="badge badge-vulnerable" style={{ fontSize: '0.7rem' }}>Lokal / Pickup</span>
+                                )}
+                              </td>
+                              <td>
+                                <div className="action-buttons">
+                                  <button 
+                                    className="btn-secondary btn-small"
+                                    onClick={() => openEditModal(item)}
+                                  >
+                                    <Edit3 size={12} />
+                                    Edit
+                                  </button>
+                                  <button 
+                                    className="btn-danger btn-small"
+                                    onClick={() => handleFaunaDelete(item.id)}
+                                  >
+                                    <Trash2 size={12} />
+                                    Hapus
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              )}
+
+              {adminTab === 'settings' && (
+                /* TAB 2: STORE SETTINGS */
+                <form onSubmit={handleSettingsSave} style={{ maxWidth: '600px', marginTop: '1rem' }}>
+                  {settingsSuccess && (
+                    <div className="alert-message alert-success">
+                      {settingsSuccess}
+                    </div>
+                  )}
+                  <div className="form-group">
+                    <label className="form-label">Nomor WhatsApp Toko *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: 628123456789"
+                      required
+                      value={settingsForm.whatsapp_number}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp_number: e.target.value })}
+                    />
+                    <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                      Gunakan format kode negara (awali dengan 62) tanpa spasi atau tanda +.
+                    </small>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Slogan / Tagline Toko *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Slogan toko hias..."
+                      required
+                      value={settingsForm.store_slogan}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, store_slogan: e.target.value })}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="btn-primary" 
+                    disabled={settingsLoading}
+                  >
+                    {settingsLoading ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                  </button>
+                </form>
+              )}
+
+              {adminTab === 'profile' && (
+                /* TAB 3: ADMIN PROFILE & PASSWORD SETTINGS */
+                <form onSubmit={handleProfileUpdate} style={{ maxWidth: '600px', marginTop: '1rem' }}>
+                  {profileSuccess && (
+                    <div className="alert-message alert-success">
+                      {profileSuccess}
+                    </div>
+                  )}
+                  {profileError && (
+                    <div className="alert-message alert-error">
+                      {profileError}
+                    </div>
+                  )}
+                  <div className="form-group">
+                    <label className="form-label">Nama Lengkap Admin *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      required
+                      value={profileForm.name}
+                      onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Alamat Email Login *</label>
+                    <input 
+                      type="email" 
+                      className="form-input" 
+                      required
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Kata Sandi Baru (Kosongkan jika tidak ingin diubah)</label>
+                    <input 
+                      type="password" 
+                      className="form-input" 
+                      placeholder="Minimal 6 karakter..."
+                      value={profileForm.password}
+                      onChange={(e) => setProfileForm({ ...profileForm, password: e.target.value })}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="btn-primary" 
+                    disabled={profileLoading}
+                  >
+                    {profileLoading ? 'Memproses...' : 'Perbarui Profil Admin'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="app-footer">
+        <div className="container">
+          <p>&copy; {new Date().getFullYear()} DFauna - Galeri Hewan Hias Premium. Dibuat dengan React & Laravel.</p>
+        </div>
+      </footer>
+    </div>
+
+    {/* CUSTOMER DETAIL MODAL */}
+      {showDetailModal && selectedFauna && (
+        <div className="modal-overlay" onClick={() => setShowDetailModal(false)}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setShowDetailModal(false)}>
+              <X size={18} />
+            </button>
+            
+            <div className="modal-header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', paddingRight: '4.5rem' }}>
+              <div>
+                <span className={`badge ${selectedFauna.is_shipping_available ? 'badge-least-concern' : 'badge-vulnerable'}`}>
+                  {selectedFauna.is_shipping_available ? 'Bisa Dikirim se-Indonesia' : 'Ambil Sendiri di Toko'}
+                </span>
+                <h2 style={{ fontSize: '1.75rem', marginTop: '0.35rem', fontWeight: 800 }}>{selectedFauna.name}</h2>
+                <div style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'var(--primary-hover)', marginTop: '0.1rem' }}>
+                  {selectedFauna.scientific_name}
+                </div>
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                <a 
+                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}.`}
+                  target="_blank"
+                  className="btn-primary"
+                  style={{ padding: '0.65rem 1.5rem', borderRadius: '0.5rem', fontSize: '0.9rem' }}
+                >
+                  <Send size={16} />
+                  Hubungi via WA & Beli
+                </a>
+              </div>
+            </div>
+
+            <div className="modal-body-scroll">
+              <div className="modal-grid-layout">
+                {/* Left Column: Media */}
+                <div className="modal-media-col">
+                  {/* Main Image Display */}
+                  <img 
+                    src={
+                      (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
+                        ? (selectedFauna.detailed_info.images[activeImageIndex] || selectedFauna.image_url)
+                        : selectedFauna.image_url
+                    } 
+                    alt={selectedFauna.name} 
+                    className="modal-main-img" 
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                    }}
+                  />
+                  
+                  {/* Thumbnail Selector Gallery */}
+                  {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+                      {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
+                        <img 
+                          key={idx}
+                          src={imgUrl} 
+                          alt={`Thumbnail ${idx + 1}`}
+                          onClick={() => setActiveImageIndex(idx)}
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            objectFit: 'cover',
+                            borderRadius: '0.35rem',
+                            border: activeImageIndex === idx ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            transition: 'var(--transition-smooth)'
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {selectedFauna.video_url && getYoutubeEmbedUrl(selectedFauna.video_url) && (
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
+                        Video Dokumentasi
+                      </h3>
+                      <div className="video-container">
+                        <iframe 
+                          src={getYoutubeEmbedUrl(selectedFauna.video_url)} 
+                          title={`Video dokumentasi ${selectedFauna.name}`}
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column: Information */}
+                <div className="modal-info-col">
+                  <div className="meta-grid">
+                    <div className="meta-item">
+                      <span className="meta-label">Kelas</span>
+                      <span className="meta-value">{selectedFauna.class}</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="meta-label">Habitat</span>
+                      <span className="meta-value">{selectedFauna.habitat}</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="meta-label">Diet</span>
+                      <span className="meta-value">{selectedFauna.diet}</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="meta-label">Harga</span>
+                      <span className="meta-value" style={{ color: 'var(--secondary)' }}>{formatRupiah(selectedFauna.price)}</span>
+                    </div>
+                  </div>
+
+                  <div className="detail-section">
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--primary-hover)', fontWeight: 700 }}>Deskripsi Hewan</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                      {selectedFauna.description}
+                    </p>
+                  </div>
+
+                  <div className="detail-section">
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--primary-hover)', fontWeight: 700 }}>Detail Pemeliharaan</h3>
+                    <div className="meta-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                      <div className="meta-item">
+                        <span className="meta-label">Asal</span>
+                        <span className="meta-value">{selectedFauna.detailed_info?.native_region || 'N/A'}</span>
+                      </div>
+                      <div className="meta-item">
+                        <span className="meta-label">Masa Hidup</span>
+                        <span className="meta-value">{selectedFauna.detailed_info?.lifespan || 'N/A'}</span>
+                      </div>
+                      <div className="meta-item">
+                        <span className="meta-label">Bobot</span>
+                        <span className="meta-value">{selectedFauna.detailed_info?.weight || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedFauna.detailed_info?.fun_facts && selectedFauna.detailed_info.fun_facts.length > 0 && (
+                    <div className="detail-section">
+                      <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--secondary)', fontWeight: 700 }}>Fakta Unik</h3>
+                      <ul className="facts-list">
+                        {selectedFauna.detailed_info.fun_facts.map((fact, i) => (
+                          <li key={i} className="fact-item" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                            &bull; {fact}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      )}
+
+      {/* ADMIN CRUD ADD/EDIT MODAL */}
+      {showCrudModal && (
+        <div className="modal-overlay" onClick={() => setShowCrudModal(false)}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <button className="modal-close-btn" onClick={() => setShowCrudModal(false)}>
+              <X size={18} />
+            </button>
+            
+            <div className="modal-header-section">
+              <h2 style={{ fontSize: '1.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800 }}>
+                <FileText style={{ color: 'var(--primary)' }} />
+                {crudMode === 'create' ? 'Tambah Postingan Hewan' : 'Edit Postingan Hewan'}
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+                Lengkapi rincian formulir untuk memperbarui listing inventaris toko.
+              </p>
+            </div>
+
+            <div className="modal-body-scroll">
+              {crudError && (
+                <div className="alert-message alert-error" style={{ marginBottom: '1.5rem' }}>
+                  {crudError}
+                </div>
+              )}
+
+              <form id="crud-form" onSubmit={handleFaunaSubmit}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Nama Hewan *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: Arwana Super Red Joey..."
+                      required
+                      value={crudForm.name}
+                      onChange={(e) => setCrudForm({ ...crudForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Nama Ilmiah / Taksonomi *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: Scleropages formosus..."
+                      required
+                      value={crudForm.scientific_name}
+                      onChange={(e) => setCrudForm({ ...crudForm, scientific_name: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Kelas Hewan *</label>
+                    <select 
+                      className="form-select"
+                      value={crudForm.class}
+                      onChange={(e) => setCrudForm({ ...crudForm, class: e.target.value })}
+                    >
+                      <option value="Ikan Hias">Ikan Hias</option>
+                      <option value="Mamalia">Mamalia</option>
+                      <option value="Mamalia Kecil">Mamalia Kecil</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Habitat *</label>
+                    <select 
+                      className="form-select"
+                      value={crudForm.habitat}
+                      onChange={(e) => setCrudForm({ ...crudForm, habitat: e.target.value })}
+                    >
+                      <option value="Air Tawar">Air Tawar</option>
+                      <option value="Darat">Darat</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Makanan / Diet *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: Pelet / Jangkrik..."
+                      required
+                      value={crudForm.diet}
+                      onChange={(e) => setCrudForm({ ...crudForm, diet: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Status Konservasi *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: Tersedia..."
+                      required
+                      value={crudForm.conservation_status}
+                      onChange={(e) => setCrudForm({ ...crudForm, conservation_status: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Harga Satuan (Rupiah) *</label>
+                    <input 
+                      type="number" 
+                      className="form-input" 
+                      placeholder="Contoh: 150000..."
+                      required
+                      value={crudForm.price}
+                      onChange={(e) => setCrudForm({ ...crudForm, price: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">URL Video YouTube (Opsional)</label>
+                    <input 
+                      type="url" 
+                      className="form-input" 
+                      placeholder="Contoh: https://www.youtube.com/watch?v=..."
+                      value={crudForm.video_url}
+                      onChange={(e) => setCrudForm({ ...crudForm, video_url: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Multi-image section */}
+                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700 }}>
+                    <span>Foto Satwa (Minimal 1, Maksimal 5) *</span>
+                    {crudImages.length < 5 && (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', borderRadius: '0.35rem' }}
+                        onClick={() => setCrudImages([...crudImages, ''])}
+                      >
+                        + Tambah Foto
+                      </button>
+                    )}
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {crudImages.map((imgUrl, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: '#0b0e0c', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)' }}>
+                        {/* Preview Thumbnail */}
+                        <div style={{ width: '60px', height: '60px', borderRadius: '0.35rem', overflow: 'hidden', border: '1px solid var(--border-light)', background: '#131916', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                          {imgUrl ? (
+                            <img src={imgUrl} alt={`Preview ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }} />
+                          ) : (
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Kosong</span>
+                          )}
+                          {uploadingIndex === index && (
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Loader className="animate-spin" size={14} style={{ color: 'var(--primary)' }} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Input & Upload Controls */}
+                        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input
+                              type="text"
+                              className="form-input"
+                              placeholder={`URL Foto ${index === 0 ? 'Utama (Wajib)' : `${index + 1} (Opsional)`}`}
+                              value={imgUrl}
+                              onChange={(e) => {
+                                const newImages = [...crudImages]
+                                newImages[index] = e.target.value
+                                setCrudImages(newImages)
+                              }}
+                              required={index === 0}
+                              style={{ height: '38px', fontSize: '0.85rem' }}
+                            />
+                            
+                            {/* Device File Upload Button */}
+                            <label className="btn-secondary" style={{ padding: '0.5rem 1rem', height: '38px', borderRadius: '0.35rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              <Upload size={14} />
+                              Pilih File
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleImageUpload(index, e.target.files[0])
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Delete Row Button */}
+                        {crudImages.length > 1 && (
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            style={{ padding: '0.5rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', height: '38px', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={() => {
+                              const newImages = crudImages.filter((_, i) => i !== index)
+                              setCrudImages(newImages)
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Asal Wilayah</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: Kalimantan Barat..."
+                      value={crudForm.native_region}
+                      onChange={(e) => setCrudForm({ ...crudForm, native_region: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Masa Hidup</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: 15-20 tahun..."
+                      value={crudForm.lifespan}
+                      onChange={(e) => setCrudForm({ ...crudForm, lifespan: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Berat Rata-rata</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: 1-2 kg..."
+                      value={crudForm.weight}
+                      onChange={(e) => setCrudForm({ ...crudForm, weight: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
+                    <label className="checkbox-label">
+                      <input 
+                        type="checkbox" 
+                        className="checkbox-input"
+                        checked={crudForm.is_shipping_available}
+                        onChange={(e) => setCrudForm({ ...crudForm, is_shipping_available: e.target.checked })}
+                      />
+                      <span>Bisa Dikirim se-Indonesia</span>
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Fakta Menarik 1</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Tuliskan fakta menarik tentang satwa ini..."
+                      value={crudForm.fun_fact_1}
+                      onChange={(e) => setCrudForm({ ...crudForm, fun_fact_1: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Fakta Menarik 2</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Tuliskan fakta menarik lainnya..."
+                      value={crudForm.fun_fact_2}
+                      onChange={(e) => setCrudForm({ ...crudForm, fun_fact_2: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Deskripsi Produk *</label>
+                  <textarea 
+                    rows={4} 
+                    className="form-textarea" 
+                    placeholder="Rincian mengenai kondisi hewan, warna, dll..."
+                    required
+                    value={crudForm.description}
+                    onChange={(e) => setCrudForm({ ...crudForm, description: e.target.value })}
+                  />
+                </div>
+              </form>
+            </div>
+
+            <div className="modal-cta-section" style={{ justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setShowCrudModal(false)}
+              >
+                Batal
+              </button>
+              <button 
+                type="submit" 
+                form="crud-form"
+                className="btn-primary"
+                disabled={crudLoading}
+                style={{ minWidth: '150px', justifyContent: 'center' }}
+              >
+                {crudLoading ? (
+                  <>
+                    <Loader className="animate-spin" size={18} />
+                    Menyimpan...
+                  </>
+                ) : (
+                  'Simpan Postingan'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default App
