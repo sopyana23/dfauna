@@ -1705,78 +1705,75 @@ function App() {
         </div>
       )}
 
-      {/* CUSTOM CONFIRMATION BOTTOM SHEET FOR MASTER OPTION DELETION */}
+      {/* CUSTOM CONFIRMATION DIALOG FOR MASTER OPTION DELETION */}
       {deleteMasterModalData && (
-        <div className="bottom-sheet-overlay" onClick={() => setDeleteMasterModalData(null)}>
-          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
-            <div className="sheet-handle"></div>
-            <div className="sheet-content" style={{ padding: '1rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--danger)' }}>
-                Konfirmasi Hapus Opsi Master
-              </h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', lineHeight: '1.4' }}>
-                Anda yakin ingin menghapus opsi <strong>"{deleteMasterModalData.value}"</strong>?
-                Semua postingan fauna yang menggunakan opsi ini akan dialihkan ke opsi pengganti di bawah ini.
-              </p>
+        <div className="modal-overlay" onClick={() => setDeleteMasterModalData(null)}>
+          <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '340px', width: '90%', padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--danger)' }}>
+              Konfirmasi Hapus
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', lineHeight: '1.4' }}>
+              Anda yakin ingin menghapus <strong>"{deleteMasterModalData.value}"</strong>?
+              Semua postingan fauna yang menggunakan opsi ini akan dialihkan ke opsi pengganti di bawah ini.
+            </p>
 
-              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label">Pilih Opsi Pengganti *</label>
-                <select 
-                  className="form-select"
-                  value={deleteMasterModalData.selectedReplacement}
-                  onChange={(e) => setDeleteMasterModalData({
-                    ...deleteMasterModalData,
-                    selectedReplacement: e.target.value
-                  })}
-                  style={{ width: '100%', padding: '0.65rem', borderRadius: '0.4rem', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-                >
-                  {deleteMasterModalData.replacementOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+              <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Pilih Opsi Pengganti *</label>
+              <select 
+                className="form-select"
+                value={deleteMasterModalData.selectedReplacement}
+                onChange={(e) => setDeleteMasterModalData({
+                  ...deleteMasterModalData,
+                  selectedReplacement: e.target.value
+                })}
+                style={{ width: '100%', padding: '0.5rem 0.65rem', borderRadius: '0.4rem', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '0.8rem' }}
+              >
+                {deleteMasterModalData.replacementOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                <button 
-                  type="button" 
-                  className="btn-secondary" 
-                  onClick={() => setDeleteMasterModalData(null)}
-                  style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
-                >
-                  Batal
-                </button>
-                <button 
-                  type="button" 
-                  className="btn-primary"
-                  style={{ backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', fontSize: '0.85rem', padding: '0.5rem 1rem' }}
-                  onClick={async () => {
-                    const { field, value, selectedReplacement } = deleteMasterModalData;
-                    setDeleteMasterModalData(null); // Close modal
-                    
-                    try {
-                      setCrudLoading(true)
-                      const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
-                        method: 'POST',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify({ field, value, replacement: selectedReplacement })
-                      })
-                      const data = await res.json()
-                      if (res.ok && data.success) {
-                        alert(data.message || 'Opsi master berhasil dihapus.')
-                        loadData()
-                      } else {
-                        alert(data.message || 'Gagal menghapus opsi master.')
-                      }
-                    } catch (err) {
-                      alert('Terjadi kesalahan saat menghapus opsi master.')
-                    } finally {
-                      setCrudLoading(false)
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setDeleteMasterModalData(null)}
+                style={{ fontSize: '0.8rem', padding: '0.4rem 1rem', borderRadius: '0.35rem' }}
+              >
+                Batal
+              </button>
+              <button 
+                type="button" 
+                className="btn-primary"
+                style={{ backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', fontSize: '0.8rem', padding: '0.4rem 1rem', borderRadius: '0.35rem' }}
+                onClick={async () => {
+                  const { field, value, selectedReplacement } = deleteMasterModalData;
+                  setDeleteMasterModalData(null); // Close modal
+                  
+                  try {
+                    setCrudLoading(true)
+                    const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
+                      method: 'POST',
+                      headers: getAuthHeaders(),
+                      body: JSON.stringify({ field, value, replacement: selectedReplacement })
+                    })
+                    const data = await res.json()
+                    if (res.ok && data.success) {
+                      alert(data.message || 'Opsi master berhasil dihapus.')
+                      loadData()
+                    } else {
+                      alert(data.message || 'Gagal menghapus opsi master.')
                     }
-                  }}
-                >
-                  Hapus & Alihkan
-                </button>
-              </div>
+                  } catch (err) {
+                    alert('Terjadi kesalahan saat menghapus opsi master.')
+                  } finally {
+                    setCrudLoading(false)
+                  }
+                }}
+              >
+                Hapus & Alihkan
+              </button>
             </div>
           </div>
         </div>

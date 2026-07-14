@@ -1753,7 +1753,7 @@ function App() {
       {/* CUSTOM CONFIRMATION DIALOG FOR MASTER OPTION DELETION */}
       {deleteMasterModalData && (
         <div className="modal-overlay" onClick={() => setDeleteMasterModalData(null)}>
-          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+          <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px', width: '90%', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)' }}>
             <button className="modal-close-btn" onClick={() => setDeleteMasterModalData(null)}>
               <X size={18} />
             </button>
