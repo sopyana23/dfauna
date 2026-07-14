@@ -41,6 +41,7 @@ interface Fauna {
     weight: string
     shipping_terms?: string
     warranty_info?: string
+    shipping_coverage?: string
     images?: string[]
   }
 }
@@ -117,7 +118,8 @@ function App() {
     lifespan: '',
     weight: '',
     shipping_terms: '',
-    warranty_info: ''
+    warranty_info: '',
+    shipping_coverage: 'Bisa Kirim se-Indonesia'
   })
 
   // Dynamic Master dropdown custom inputs
@@ -127,6 +129,8 @@ function App() {
   const [showCustomHabitatInput, setShowCustomHabitatInput] = useState<boolean>(false)
   const [customConservationStatus, setCustomConservationStatus] = useState<string>('')
   const [showCustomConservationStatusInput, setShowCustomConservationStatusInput] = useState<boolean>(false)
+  const [customShippingCoverage, setCustomShippingCoverage] = useState<string>('')
+  const [showCustomShippingCoverageInput, setShowCustomShippingCoverageInput] = useState<boolean>(false)
 
   // Lightbox Galeri Interaktif
   const [showLightbox, setShowLightbox] = useState<boolean>(false)
@@ -511,7 +515,8 @@ function App() {
       lifespan: '',
       weight: '',
       shipping_terms: '',
-      warranty_info: ''
+      warranty_info: '',
+      shipping_coverage: 'Bisa Kirim se-Indonesia'
     })
     setCustomClass('')
     setShowCustomClassInput(false)
@@ -519,6 +524,8 @@ function App() {
     setShowCustomHabitatInput(false)
     setCustomConservationStatus('')
     setShowCustomConservationStatusInput(false)
+    setCustomShippingCoverage('')
+    setShowCustomShippingCoverageInput(false)
     setCrudImages([''])
     setCrudError(null)
     setShowCrudModal(true)
@@ -544,7 +551,8 @@ function App() {
       lifespan: item.detailed_info?.lifespan || '',
       weight: item.detailed_info?.weight || '',
       shipping_terms: item.detailed_info?.shipping_terms || '',
-      warranty_info: item.detailed_info?.warranty_info || ''
+      warranty_info: item.detailed_info?.warranty_info || '',
+      shipping_coverage: item.detailed_info?.shipping_coverage || (item.is_shipping_available ? 'Bisa Kirim se-Indonesia' : 'Ambil Sendiri di Toko (No Shipping)')
     })
     setCustomClass('')
     setShowCustomClassInput(false)
@@ -552,6 +560,8 @@ function App() {
     setShowCustomHabitatInput(false)
     setCustomConservationStatus('')
     setShowCustomConservationStatusInput(false)
+    setCustomShippingCoverage('')
+    setShowCustomShippingCoverageInput(false)
     const initialImages = item.detailed_info?.images && Array.isArray(item.detailed_info.images) && item.detailed_info.images.length > 0
       ? item.detailed_info.images
       : [item.image_url];
@@ -581,6 +591,7 @@ function App() {
     const selectedClass = showCustomClassInput ? customClass.trim() : crudForm.class
     const selectedHabitat = showCustomHabitatInput ? customHabitat.trim() : crudForm.habitat
     const selectedConservationStatus = showCustomConservationStatusInput ? customConservationStatus.trim() : crudForm.conservation_status
+    const selectedShippingCoverage = showCustomShippingCoverageInput ? customShippingCoverage.trim() : crudForm.shipping_coverage
 
     if (!selectedClass) {
       setCrudError('Kelas hewan wajib diisi.')
@@ -597,6 +608,11 @@ function App() {
       setCrudLoading(false)
       return
     }
+    if (!selectedShippingCoverage) {
+      setCrudError('Jangkauan pengiriman wajib diisi.')
+      setCrudLoading(false)
+      return
+    }
 
     const payload = {
       name: crudForm.name,
@@ -607,7 +623,7 @@ function App() {
       conservation_status: selectedConservationStatus,
       price: crudForm.price,
       video_url: crudForm.video_url || null,
-      is_shipping_available: crudForm.is_shipping_available,
+      is_shipping_available: !selectedShippingCoverage.toLowerCase().includes('ambil sendiri'),
       description: crudForm.description,
       image_url: filteredImages[0],
       detailed_info: {
@@ -616,6 +632,7 @@ function App() {
         weight: crudForm.weight,
         shipping_terms: crudForm.shipping_terms,
         warranty_info: crudForm.warranty_info,
+        shipping_coverage: selectedShippingCoverage,
         images: filteredImages
       }
     }
@@ -716,6 +733,12 @@ function App() {
     const defaultStatuses = ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']
     const existing = faunas.map(f => f.conservation_status).filter(Boolean)
     return Array.from(new Set([...defaultStatuses, ...existing]))
+  }
+
+  const getUniqueShippingCoverages = () => {
+    const defaultCoverages = ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
+    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean)
+    return Array.from(new Set([...defaultCoverages, ...existing]))
   }
 
   // Handle Fauna Delete
@@ -1291,7 +1314,7 @@ function App() {
             <div className="modal-header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', paddingRight: '4.5rem' }}>
               <div>
                 <span className={`badge ${selectedFauna.is_shipping_available ? 'badge-least-concern' : 'badge-vulnerable'}`}>
-                  {selectedFauna.is_shipping_available ? 'Bisa Dikirim se-Indonesia' : 'Ambil Sendiri di Toko'}
+                  {selectedFauna.detailed_info?.shipping_coverage || (selectedFauna.is_shipping_available ? 'Bisa Dikirim se-Indonesia' : 'Ambil Sendiri di Toko')}
                 </span>
                 <h2 style={{ fontSize: '1.75rem', marginTop: '0.35rem', fontWeight: 800 }}>{selectedFauna.name}</h2>
                 <div style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'var(--primary-hover)', marginTop: '0.1rem' }}>
@@ -1767,16 +1790,37 @@ function App() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
-                    <label className="checkbox-label">
+                  <div className="form-group">
+                    <label className="form-label">Jangkauan Pengiriman *</label>
+                    <select 
+                      className="form-select"
+                      value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomShippingCoverageInput(true)
+                          setCustomShippingCoverage('')
+                        } else {
+                          setShowCustomShippingCoverageInput(false)
+                          setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
+                        }
+                      }}
+                    >
+                      {getUniqueShippingCoverages().map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
+                    </select>
+                    {showCustomShippingCoverageInput && (
                       <input 
-                        type="checkbox" 
-                        className="checkbox-input"
-                        checked={crudForm.is_shipping_available}
-                        onChange={(e) => setCrudForm({ ...crudForm, is_shipping_available: e.target.checked })}
+                        type="text" 
+                        className="form-input" 
+                        style={{ marginTop: '0.5rem' }} 
+                        placeholder="Ketik Jangkauan Pengiriman Baru..." 
+                        value={customShippingCoverage} 
+                        onChange={(e) => setCustomShippingCoverage(e.target.value)} 
+                        required 
                       />
-                      <span>Bisa Dikirim se-Indonesia</span>
-                    </label>
+                    )}
                   </div>
                 </div>
 

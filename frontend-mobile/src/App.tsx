@@ -42,6 +42,7 @@ interface Fauna {
     weight: string
     shipping_terms?: string
     warranty_info?: string
+    shipping_coverage?: string
     images?: string[]
   }
 }
@@ -118,7 +119,8 @@ function App() {
     lifespan: '',
     weight: '',
     shipping_terms: '',
-    warranty_info: ''
+    warranty_info: '',
+    shipping_coverage: 'Bisa Kirim se-Indonesia'
   })
 
   // Dynamic Master dropdown custom inputs
@@ -128,6 +130,8 @@ function App() {
   const [showCustomHabitatInput, setShowCustomHabitatInput] = useState<boolean>(false)
   const [customConservationStatus, setCustomConservationStatus] = useState<string>('')
   const [showCustomConservationStatusInput, setShowCustomConservationStatusInput] = useState<boolean>(false)
+  const [customShippingCoverage, setCustomShippingCoverage] = useState<string>('')
+  const [showCustomShippingCoverageInput, setShowCustomShippingCoverageInput] = useState<boolean>(false)
 
   // Lightbox Galeri Interaktif
   const [showLightbox, setShowLightbox] = useState<boolean>(false)
@@ -515,7 +519,8 @@ function App() {
       lifespan: '',
       weight: '',
       shipping_terms: '',
-      warranty_info: ''
+      warranty_info: '',
+      shipping_coverage: 'Bisa Kirim se-Indonesia'
     })
     setCustomClass('')
     setShowCustomClassInput(false)
@@ -523,6 +528,8 @@ function App() {
     setShowCustomHabitatInput(false)
     setCustomConservationStatus('')
     setShowCustomConservationStatusInput(false)
+    setCustomShippingCoverage('')
+    setShowCustomShippingCoverageInput(false)
     setCrudImages([''])
     setCrudError(null)
     setShowCrudSheet(true)
@@ -548,7 +555,8 @@ function App() {
       lifespan: item.detailed_info?.lifespan || '',
       weight: item.detailed_info?.weight || '',
       shipping_terms: item.detailed_info?.shipping_terms || '',
-      warranty_info: item.detailed_info?.warranty_info || ''
+      warranty_info: item.detailed_info?.warranty_info || '',
+      shipping_coverage: item.detailed_info?.shipping_coverage || (item.is_shipping_available ? 'Bisa Kirim se-Indonesia' : 'Ambil Sendiri di Toko (No Shipping)')
     })
     setCustomClass('')
     setShowCustomClassInput(false)
@@ -556,6 +564,8 @@ function App() {
     setShowCustomHabitatInput(false)
     setCustomConservationStatus('')
     setShowCustomConservationStatusInput(false)
+    setCustomShippingCoverage('')
+    setShowCustomShippingCoverageInput(false)
     const initialImages = item.detailed_info?.images && Array.isArray(item.detailed_info.images) && item.detailed_info.images.length > 0
       ? item.detailed_info.images
       : [item.image_url];
@@ -585,6 +595,7 @@ function App() {
     const selectedClass = showCustomClassInput ? customClass.trim() : crudForm.class
     const selectedHabitat = showCustomHabitatInput ? customHabitat.trim() : crudForm.habitat
     const selectedConservationStatus = showCustomConservationStatusInput ? customConservationStatus.trim() : crudForm.conservation_status
+    const selectedShippingCoverage = showCustomShippingCoverageInput ? customShippingCoverage.trim() : crudForm.shipping_coverage
 
     if (!selectedClass) {
       setCrudError('Kelas hewan wajib diisi.')
@@ -601,6 +612,11 @@ function App() {
       setCrudLoading(false)
       return
     }
+    if (!selectedShippingCoverage) {
+      setCrudError('Jangkauan pengiriman wajib diisi.')
+      setCrudLoading(false)
+      return
+    }
 
     const payload = {
       name: crudForm.name,
@@ -611,7 +627,7 @@ function App() {
       conservation_status: selectedConservationStatus,
       price: crudForm.price,
       video_url: crudForm.video_url || null,
-      is_shipping_available: crudForm.is_shipping_available,
+      is_shipping_available: !selectedShippingCoverage.toLowerCase().includes('ambil sendiri'),
       description: crudForm.description,
       image_url: filteredImages[0],
       detailed_info: {
@@ -620,6 +636,7 @@ function App() {
         weight: crudForm.weight,
         shipping_terms: crudForm.shipping_terms,
         warranty_info: crudForm.warranty_info,
+        shipping_coverage: selectedShippingCoverage,
         images: filteredImages
       }
     }
@@ -720,6 +737,12 @@ function App() {
     const defaultStatuses = ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']
     const existing = faunas.map(f => f.conservation_status).filter(Boolean)
     return Array.from(new Set([...defaultStatuses, ...existing]))
+  }
+
+  const getUniqueShippingCoverages = () => {
+    const defaultCoverages = ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
+    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean)
+    return Array.from(new Set([...defaultCoverages, ...existing]))
   }
 
   // Delete Item
@@ -1327,7 +1350,7 @@ function App() {
                 <span className="badge badge-least-concern">{selectedFauna.class}</span>
                 <span className="badge badge-least-concern">{selectedFauna.habitat}</span>
                 <span className={`badge ${selectedFauna.is_shipping_available ? 'badge-least-concern' : 'badge-vulnerable'}`}>
-                  {selectedFauna.is_shipping_available ? 'Bisa Kirim' : 'Pickup Only'}
+                  {selectedFauna.detailed_info?.shipping_coverage || (selectedFauna.is_shipping_available ? 'Bisa Kirim' : 'Pickup Only')}
                 </span>
               </div>
 
@@ -1701,15 +1724,36 @@ function App() {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="checkbox-label" style={{ padding: '0.25rem 0' }}>
+                  <label className="form-label">Jangkauan Pengiriman *</label>
+                  <select 
+                    className="form-select"
+                    value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setShowCustomShippingCoverageInput(true)
+                        setCustomShippingCoverage('')
+                      } else {
+                        setShowCustomShippingCoverageInput(false)
+                        setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
+                      }
+                    }}
+                  >
+                    {getUniqueShippingCoverages().map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                    <option value="__NEW__">+ Tambah Baru...</option>
+                  </select>
+                  {showCustomShippingCoverageInput && (
                     <input 
-                      type="checkbox" 
-                      className="checkbox-input"
-                      checked={crudForm.is_shipping_available}
-                      onChange={(e) => setCrudForm({ ...crudForm, is_shipping_available: e.target.checked })}
+                      type="text" 
+                      className="form-input" 
+                      style={{ marginTop: '0.35rem' }} 
+                      placeholder="Ketik Jangkauan Pengiriman Baru..." 
+                      value={customShippingCoverage} 
+                      onChange={(e) => setCustomShippingCoverage(e.target.value)} 
+                      required 
                     />
-                    <span>Bisa Dikirim se-Indonesia</span>
-                  </label>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Deskripsi Hewan *</label>
@@ -1790,54 +1834,21 @@ function App() {
       {showLightbox && selectedFauna && (
         <div 
           className="modal-overlay" 
-          style={{ background: 'rgba(0,0,0,0.97)', zIndex: 3000, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', userSelect: 'none' }}
+          style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.97)', zIndex: 3000, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', userSelect: 'none' }}
           onClick={() => setShowLightbox(false)}
         >
           {/* Close Button */}
           <button 
             className="modal-close-btn" 
-            style={{ top: '1rem', right: '1rem', color: '#fff', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '0.5rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }} 
+            style={{ position: 'absolute', top: '1rem', right: '1rem', color: '#fff', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '0.5rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', zIndex: 3200 }} 
             onClick={() => setShowLightbox(false)}
           >
             <X size={18} />
           </button>
 
-          {/* Top Control Bar */}
-          <div style={{ position: 'absolute', top: '1rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.75rem', background: 'rgba(0,0,0,0.6)', padding: '0.4rem 1rem', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.1)', alignItems: 'center', zIndex: 3100 }} onClick={(e) => e.stopPropagation()}>
-            <button 
-              type="button" 
-              style={{ padding: '0.25rem 0.5rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setZoomScale(prev => Math.max(1, prev - 0.5))
-                if (zoomScale <= 1.5) setPanPosition({ x: 0, y: 0 })
-              }}
-            >
-              <ZoomOut size={16} />
-            </button>
-            <span style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 600 }}>{zoomScale.toFixed(1)}x</span>
-            <button 
-              type="button" 
-              style={{ padding: '0.25rem 0.5rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setZoomScale(prev => Math.min(4, prev + 0.5))
-              }}
-            >
-              <ZoomIn size={16} />
-            </button>
-            <span style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)' }}></span>
-            <span style={{ fontSize: '0.8rem', color: '#fff' }}>
-              {(selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images))
-                ? `${lightboxIndex + 1} / ${selectedFauna.detailed_info.images.length}`
-                : '1 / 1'
-              }
-            </span>
-          </div>
-
           {/* Main Visual Container */}
           <div 
-            style={{ width: '95vw', height: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}
+            style={{ width: '95vw', height: '55vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Previous Button */}
@@ -1931,9 +1942,56 @@ function App() {
             </div>
           </div>
 
+          {/* Bottom Control Bar */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              gap: '1.25rem', 
+              background: 'rgba(0,0,0,0.6)', 
+              padding: '0.4rem 1rem', 
+              borderRadius: '2rem', 
+              border: '1px solid rgba(255,255,255,0.1)', 
+              alignItems: 'center', 
+              zIndex: 3100, 
+              marginTop: '1.5rem', 
+              marginBottom: '1rem' 
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              type="button" 
+              style={{ padding: '0.25rem 0.5rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoomScale(prev => Math.max(1, prev - 0.5))
+                if (zoomScale <= 1.5) setPanPosition({ x: 0, y: 0 })
+              }}
+            >
+              <ZoomOut size={16} />
+            </button>
+            <span style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 600 }}>{zoomScale.toFixed(1)}x</span>
+            <button 
+              type="button" 
+              style={{ padding: '0.25rem 0.5rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoomScale(prev => Math.min(4, prev + 0.5))
+              }}
+            >
+              <ZoomIn size={16} />
+            </button>
+            <span style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)' }}></span>
+            <span style={{ fontSize: '0.8rem', color: '#fff' }}>
+              {(selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images))
+                ? `${lightboxIndex + 1} / ${selectedFauna.detailed_info.images.length}`
+                : '1 / 1'
+              }
+            </span>
+          </div>
+
           {/* Bottom Thumbnails Strip */}
           {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
-            <div style={{ display: 'flex', gap: '0.4rem', marginTop: '1rem', zIndex: 10, background: 'rgba(0,0,0,0.6)', padding: '0.4rem', borderRadius: '0.5rem', overflowX: 'auto', maxWidth: '90%' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', gap: '0.4rem', zIndex: 10, background: 'rgba(0,0,0,0.6)', padding: '0.4rem', borderRadius: '0.5rem', overflowX: 'auto', maxWidth: '90%' }} onClick={(e) => e.stopPropagation()}>
               {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
                 <img
                   key={idx}
