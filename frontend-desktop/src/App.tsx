@@ -750,7 +750,6 @@ function App() {
   }
 
   const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
-    alert("handleDeleteMasterOption dipanggil: field=" + field + ", value=" + value);
     // Determine the list of available options for replacement
     let options: string[] = []
     if (field === 'class') options = getUniqueClasses()
