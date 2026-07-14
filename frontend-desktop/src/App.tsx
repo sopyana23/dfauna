@@ -718,27 +718,35 @@ function App() {
 
   // Get unique options from existing faunas list
   const getUniqueClasses = () => {
-    const defaultClasses = ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']
     const existing = faunas.map(f => f.class).filter(Boolean)
-    return Array.from(new Set([...defaultClasses, ...existing]))
+    if (existing.length === 0) {
+      return ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']
+    }
+    return Array.from(new Set(existing))
   }
 
   const getUniqueHabitats = () => {
-    const defaultHabitats = ['Air Tawar', 'Air Laut', 'Darat']
     const existing = faunas.map(f => f.habitat).filter(Boolean)
-    return Array.from(new Set([...defaultHabitats, ...existing]))
+    if (existing.length === 0) {
+      return ['Air Tawar', 'Air Laut', 'Darat']
+    }
+    return Array.from(new Set(existing))
   }
 
   const getUniqueConservationStatuses = () => {
-    const defaultStatuses = ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']
     const existing = faunas.map(f => f.conservation_status).filter(Boolean)
-    return Array.from(new Set([...defaultStatuses, ...existing]))
+    if (existing.length === 0) {
+      return ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']
+    }
+    return Array.from(new Set(existing))
   }
 
   const getUniqueShippingCoverages = () => {
-    const defaultCoverages = ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
     const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean) as string[]
-    return Array.from(new Set([...defaultCoverages, ...existing]))
+    if (existing.length === 0) {
+      return ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
+    }
+    return Array.from(new Set(existing))
   }
 
   const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
