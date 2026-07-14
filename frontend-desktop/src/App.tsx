@@ -91,6 +91,11 @@ function App() {
   const [masterStatuses, setMasterStatuses] = useState<string[]>(['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)'])
   const [masterShippingCoverages, setMasterShippingCoverages] = useState<string[]>(['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)'])
 
+  const [newClassInput, setNewClassInput] = useState('')
+  const [newHabitatInput, setNewHabitatInput] = useState('')
+  const [newStatusInput, setNewStatusInput] = useState('')
+  const [newShippingInput, setNewShippingInput] = useState('')
+
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
@@ -728,19 +733,19 @@ function App() {
 
   // Get unique options from existing faunas list
   const getUniqueClasses = () => {
-    return masterClasses
+    return Array.isArray(masterClasses) ? masterClasses : []
   }
 
   const getUniqueHabitats = () => {
-    return masterHabitats
+    return Array.isArray(masterHabitats) ? masterHabitats : []
   }
 
   const getUniqueConservationStatuses = () => {
-    return masterStatuses
+    return Array.isArray(masterStatuses) ? masterStatuses : []
   }
 
   const getUniqueShippingCoverages = () => {
-    return masterShippingCoverages
+    return Array.isArray(masterShippingCoverages) ? masterShippingCoverages : []
   }
 
   const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
@@ -799,6 +804,39 @@ function App() {
       }
     } catch (err: any) {
       alert('Terjadi kesalahan saat menghapus opsi master.')
+    } finally {
+      setCrudLoading(false)
+    }
+  }
+
+  const handleAddMasterOption = async (
+    field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage',
+    value: string,
+    resetInput: (val: string) => void
+  ) => {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      alert('Nilai opsi tidak boleh kosong.')
+      return
+    }
+
+    try {
+      setCrudLoading(true)
+      const res = await fetch(`${API_BASE}/fauna/add-master-option`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ field, value: trimmed })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        alert(data.message || 'Opsi master berhasil ditambahkan.')
+        resetInput('')
+        loadData()
+      } else {
+        alert(data.message || 'Gagal menambahkan opsi master.')
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat menambahkan opsi master.')
     } finally {
       setCrudLoading(false)
     }
@@ -1310,7 +1348,7 @@ function App() {
                     {/* Kelas Category */}
                     <div className="glass-panel" style={{ padding: '1.25rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
                       <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--primary-hover)' }}>Kelas Hewan</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
                         {getUniqueClasses().map((c) => (
                           <span key={c} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {c}
@@ -1328,12 +1366,30 @@ function App() {
                           </span>
                         ))}
                       </div>
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Tambah kelas baru..." 
+                          className="form-input" 
+                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem', height: '32px' }}
+                          value={newClassInput}
+                          onChange={(e) => setNewClassInput(e.target.value)}
+                        />
+                        <button 
+                          type="button" 
+                          className="btn-primary" 
+                          style={{ padding: '0 0.75rem', fontSize: '0.8rem', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => handleAddMasterOption('class', newClassInput, setNewClassInput)}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Habitat Category */}
                     <div className="glass-panel" style={{ padding: '1.25rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
                       <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--primary-hover)' }}>Habitat</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
                         {getUniqueHabitats().map((h) => (
                           <span key={h} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {h}
@@ -1351,12 +1407,30 @@ function App() {
                           </span>
                         ))}
                       </div>
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Tambah habitat baru..." 
+                          className="form-input" 
+                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem', height: '32px' }}
+                          value={newHabitatInput}
+                          onChange={(e) => setNewHabitatInput(e.target.value)}
+                        />
+                        <button 
+                          type="button" 
+                          className="btn-primary" 
+                          style={{ padding: '0 0.75rem', fontSize: '0.8rem', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => handleAddMasterOption('habitat', newHabitatInput, setNewHabitatInput)}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Status Konservasi Category */}
                     <div className="glass-panel" style={{ padding: '1.25rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
                       <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--primary-hover)' }}>Status Konservasi</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
                         {getUniqueConservationStatuses().map((s) => (
                           <span key={s} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {s}
@@ -1374,12 +1448,30 @@ function App() {
                           </span>
                         ))}
                       </div>
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Tambah status baru..." 
+                          className="form-input" 
+                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem', height: '32px' }}
+                          value={newStatusInput}
+                          onChange={(e) => setNewStatusInput(e.target.value)}
+                        />
+                        <button 
+                          type="button" 
+                          className="btn-primary" 
+                          style={{ padding: '0 0.75rem', fontSize: '0.8rem', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => handleAddMasterOption('conservation_status', newStatusInput, setNewStatusInput)}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Jangkauan Pengiriman Category */}
                     <div className="glass-panel" style={{ padding: '1.25rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
                       <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--primary-hover)' }}>Jangkauan Pengiriman</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
                         {getUniqueShippingCoverages().map((sc) => (
                           <span key={sc} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {sc}
@@ -1396,6 +1488,24 @@ function App() {
                             </span>
                           </span>
                         ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Tambah jangkauan baru..." 
+                          className="form-input" 
+                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem', height: '32px' }}
+                          value={newShippingInput}
+                          onChange={(e) => setNewShippingInput(e.target.value)}
+                        />
+                        <button 
+                          type="button" 
+                          className="btn-primary" 
+                          style={{ padding: '0 0.75rem', fontSize: '0.8rem', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => handleAddMasterOption('shipping_coverage', newShippingInput, setNewShippingInput)}
+                        >
+                          <Plus size={14} />
+                        </button>
                       </div>
                     </div>
                   </div>

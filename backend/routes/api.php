@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD postings
     Route::post('/upload-image', [FaunaController::class, 'uploadImage']);
     Route::post('/fauna/delete-master-option', [FaunaController::class, 'deleteMasterOption']);
+    Route::post('/fauna/add-master-option', [FaunaController::class, 'addMasterOption']);
     Route::post('/fauna', [FaunaController::class, 'store']);
     Route::put('/fauna/{id}', [FaunaController::class, 'update']);
     Route::delete('/fauna/{id}', [FaunaController::class, 'destroy']);

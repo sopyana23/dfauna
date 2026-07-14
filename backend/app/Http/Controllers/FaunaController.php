@@ -309,6 +309,44 @@ class FaunaController extends Controller
         ]);
     }
 
+    public function addMasterOption(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|string',
+            'value' => 'required|string',
+        ]);
+
+        $field = $request->field;
+        $value = trim($request->value);
+
+        if (!$value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nilai opsi tidak boleh kosong.'
+            ], 400);
+        }
+
+        if ($field === 'class') {
+            $this->updateMasterList('master_classes', $value, ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']);
+        } elseif ($field === 'habitat') {
+            $this->updateMasterList('master_habitats', $value, ['Air Tawar', 'Air Laut', 'Darat']);
+        } elseif ($field === 'conservation_status') {
+            $this->updateMasterList('master_statuses', $value, ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']);
+        } elseif ($field === 'shipping_coverage') {
+            $this->updateMasterList('master_shipping_coverages', $value, ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kategori master tidak valid.'
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Opsi master berhasil ditambahkan.'
+        ]);
+    }
+
     private function updateMasterList($key, $value, $defaults = [])
     {
         $setting = Setting::find($key);
