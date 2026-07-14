@@ -1242,8 +1242,8 @@ function App() {
               )}
 
               {adminSubTab === 'settings' && (
-                /* TAB 2: STORE CONFIGS */
-                <form onSubmit={handleSettingsSave} className="glass-panel" style={{ padding: '1.25rem' }}>
+                <>
+                  <form onSubmit={handleSettingsSave} className="glass-panel" style={{ padding: '1.25rem' }}>
                   {settingsSuccess && (
                     <div className="alert-box alert-success">
                       {settingsSuccess}
@@ -1280,7 +1280,96 @@ function App() {
                     {settingsLoading ? 'Menyimpan...' : 'Simpan Setelan'}
                   </button>
                 </form>
-              )}
+
+                {/* Master Data Management Section */}
+                <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)' }}>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.35rem', fontWeight: 700 }}>
+                    Kelola Pilihan Master Data
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                    Kelola daftar pilihan dropdown bawaan. Klik tombol hapus (tanda silang) pada pilihan untuk menghapus atau menggantinya secara massal di database.
+                  </p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    {/* Kelas Category */}
+                    <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.65rem', color: 'var(--primary-hover)' }}>Kelas Hewan</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {getUniqueClasses().map((c) => (
+                          <span key={c} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.3rem 0.5rem', borderRadius: '0.4rem', fontSize: '0.75rem' }}>
+                            {c}
+                            <span 
+                              onClick={() => handleDeleteMasterOption('class', c)} 
+                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.9rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                              title={`Hapus opsi ${c}`}
+                            >
+                              &times;
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Habitat Category */}
+                    <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.65rem', color: 'var(--primary-hover)' }}>Habitat</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {getUniqueHabitats().map((h) => (
+                          <span key={h} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.3rem 0.5rem', borderRadius: '0.4rem', fontSize: '0.75rem' }}>
+                            {h}
+                            <span 
+                              onClick={() => handleDeleteMasterOption('habitat', h)} 
+                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.9rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                              title={`Hapus opsi ${h}`}
+                            >
+                              &times;
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Status Konservasi Category */}
+                    <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.65rem', color: 'var(--primary-hover)' }}>Status Konservasi</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {getUniqueConservationStatuses().map((s) => (
+                          <span key={s} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.3rem 0.5rem', borderRadius: '0.4rem', fontSize: '0.75rem' }}>
+                            {s}
+                            <span 
+                              onClick={() => handleDeleteMasterOption('conservation_status', s)} 
+                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.9rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                              title={`Hapus opsi ${s}`}
+                            >
+                              &times;
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Jangkauan Pengiriman Category */}
+                    <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.65rem', color: 'var(--primary-hover)' }}>Jangkauan Pengiriman</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {getUniqueShippingCoverages().map((sc) => (
+                          <span key={sc} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.3rem 0.5rem', borderRadius: '0.4rem', fontSize: '0.75rem' }}>
+                            {sc}
+                            <span 
+                              onClick={() => handleDeleteMasterOption('shipping_coverage', sc)} 
+                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.9rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                              title={`Hapus opsi ${sc}`}
+                            >
+                              &times;
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
 
               {adminSubTab === 'profile' && (
                 /* TAB 3: ADMIN PROFILE FORM */
@@ -1560,20 +1649,6 @@ function App() {
                         ))}
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
-                      {!showCustomClassInput && (
-                        <div
-                          className="btn-secondary"
-                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0, cursor: 'pointer' }}
-                          title="Hapus opsi master ini"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteMasterOption('class', crudForm.class);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </div>
-                      )}
                     </div>
                     {showCustomClassInput && (
                       <input 
@@ -1609,20 +1684,6 @@ function App() {
                         ))}
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
-                      {!showCustomHabitatInput && (
-                        <div
-                          className="btn-secondary"
-                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0, cursor: 'pointer' }}
-                          title="Hapus opsi master ini"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteMasterOption('habitat', crudForm.habitat);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </div>
-                      )}
                     </div>
                     {showCustomHabitatInput && (
                       <input 
@@ -1672,20 +1733,6 @@ function App() {
                         ))}
                         <option value="__NEW__">+ Tambah Baru...</option>
                       </select>
-                      {!showCustomConservationStatusInput && (
-                        <div
-                          className="btn-secondary"
-                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0, cursor: 'pointer' }}
-                          title="Hapus opsi master ini"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteMasterOption('conservation_status', crudForm.conservation_status);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </div>
-                      )}
                     </div>
                     {showCustomConservationStatusInput && (
                       <input 
@@ -1862,20 +1909,6 @@ function App() {
                       ))}
                       <option value="__NEW__">+ Tambah Baru...</option>
                     </select>
-                    {!showCustomShippingCoverageInput && (
-                        <div
-                          className="btn-secondary"
-                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0, cursor: 'pointer' }}
-                          title="Hapus opsi master ini"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteMasterOption('shipping_coverage', crudForm.shipping_coverage);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </div>
-                    )}
                   </div>
                   {showCustomShippingCoverageInput && (
                     <input 
