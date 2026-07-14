@@ -18,7 +18,8 @@ import {
   ZoomIn,
   ZoomOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Eye
 } from 'lucide-react'
 import './App.css'
 
@@ -804,8 +805,8 @@ function App() {
   }
 
   // Handle Fauna Delete
-  const handleFaunaDelete = async (id: number) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus postingan hewan ini?')) return
+  const handleFaunaDelete = async (id: number): Promise<boolean> => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus postingan hewan ini?')) return false
 
     try {
       const res = await fetch(`${API_BASE}/fauna/${id}`, {
@@ -815,16 +816,19 @@ function App() {
       const data = await res.json()
       if (res.ok && data.success) {
         loadData()
+        return true
       } else {
         if (res.status === 401) {
           handleUnauthorized()
         } else {
           alert(data.message || 'Gagal menghapus postingan.')
         }
+        return false
       }
     } catch (err) {
       console.error(err)
       alert('Koneksi terputus.')
+      return false
     }
   }
 
@@ -1163,7 +1167,7 @@ function App() {
                   className={`admin-tab ${adminTab === 'settings' ? 'active' : ''}`}
                   onClick={() => setAdminTab('settings')}
                 >
-                  Pengaturan WhatsApp & Toko
+                  Pengaturan Toko
                 </button>
                 <button 
                   className={`admin-tab ${adminTab === 'profile' ? 'active' : ''}`}
@@ -1231,20 +1235,14 @@ function App() {
                                 )}
                               </td>
                               <td>
-                                <div className="action-buttons">
+                                 <div className="action-buttons">
                                   <button 
                                     className="btn-secondary btn-small"
-                                    onClick={() => openEditModal(item)}
+                                    onClick={() => fetchDetails(item.id)}
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
                                   >
-                                    <Edit3 size={12} />
-                                    Edit
-                                  </button>
-                                  <button 
-                                    className="btn-danger btn-small"
-                                    onClick={() => handleFaunaDelete(item.id)}
-                                  >
-                                    <Trash2 size={12} />
-                                    Hapus
+                                    <Eye size={12} />
+                                    Detail
                                   </button>
                                 </div>
                               </td>
@@ -1316,12 +1314,16 @@ function App() {
                         {getUniqueClasses().map((c) => (
                           <span key={c} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {c}
-                            <span 
-                              onClick={() => handleDeleteMasterOption('class', c)} 
-                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.95rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                            <span
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteMasterOption('class', c);
+                              }}
+                              style={{ cursor: 'pointer', color: 'var(--danger)', marginLeft: '0.15rem', display: 'inline-flex', alignItems: 'center' }}
                               title={`Hapus opsi ${c}`}
                             >
-                              &times;
+                              <X size={12} />
                             </span>
                           </span>
                         ))}
@@ -1335,12 +1337,16 @@ function App() {
                         {getUniqueHabitats().map((h) => (
                           <span key={h} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {h}
-                            <span 
-                              onClick={() => handleDeleteMasterOption('habitat', h)} 
-                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.95rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                            <span
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteMasterOption('habitat', h);
+                              }}
+                              style={{ cursor: 'pointer', color: 'var(--danger)', marginLeft: '0.15rem', display: 'inline-flex', alignItems: 'center' }}
                               title={`Hapus opsi ${h}`}
                             >
-                              &times;
+                              <X size={12} />
                             </span>
                           </span>
                         ))}
@@ -1354,12 +1360,16 @@ function App() {
                         {getUniqueConservationStatuses().map((s) => (
                           <span key={s} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {s}
-                            <span 
-                              onClick={() => handleDeleteMasterOption('conservation_status', s)} 
-                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.95rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                            <span
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteMasterOption('conservation_status', s);
+                              }}
+                              style={{ cursor: 'pointer', color: 'var(--danger)', marginLeft: '0.15rem', display: 'inline-flex', alignItems: 'center' }}
                               title={`Hapus opsi ${s}`}
                             >
-                              &times;
+                              <X size={12} />
                             </span>
                           </span>
                         ))}
@@ -1373,12 +1383,16 @@ function App() {
                         {getUniqueShippingCoverages().map((sc) => (
                           <span key={sc} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', padding: '0.35rem 0.6rem', borderRadius: '0.50rem', fontSize: '0.8rem' }}>
                             {sc}
-                            <span 
-                              onClick={() => handleDeleteMasterOption('shipping_coverage', sc)} 
-                              style={{ cursor: 'pointer', color: 'var(--danger)', fontWeight: 'bold', fontSize: '0.95rem', marginLeft: '0.15rem', display: 'inline-block', lineHeight: 1 }}
+                            <span
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteMasterOption('shipping_coverage', sc);
+                              }}
+                              style={{ cursor: 'pointer', color: 'var(--danger)', marginLeft: '0.15rem', display: 'inline-flex', alignItems: 'center' }}
                               title={`Hapus opsi ${sc}`}
                             >
-                              &times;
+                              <X size={12} />
                             </span>
                           </span>
                         ))}
@@ -1472,16 +1486,43 @@ function App() {
                   {selectedFauna.scientific_name}
                 </div>
               </div>
-              <div style={{ flexShrink: 0 }}>
-                <a 
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}.`}
-                  target="_blank"
-                  className="btn-primary"
-                  style={{ padding: '0.65rem 1.5rem', borderRadius: '0.5rem', fontSize: '0.9rem' }}
-                >
-                  <Send size={16} />
-                  Hubungi via WA & Beli
-                </a>
+              <div style={{ flexShrink: 0, display: 'flex', gap: '0.5rem' }}>
+                {view === 'admin' ? (
+                  <>
+                    <button 
+                      className="btn-primary"
+                      onClick={() => {
+                        setShowDetailModal(false)
+                        openEditModal(selectedFauna)
+                      }}
+                      style={{ padding: '0.65rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      <Edit3 size={16} />
+                      Edit Data
+                    </button>
+                    <button 
+                      className="btn-danger"
+                      onClick={async () => {
+                        const deleted = await handleFaunaDelete(selectedFauna.id)
+                        if (deleted) setShowDetailModal(false)
+                      }}
+                      style={{ padding: '0.65rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      <Trash2 size={16} />
+                      Hapus
+                    </button>
+                  </>
+                ) : (
+                  <a 
+                    href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}.`}
+                    target="_blank"
+                    className="btn-primary"
+                    style={{ padding: '0.65rem 1.5rem', borderRadius: '0.5rem', fontSize: '0.9rem' }}
+                  >
+                    <Send size={16} />
+                    Hubungi via WA & Beli
+                  </a>
+                )}
               </div>
             </div>
 
