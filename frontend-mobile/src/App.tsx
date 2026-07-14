@@ -86,6 +86,11 @@ function App() {
     localStorage.getItem('dfauna_password_changed') === 'true'
   )
 
+  const [masterClasses, setMasterClasses] = useState<string[]>(['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil'])
+  const [masterHabitats, setMasterHabitats] = useState<string[]>(['Air Tawar', 'Air Laut', 'Darat'])
+  const [masterStatuses, setMasterStatuses] = useState<string[]>(['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)'])
+  const [masterShippingCoverages, setMasterShippingCoverages] = useState<string[]>(['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)'])
+
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
@@ -236,6 +241,10 @@ function App() {
         }
         setSettings(fetchedSettings)
         setSettingsForm(fetchedSettings)
+        if (settingsData.data.master_classes) setMasterClasses(JSON.parse(settingsData.data.master_classes))
+        if (settingsData.data.master_habitats) setMasterHabitats(JSON.parse(settingsData.data.master_habitats))
+        if (settingsData.data.master_statuses) setMasterStatuses(JSON.parse(settingsData.data.master_statuses))
+        if (settingsData.data.master_shipping_coverages) setMasterShippingCoverages(JSON.parse(settingsData.data.master_shipping_coverages))
       }
 
       // Fetch faunas
@@ -722,35 +731,19 @@ function App() {
 
   // Get unique options from existing faunas list
   const getUniqueClasses = () => {
-    const existing = faunas.map(f => f.class).filter(Boolean)
-    if (existing.length === 0) {
-      return ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']
-    }
-    return Array.from(new Set(existing))
+    return masterClasses
   }
 
   const getUniqueHabitats = () => {
-    const existing = faunas.map(f => f.habitat).filter(Boolean)
-    if (existing.length === 0) {
-      return ['Air Tawar', 'Air Laut', 'Darat']
-    }
-    return Array.from(new Set(existing))
+    return masterHabitats
   }
 
   const getUniqueConservationStatuses = () => {
-    const existing = faunas.map(f => f.conservation_status).filter(Boolean)
-    if (existing.length === 0) {
-      return ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']
-    }
-    return Array.from(new Set(existing))
+    return masterStatuses
   }
 
   const getUniqueShippingCoverages = () => {
-    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean) as string[]
-    if (existing.length === 0) {
-      return ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
-    }
-    return Array.from(new Set(existing))
+    return masterShippingCoverages
   }
 
   const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {

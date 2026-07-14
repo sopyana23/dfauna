@@ -10,7 +10,21 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $settings = Setting::all()->pluck('value', 'key');
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+
+        $defaults = [
+            'master_classes' => json_encode(['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']),
+            'master_habitats' => json_encode(['Air Tawar', 'Air Laut', 'Darat']),
+            'master_statuses' => json_encode(['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']),
+            'master_shipping_coverages' => json_encode(['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)'])
+        ];
+
+        foreach ($defaults as $key => $defaultValue) {
+            if (!isset($settings[$key])) {
+                Setting::updateOrCreate(['key' => $key], ['value' => $defaultValue]);
+                $settings[$key] = $defaultValue;
+            }
+        }
 
         return response()->json([
             'success' => true,

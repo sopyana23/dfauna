@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Fauna;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -84,6 +85,15 @@ class FaunaController extends Controller
 
         $fauna = Fauna::create($validator->validated());
 
+        // Update master lists in settings
+        $this->updateMasterList('master_classes', $fauna->class, ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']);
+        $this->updateMasterList('master_habitats', $fauna->habitat, ['Air Tawar', 'Air Laut', 'Darat']);
+        $this->updateMasterList('master_statuses', $fauna->conservation_status, ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']);
+        $detailedInfo = $fauna->detailed_info;
+        if (is_array($detailedInfo) && isset($detailedInfo['shipping_coverage'])) {
+            $this->updateMasterList('master_shipping_coverages', $detailedInfo['shipping_coverage'], ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Postingan hewan berhasil ditambahkan!',
@@ -125,6 +135,15 @@ class FaunaController extends Controller
         }
 
         $fauna->update($validator->validated());
+
+        // Update master lists in settings
+        $this->updateMasterList('master_classes', $fauna->class, ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']);
+        $this->updateMasterList('master_habitats', $fauna->habitat, ['Air Tawar', 'Air Laut', 'Darat']);
+        $this->updateMasterList('master_statuses', $fauna->conservation_status, ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']);
+        $detailedInfo = $fauna->detailed_info;
+        if (is_array($detailedInfo) && isset($detailedInfo['shipping_coverage'])) {
+            $this->updateMasterList('master_shipping_coverages', $detailedInfo['shipping_coverage'], ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']);
+        }
 
         return response()->json([
             'success' => true,
@@ -262,10 +281,13 @@ class FaunaController extends Controller
 
         if ($field === 'class') {
             Fauna::where('class', $value)->update(['class' => $replacement]);
+            $this->removeFromMasterList('master_classes', $value, $replacement, ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']);
         } elseif ($field === 'habitat') {
             Fauna::where('habitat', $value)->update(['habitat' => $replacement]);
+            $this->removeFromMasterList('master_habitats', $value, $replacement, ['Air Tawar', 'Air Laut', 'Darat']);
         } elseif ($field === 'conservation_status') {
             Fauna::where('conservation_status', $value)->update(['conservation_status' => $replacement]);
+            $this->removeFromMasterList('master_statuses', $value, $replacement, ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']);
         } elseif ($field === 'shipping_coverage') {
             $faunas = Fauna::where('detailed_info->shipping_coverage', $value)->get();
             foreach ($faunas as $fauna) {
@@ -278,11 +300,41 @@ class FaunaController extends Controller
                 $fauna->detailed_info = $info;
                 $fauna->save();
             }
+            $this->removeFromMasterList('master_shipping_coverages', $value, $replacement, ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Opsi master berhasil dihapus dan diganti.'
         ]);
+    }
+
+    private function updateMasterList($key, $value, $defaults = [])
+    {
+        $setting = Setting::find($key);
+        $list = $setting ? json_decode($setting->value, true) : $defaults;
+        if (!is_array($list)) {
+            $list = $defaults;
+        }
+        if ($value && !in_array($value, $list)) {
+            $list[] = $value;
+            Setting::updateOrCreate(['key' => $key], ['value' => json_encode(array_values($list))]);
+        }
+    }
+
+    private function removeFromMasterList($key, $value, $replacement, $defaults = [])
+    {
+        $setting = Setting::find($key);
+        $list = $setting ? json_decode($setting->value, true) : $defaults;
+        if (!is_array($list)) {
+            $list = $defaults;
+        }
+        $list = array_filter($list, function($item) use ($value) {
+            return $item !== $value;
+        });
+        if ($replacement && !in_array($replacement, $list)) {
+            $list[] = $replacement;
+        }
+        Setting::updateOrCreate(['key' => $key], ['value' => json_encode(array_values($list))]);
     }
 }
