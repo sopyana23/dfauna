@@ -750,6 +750,7 @@ function App() {
   }
 
   const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
+    alert("handleDeleteMasterOption dipanggil: field=" + field + ", value=" + value);
     // Determine the list of available options for replacement
     let options: string[] = []
     if (field === 'class') options = getUniqueClasses()
@@ -1627,7 +1628,11 @@ function App() {
                           className="btn-secondary"
                           style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
                           title="Hapus opsi master ini"
-                          onClick={() => handleDeleteMasterOption('class', crudForm.class)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteMasterOption('class', crudForm.class);
+                          }}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -1673,7 +1678,11 @@ function App() {
                           className="btn-secondary"
                           style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
                           title="Hapus opsi master ini"
-                          onClick={() => handleDeleteMasterOption('habitat', crudForm.habitat)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteMasterOption('habitat', crudForm.habitat);
+                          }}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -1733,7 +1742,11 @@ function App() {
                           className="btn-secondary"
                           style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
                           title="Hapus opsi master ini"
-                          onClick={() => handleDeleteMasterOption('conservation_status', crudForm.conservation_status)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteMasterOption('conservation_status', crudForm.conservation_status);
+                          }}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -1929,7 +1942,11 @@ function App() {
                           className="btn-secondary"
                           style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
                           title="Hapus opsi master ini"
-                          onClick={() => handleDeleteMasterOption('shipping_coverage', crudForm.shipping_coverage)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteMasterOption('shipping_coverage', crudForm.shipping_coverage);
+                          }}
                         >
                           <Trash2 size={16} />
                         </button>
