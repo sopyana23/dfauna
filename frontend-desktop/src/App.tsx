@@ -737,8 +737,69 @@ function App() {
 
   const getUniqueShippingCoverages = () => {
     const defaultCoverages = ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
-    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean)
+    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean) as string[]
     return Array.from(new Set([...defaultCoverages, ...existing]))
+  }
+
+  const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
+    // Determine the list of available options for replacement
+    let options: string[] = []
+    if (field === 'class') options = getUniqueClasses()
+    else if (field === 'habitat') options = getUniqueHabitats()
+    else if (field === 'conservation_status') options = getUniqueConservationStatuses()
+    else if (field === 'shipping_coverage') options = getUniqueShippingCoverages()
+
+    // Filter out the value to delete and any "+ Tambah Baru..." or "__NEW__" items
+    const replacementOptions = options.filter(opt => opt !== value && opt !== '+ Tambah Baru...' && opt !== '__NEW__')
+
+    if (replacementOptions.length === 0) {
+      alert('Tidak dapat menghapus opsi ini karena tidak ada opsi lain yang tersedia sebagai pengganti.')
+      return
+    }
+
+    const replacement = window.prompt(
+      `Hapus Opsi Master:\nAnda yakin ingin menghapus "${value}"?\n\nKetik salah satu opsi pengganti berikut untuk mengalihkan data fauna yang ada:\n${replacementOptions.join(', ')}`,
+      replacementOptions[0]
+    )
+
+    if (replacement === null) return // User cancelled
+
+    const trimmedReplacement = replacement.trim()
+    if (!replacementOptions.includes(trimmedReplacement)) {
+      alert('Opsi pengganti tidak valid atau salah ketik. Penghapusan dibatalkan.')
+      return
+    }
+
+    try {
+      setCrudLoading(true)
+      const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ field, value, replacement: trimmedReplacement })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        alert(data.message || 'Opsi master berhasil dihapus.')
+        // Refresh fauna list
+        loadData()
+        // Reset local form values if they were pointing to the deleted value
+        if (field === 'class' && crudForm.class === value) {
+          setCrudForm(prev => ({ ...prev, class: trimmedReplacement }))
+        } else if (field === 'habitat' && crudForm.habitat === value) {
+          setCrudForm(prev => ({ ...prev, habitat: trimmedReplacement }))
+        } else if (field === 'conservation_status' && crudForm.conservation_status === value) {
+          setCrudForm(prev => ({ ...prev, conservation_status: trimmedReplacement }))
+        } else if (field === 'shipping_coverage' && crudForm.shipping_coverage === value) {
+          setCrudForm(prev => ({ ...prev, shipping_coverage: trimmedReplacement }))
+        }
+      } else {
+        alert(data.message || 'Gagal menghapus opsi master.')
+      }
+    } catch (err: any) {
+      alert('Terjadi kesalahan saat menghapus opsi master.')
+    } finally {
+      setCrudLoading(false)
+    }
   }
 
   // Handle Fauna Delete
@@ -1532,24 +1593,38 @@ function App() {
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Kelas Hewan *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomClassInput ? '__NEW__' : crudForm.class}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomClassInput(true)
-                          setCustomClass('')
-                        } else {
-                          setShowCustomClassInput(false)
-                          setCrudForm({ ...crudForm, class: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueClasses().map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1 }}
+                        value={showCustomClassInput ? '__NEW__' : crudForm.class}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomClassInput(true)
+                            setCustomClass('')
+                          } else {
+                            setShowCustomClassInput(false)
+                            setCrudForm({ ...crudForm, class: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueClasses().map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomClassInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('class', crudForm.class)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomClassInput && (
                       <input 
                         type="text" 
@@ -1564,24 +1639,38 @@ function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Habitat *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomHabitatInput ? '__NEW__' : crudForm.habitat}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomHabitatInput(true)
-                          setCustomHabitat('')
-                        } else {
-                          setShowCustomHabitatInput(false)
-                          setCrudForm({ ...crudForm, habitat: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueHabitats().map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1 }}
+                        value={showCustomHabitatInput ? '__NEW__' : crudForm.habitat}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomHabitatInput(true)
+                            setCustomHabitat('')
+                          } else {
+                            setShowCustomHabitatInput(false)
+                            setCrudForm({ ...crudForm, habitat: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueHabitats().map((h) => (
+                          <option key={h} value={h}>{h}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomHabitatInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('habitat', crudForm.habitat)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomHabitatInput && (
                       <input 
                         type="text" 
@@ -1610,24 +1699,38 @@ function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Status Konservasi *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomConservationStatusInput ? '__NEW__' : crudForm.conservation_status}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomConservationStatusInput(true)
-                          setCustomConservationStatus('')
-                        } else {
-                          setShowCustomConservationStatusInput(false)
-                          setCrudForm({ ...crudForm, conservation_status: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueConservationStatuses().map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1 }}
+                        value={showCustomConservationStatusInput ? '__NEW__' : crudForm.conservation_status}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomConservationStatusInput(true)
+                            setCustomConservationStatus('')
+                          } else {
+                            setShowCustomConservationStatusInput(false)
+                            setCrudForm({ ...crudForm, conservation_status: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueConservationStatuses().map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomConservationStatusInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('conservation_status', crudForm.conservation_status)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomConservationStatusInput && (
                       <input 
                         type="text" 
@@ -1789,27 +1892,41 @@ function App() {
                   </div>
                 </div>
 
-                <div className="form-row">
+                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Jangkauan Pengiriman *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomShippingCoverageInput(true)
-                          setCustomShippingCoverage('')
-                        } else {
-                          setShowCustomShippingCoverageInput(false)
-                          setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueShippingCoverages().map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1 }}
+                        value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomShippingCoverageInput(true)
+                            setCustomShippingCoverage('')
+                          } else {
+                            setShowCustomShippingCoverageInput(false)
+                            setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueShippingCoverages().map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomShippingCoverageInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.45rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '38px', width: '38px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('shipping_coverage', crudForm.shipping_coverage)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomShippingCoverageInput && (
                       <input 
                         type="text" 

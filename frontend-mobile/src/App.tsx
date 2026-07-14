@@ -741,8 +741,69 @@ function App() {
 
   const getUniqueShippingCoverages = () => {
     const defaultCoverages = ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
-    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean)
+    const existing = faunas.map(f => f.detailed_info?.shipping_coverage).filter(Boolean) as string[]
     return Array.from(new Set([...defaultCoverages, ...existing]))
+  }
+
+  const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
+    // Determine the list of available options for replacement
+    let options: string[] = []
+    if (field === 'class') options = getUniqueClasses()
+    else if (field === 'habitat') options = getUniqueHabitats()
+    else if (field === 'conservation_status') options = getUniqueConservationStatuses()
+    else if (field === 'shipping_coverage') options = getUniqueShippingCoverages()
+
+    // Filter out the value to delete and any "+ Tambah Baru..." or "__NEW__" items
+    const replacementOptions = options.filter(opt => opt !== value && opt !== '+ Tambah Baru...' && opt !== '__NEW__')
+
+    if (replacementOptions.length === 0) {
+      alert('Tidak dapat menghapus opsi ini karena tidak ada opsi lain yang tersedia sebagai pengganti.')
+      return
+    }
+
+    const replacement = window.prompt(
+      `Hapus Opsi Master:\nAnda yakin ingin menghapus "${value}"?\n\nKetik salah satu opsi pengganti berikut untuk mengalihkan data fauna yang ada:\n${replacementOptions.join(', ')}`,
+      replacementOptions[0]
+    )
+
+    if (replacement === null) return // User cancelled
+
+    const trimmedReplacement = replacement.trim()
+    if (!replacementOptions.includes(trimmedReplacement)) {
+      alert('Opsi pengganti tidak valid atau salah ketik. Penghapusan dibatalkan.')
+      return
+    }
+
+    try {
+      setCrudLoading(true)
+      const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ field, value, replacement: trimmedReplacement })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        alert(data.message || 'Opsi master berhasil dihapus.')
+        // Refresh fauna list
+        loadData()
+        // Reset local form values if they were pointing to the deleted value
+        if (field === 'class' && crudForm.class === value) {
+          setCrudForm(prev => ({ ...prev, class: trimmedReplacement }))
+        } else if (field === 'habitat' && crudForm.habitat === value) {
+          setCrudForm(prev => ({ ...prev, habitat: trimmedReplacement }))
+        } else if (field === 'conservation_status' && crudForm.conservation_status === value) {
+          setCrudForm(prev => ({ ...prev, conservation_status: trimmedReplacement }))
+        } else if (field === 'shipping_coverage' && crudForm.shipping_coverage === value) {
+          setCrudForm(prev => ({ ...prev, shipping_coverage: trimmedReplacement }))
+        }
+      } else {
+        alert(data.message || 'Gagal menghapus opsi master.')
+      }
+    } catch (err: any) {
+      alert('Terjadi kesalahan saat menghapus opsi master.')
+    } finally {
+      setCrudLoading(false)
+    }
   }
 
   // Delete Item
@@ -1286,60 +1347,64 @@ function App() {
             <div className="sheet-handle"></div>
             <div className="sheet-content">
               {/* Header Details */}
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flexShrink: 0 }}>
-                  <img 
-                    src={
-                      (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
-                        ? (selectedFauna.detailed_info.images[activeImageIndex] || selectedFauna.image_url)
-                        : selectedFauna.image_url
-                    } 
-                    alt={selectedFauna.name} 
-                    style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '0.5rem', border: '1px solid var(--border-light)', cursor: 'zoom-in' }} 
-                    onClick={() => {
-                      setLightboxIndex(activeImageIndex)
-                      setZoomScale(1)
-                      setPanPosition({ x: 0, y: 0 })
-                      setShowLightbox(true)
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
-                    }}
-                  />
-                  {/* Small Thumbnails Row under Main Image on Mobile */}
-                  {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
-                    <div style={{ display: 'flex', gap: '0.25rem', width: '90px', overflowX: 'auto', paddingBottom: '0.1rem', scrollbarWidth: 'none' }}>
-                      {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
-                        <div 
-                          key={idx}
-                          onClick={() => setActiveImageIndex(idx)}
-                          style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '0.15rem',
-                            border: activeImageIndex === idx ? '1px solid var(--primary)' : '1px solid var(--border-light)',
-                            overflow: 'hidden',
-                            cursor: 'pointer',
-                            flexShrink: 0
-                          }}
-                        >
-                          <img 
-                            src={imgUrl} 
-                            alt="" 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                            onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.25rem' }}>
+                {/* Large Center Image */}
+                <img 
+                  src={
+                    (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
+                      ? (selectedFauna.detailed_info.images[activeImageIndex] || selectedFauna.image_url)
+                      : selectedFauna.image_url
+                  } 
+                  alt={selectedFauna.name} 
+                  style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: '0.75rem', border: '1px solid var(--border-light)', cursor: 'zoom-in' }} 
+                  onClick={() => {
+                    setLightboxIndex(activeImageIndex)
+                    setZoomScale(1)
+                    setPanPosition({ x: 0, y: 0 })
+                    setShowLightbox(true)
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                  }}
+                />
+
+                {/* Click to Zoom Hint */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem', marginBottom: '0.25rem' }}>
+                  <ZoomIn size={12} />
+                  <span>Ketuk gambar untuk memperbesar & melihat detail</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0, flexGrow: 1 }}>
-                  <h2 style={{ fontSize: '1.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedFauna.name}</h2>
-                  <div style={{ fontStyle: 'italic', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.35rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+
+                {/* Large Thumbnails List */}
+                {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem', overflowX: 'auto', maxWidth: '100%', paddingBottom: '0.25rem' }}>
+                    {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
+                      <img 
+                        key={idx}
+                        src={imgUrl} 
+                        alt="" 
+                        onClick={() => setActiveImageIndex(idx)}
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          objectFit: 'cover',
+                          borderRadius: '0.25rem',
+                          border: activeImageIndex === idx ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                          cursor: 'pointer',
+                          flexShrink: 0
+                        }} 
+                        onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Text Info Box (Name, Subtitle, Price) */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%', marginTop: '0.75rem', padding: '0 0.5rem' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{selectedFauna.name}</h2>
+                  <div style={{ fontStyle: 'italic', fontSize: '0.85rem', color: 'var(--primary-hover)', marginTop: '0.15rem', marginBottom: '0.35rem' }}>
                     {selectedFauna.scientific_name}
                   </div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--secondary)' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--secondary)' }}>
                     {formatRupiah(selectedFauna.price)}
                   </div>
                 </div>
@@ -1474,24 +1539,38 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
                   <div className="form-group">
                     <label className="form-label">Kelas *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomClassInput ? '__NEW__' : crudForm.class}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomClassInput(true)
-                          setCustomClass('')
-                        } else {
-                          setShowCustomClassInput(false)
-                          setCrudForm({ ...crudForm, class: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueClasses().map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                        value={showCustomClassInput ? '__NEW__' : crudForm.class}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomClassInput(true)
+                            setCustomClass('')
+                          } else {
+                            setShowCustomClassInput(false)
+                            setCrudForm({ ...crudForm, class: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueClasses().map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomClassInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('class', crudForm.class)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomClassInput && (
                       <input 
                         type="text" 
@@ -1506,24 +1585,38 @@ function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Habitat *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomHabitatInput ? '__NEW__' : crudForm.habitat}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomHabitatInput(true)
-                          setCustomHabitat('')
-                        } else {
-                          setShowCustomHabitatInput(false)
-                          setCrudForm({ ...crudForm, habitat: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueHabitats().map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                        value={showCustomHabitatInput ? '__NEW__' : crudForm.habitat}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomHabitatInput(true)
+                            setCustomHabitat('')
+                          } else {
+                            setShowCustomHabitatInput(false)
+                            setCrudForm({ ...crudForm, habitat: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueHabitats().map((h) => (
+                          <option key={h} value={h}>{h}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomHabitatInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('habitat', crudForm.habitat)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomHabitatInput && (
                       <input 
                         type="text" 
@@ -1552,24 +1645,38 @@ function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Status *</label>
-                    <select 
-                      className="form-select"
-                      value={showCustomConservationStatusInput ? '__NEW__' : crudForm.conservation_status}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setShowCustomConservationStatusInput(true)
-                          setCustomConservationStatus('')
-                        } else {
-                          setShowCustomConservationStatusInput(false)
-                          setCrudForm({ ...crudForm, conservation_status: e.target.value })
-                        }
-                      }}
-                    >
-                      {getUniqueConservationStatuses().map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                      <option value="__NEW__">+ Tambah Baru...</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-select"
+                        style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                        value={showCustomConservationStatusInput ? '__NEW__' : crudForm.conservation_status}
+                        onChange={(e) => {
+                          if (e.target.value === '__NEW__') {
+                            setShowCustomConservationStatusInput(true)
+                            setCustomConservationStatus('')
+                          } else {
+                            setShowCustomConservationStatusInput(false)
+                            setCrudForm({ ...crudForm, conservation_status: e.target.value })
+                          }
+                        }}
+                      >
+                        {getUniqueConservationStatuses().map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                        <option value="__NEW__">+ Tambah Baru...</option>
+                      </select>
+                      {!showCustomConservationStatusInput && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0 }}
+                          title="Hapus opsi master ini"
+                          onClick={() => handleDeleteMasterOption('conservation_status', crudForm.conservation_status)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                     {showCustomConservationStatusInput && (
                       <input 
                         type="text" 
@@ -1725,24 +1832,38 @@ function App() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Jangkauan Pengiriman *</label>
-                  <select 
-                    className="form-select"
-                    value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
-                    onChange={(e) => {
-                      if (e.target.value === '__NEW__') {
-                        setShowCustomShippingCoverageInput(true)
-                        setCustomShippingCoverage('')
-                      } else {
-                        setShowCustomShippingCoverageInput(false)
-                        setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
-                      }
-                    }}
-                  >
-                    {getUniqueShippingCoverages().map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                    <option value="__NEW__">+ Tambah Baru...</option>
-                  </select>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <select 
+                      className="form-select"
+                      style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                      value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomShippingCoverageInput(true)
+                          setCustomShippingCoverage('')
+                        } else {
+                          setShowCustomShippingCoverageInput(false)
+                          setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
+                        }
+                      }}
+                    >
+                      {getUniqueShippingCoverages().map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
+                    </select>
+                    {!showCustomShippingCoverageInput && (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '34px', width: '34px', flexShrink: 0 }}
+                        title="Hapus opsi master ini"
+                        onClick={() => handleDeleteMasterOption('shipping_coverage', crudForm.shipping_coverage)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                   {showCustomShippingCoverageInput && (
                     <input 
                       type="text" 

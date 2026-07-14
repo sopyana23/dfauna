@@ -247,4 +247,42 @@ class FaunaController extends Controller
             'url' => $url
         ]);
     }
+
+    public function deleteMasterOption(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|string',
+            'value' => 'required|string',
+            'replacement' => 'required|string',
+        ]);
+
+        $field = $request->field;
+        $value = $request->value;
+        $replacement = $request->replacement;
+
+        if ($field === 'class') {
+            Fauna::where('class', $value)->update(['class' => $replacement]);
+        } elseif ($field === 'habitat') {
+            Fauna::where('habitat', $value)->update(['habitat' => $replacement]);
+        } elseif ($field === 'conservation_status') {
+            Fauna::where('conservation_status', $value)->update(['conservation_status' => $replacement]);
+        } elseif ($field === 'shipping_coverage') {
+            $faunas = Fauna::where('detailed_info->shipping_coverage', $value)->get();
+            foreach ($faunas as $fauna) {
+                $info = $fauna->detailed_info;
+                if (is_array($info)) {
+                    $info['shipping_coverage'] = $replacement;
+                } else if (is_object($info)) {
+                    $info->shipping_coverage = $replacement;
+                }
+                $fauna->detailed_info = $info;
+                $fauna->save();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Opsi master berhasil dihapus dan diganti.'
+        ]);
+    }
 }
