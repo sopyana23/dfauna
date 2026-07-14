@@ -97,6 +97,13 @@ function App() {
   const [newStatusInput, setNewStatusInput] = useState('')
   const [newShippingInput, setNewShippingInput] = useState('')
 
+  const [deleteMasterModalData, setDeleteMasterModalData] = useState<{
+    field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage'
+    value: string
+    replacementOptions: string[]
+    selectedReplacement: string
+  } | null>(null)
+
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
@@ -752,7 +759,7 @@ function App() {
     return Array.isArray(masterShippingCoverages) ? masterShippingCoverages : []
   }
 
-  const handleDeleteMasterOption = async (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
+  const handleDeleteMasterOption = (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
     // Determine the list of available options for replacement
     let options: string[] = []
     if (field === 'class') options = getUniqueClasses()
@@ -768,49 +775,12 @@ function App() {
       return
     }
 
-    const replacement = window.prompt(
-      `Hapus Opsi Master:\nAnda yakin ingin menghapus "${value}"?\n\nKetik salah satu opsi pengganti berikut untuk mengalihkan data fauna yang ada:\n${replacementOptions.join(', ')}`,
-      replacementOptions[0]
-    )
-
-    if (replacement === null) return // User cancelled
-
-    const trimmedReplacement = replacement.trim()
-    if (!replacementOptions.includes(trimmedReplacement)) {
-      alert('Opsi pengganti tidak valid atau salah ketik. Penghapusan dibatalkan.')
-      return
-    }
-
-    try {
-      setCrudLoading(true)
-      const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ field, value, replacement: trimmedReplacement })
-      })
-      const data = await res.json()
-      if (res.ok && data.success) {
-        alert(data.message || 'Opsi master berhasil dihapus.')
-        // Refresh fauna list
-        loadData()
-        // Reset local form values if they were pointing to the deleted value
-        if (field === 'class' && crudForm.class === value) {
-          setCrudForm(prev => ({ ...prev, class: trimmedReplacement }))
-        } else if (field === 'habitat' && crudForm.habitat === value) {
-          setCrudForm(prev => ({ ...prev, habitat: trimmedReplacement }))
-        } else if (field === 'conservation_status' && crudForm.conservation_status === value) {
-          setCrudForm(prev => ({ ...prev, conservation_status: trimmedReplacement }))
-        } else if (field === 'shipping_coverage' && crudForm.shipping_coverage === value) {
-          setCrudForm(prev => ({ ...prev, shipping_coverage: trimmedReplacement }))
-        }
-      } else {
-        alert(data.message || 'Gagal menghapus opsi master.')
-      }
-    } catch (err: any) {
-      alert('Terjadi kesalahan saat menghapus opsi master.')
-    } finally {
-      setCrudLoading(false)
-    }
+    setDeleteMasterModalData({
+      field,
+      value,
+      replacementOptions,
+      selectedReplacement: replacementOptions[0]
+    })
   }
 
   const handleAddMasterOption = async (
@@ -1730,6 +1700,83 @@ function App() {
                   Hubungi via WA & Beli
                 </a>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM CONFIRMATION BOTTOM SHEET FOR MASTER OPTION DELETION */}
+      {deleteMasterModalData && (
+        <div className="bottom-sheet-overlay" onClick={() => setDeleteMasterModalData(null)}>
+          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
+            <div className="sheet-handle"></div>
+            <div className="sheet-content" style={{ padding: '1rem' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--danger)' }}>
+                Konfirmasi Hapus Opsi Master
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', lineHeight: '1.4' }}>
+                Anda yakin ingin menghapus opsi <strong>"{deleteMasterModalData.value}"</strong>?
+                Semua postingan fauna yang menggunakan opsi ini akan dialihkan ke opsi pengganti di bawah ini.
+              </p>
+
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label">Pilih Opsi Pengganti *</label>
+                <select 
+                  className="form-select"
+                  value={deleteMasterModalData.selectedReplacement}
+                  onChange={(e) => setDeleteMasterModalData({
+                    ...deleteMasterModalData,
+                    selectedReplacement: e.target.value
+                  })}
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '0.4rem', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                >
+                  {deleteMasterModalData.replacementOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => setDeleteMasterModalData(null)}
+                  style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-primary"
+                  style={{ backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+                  onClick={async () => {
+                    const { field, value, selectedReplacement } = deleteMasterModalData;
+                    setDeleteMasterModalData(null); // Close modal
+                    
+                    try {
+                      setCrudLoading(true)
+                      const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ field, value, replacement: selectedReplacement })
+                      })
+                      const data = await res.json()
+                      if (res.ok && data.success) {
+                        alert(data.message || 'Opsi master berhasil dihapus.')
+                        loadData()
+                      } else {
+                        alert(data.message || 'Gagal menghapus opsi master.')
+                      }
+                    } catch (err) {
+                      alert('Terjadi kesalahan saat menghapus opsi master.')
+                    } finally {
+                      setCrudLoading(false)
+                    }
+                  }}
+                >
+                  Hapus & Alihkan
+                </button>
+              </div>
             </div>
           </div>
         </div>
