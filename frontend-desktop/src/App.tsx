@@ -79,6 +79,7 @@ function App() {
   const [showCrudModal, setShowCrudModal] = useState<boolean>(false)
   const [isDetailActive, setIsDetailActive] = useState<boolean>(false)
   const [displayLimit, setDisplayLimit] = useState<number>(8)
+  const [loadingMore, setLoadingMore] = useState<boolean>(false)
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
@@ -301,17 +302,22 @@ function App() {
   // Infinite scroll event listener
   useEffect(() => {
     const handleScroll = () => {
-      if (isDetailActive) return
-      const threshold = 150
+      if (isDetailActive || loadingMore) return
+      if (displayLimit >= faunas.length) return
+      const threshold = 100
       const position = window.innerHeight + window.scrollY
       const limit = document.documentElement.scrollHeight - threshold
       if (position >= limit) {
-        setDisplayLimit(prev => Math.min(prev + 8, faunas.length))
+        setLoadingMore(true)
+        setTimeout(() => {
+          setDisplayLimit(prev => Math.min(prev + 8, faunas.length))
+          setLoadingMore(false)
+        }, 1200)
       }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [faunas.length, isDetailActive])
+  }, [faunas.length, isDetailActive, loadingMore, displayLimit])
 
   // Sync profile form when user state loads
   useEffect(() => {
@@ -1435,10 +1441,30 @@ function App() {
                     </div>
 
                     {/* Infinite Scroll loading indicator */}
-                    {displayLimit < faunas.length && (
-                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem 0', gap: '0.5rem' }}>
-                        <Loader className="animate-spin" size={24} style={{ color: 'var(--primary)' }} />
-                        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Memuat produk lainnya...</span>
+                    {loadingMore && (
+                      <div className="fauna-grid" style={{ marginTop: '2rem' }}>
+                        {[1, 2, 3, 4].map((i) => (
+                          <div 
+                            key={i} 
+                            className="glass-panel"
+                            style={{ display: 'flex', flexDirection: 'column', height: '360px', opacity: 0.7 }}
+                          >
+                            <div style={{ height: '240px', backgroundColor: 'rgba(255,255,255,0.03)', position: 'relative', overflow: 'hidden' }}>
+                              <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'shimmer 1.5s infinite' }}></div>
+                            </div>
+                            <div style={{ padding: '1.25rem 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flexGrow: 1, justifyContent: 'space-between' }}>
+                              <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                  <div style={{ height: '10px', width: '30%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
+                                  <div style={{ height: '10px', width: '20%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
+                                </div>
+                                <div style={{ height: '16px', width: '80%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px', marginTop: '0.75rem' }}></div>
+                                <div style={{ height: '10px', width: '60%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px', marginTop: '0.5rem' }}></div>
+                              </div>
+                              <div style={{ height: '16px', width: '50%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </>
