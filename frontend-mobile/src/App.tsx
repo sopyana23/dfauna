@@ -52,6 +52,7 @@ interface Fauna {
 interface ShopSettings {
   whatsapp_number: string
   store_slogan: string
+  promo_banner?: string
 }
 
 const API_BASE = 'http://localhost:8000/api'
@@ -60,7 +61,8 @@ function App() {
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
-    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia'
+    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia',
+    promo_banner: ''
   })
   const [selectedFauna, setSelectedFauna] = useState<Fauna | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
@@ -78,6 +80,7 @@ function App() {
   // Bottom Sheets
   const [showCrudSheet, setShowCrudSheet] = useState<boolean>(false)
   const [isDetailActive, setIsDetailActive] = useState<boolean>(false)
+  const [displayLimit, setDisplayLimit] = useState<number>(6)
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
@@ -168,7 +171,8 @@ function App() {
   // Settings Form State
   const [settingsForm, setSettingsForm] = useState<ShopSettings>({
     whatsapp_number: '',
-    store_slogan: ''
+    store_slogan: '',
+    promo_banner: ''
   })
   const [settingsLoading, setSettingsLoading] = useState<boolean>(false)
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
@@ -251,7 +255,8 @@ function App() {
       if (settingsData.success && settingsData.data) {
         const fetchedSettings = {
           whatsapp_number: settingsData.data.whatsapp_number || '628123456789',
-          store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium'
+          store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium',
+          promo_banner: settingsData.data.promo_banner || ''
         }
         setSettings(fetchedSettings)
         setSettingsForm(fetchedSettings)
@@ -289,6 +294,26 @@ function App() {
     }, 200)
     return () => clearTimeout(delayDebounceFn)
   }, [search, classFilter, habitatFilter])
+
+  // Reset displayLimit on search or filter change
+  useEffect(() => {
+    setDisplayLimit(6)
+  }, [search, classFilter, habitatFilter])
+
+  // Infinite scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isDetailActive) return
+      const threshold = 150
+      const position = window.innerHeight + window.scrollY
+      const limit = document.documentElement.scrollHeight - threshold
+      if (position >= limit) {
+        setDisplayLimit(prev => Math.min(prev + 6, faunas.length))
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [faunas.length, isDetailActive])
 
   // Sync profile when adminUser loads
   useEffect(() => {
@@ -1079,8 +1104,13 @@ function App() {
                       onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
                     />
                     <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, marginBottom: '0.25rem' }}>
-                        {rec.name}
+                      <div>
+                        <span style={{ display: 'inline-block', fontSize: '0.6rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.15rem' }}>
+                          {rec.class}
+                        </span>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, marginBottom: '0.25rem' }}>
+                          {rec.name}
+                        </div>
                       </div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ef4444' }}>
                         {formatRupiah(rec.price)}
@@ -1207,7 +1237,6 @@ function App() {
             <Compass className="logo-icon" />
             <h1 className="logo-title">DFauna</h1>
           </div>
-          <div className="slogan-banner">{settings.store_slogan}</div>
         </div>
       </header>
 
@@ -1262,6 +1291,45 @@ function App() {
               </span>
             </div>
 
+            {/* Dynamic Promo Banner */}
+            {settings.promo_banner && settings.promo_banner.trim() !== '' && (
+              <div 
+                className="glass-panel" 
+                style={{ 
+                  padding: '1rem', 
+                  borderRadius: '0.75rem', 
+                  border: '1px dashed var(--primary)', 
+                  backgroundColor: 'rgba(16, 185, 129, 0.05)', 
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.75rem'
+                }}
+              >
+                <div style={{ 
+                  backgroundColor: 'var(--primary)', 
+                  color: '#0b0e0c', 
+                  borderRadius: '50%', 
+                  width: '24px', 
+                  height: '24px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold'
+                }}>
+                  %
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>Promo Spesial Hari Ini!</h4>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0, whiteSpace: 'pre-wrap' }}>
+                    {settings.promo_banner}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* List Render */}
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
@@ -1280,58 +1348,70 @@ function App() {
             )}
 
             {!loading && !error && (
-              <div className="mobile-list">
-                {faunas.length === 0 ? (
-                  <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                    Belum ada hewan peliharaan terdaftar.
-                  </div>
-                ) : (
-                  faunas.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className="glass-panel mobile-card"
-                      onClick={() => openDetailsSheet(item.id)}
-                    >
-                      <div className="mobile-card-img-wrapper">
-                        <img 
-                          src={item.image_url} 
-                          alt={item.name} 
-                          className="mobile-card-img" 
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                        <div className="img-fallback">
-                          <Compass size={24} />
-                          <span>No Photo</span>
-                        </div>
-                      </div>
-                      <div className="mobile-card-content">
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase' }}>
-                              {item.class}
-                            </span>
-                            {item.is_shipping_available && (
-                              <span style={{ fontSize: '0.6rem', color: 'var(--secondary)', fontWeight: 600 }}>
-                                Kirim &bull; Yes
-                              </span>
-                            )}
-                          </div>
-                          <h3 className="mobile-card-title">{item.name}</h3>
-                          <div className="mobile-card-subtitle">{item.scientific_name}</div>
-                        </div>
-                        <div className="mobile-card-footer">
-                          <div className="mobile-card-price">{formatRupiah(item.price)}</div>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}>
-                            Detail &rarr;
-                          </span>
-                        </div>
-                      </div>
+              <>
+                <div className="mobile-list-grid">
+                  {faunas.length === 0 ? (
+                    <div className="glass-panel" style={{ gridColumn: 'span 2', padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      Belum ada hewan peliharaan terdaftar.
                     </div>
-                  ))
+                  ) : (
+                    faunas.slice(0, displayLimit).map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="glass-panel mobile-grid-card"
+                        onClick={() => openDetailsSheet(item.id)}
+                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+                      >
+                        <div className="mobile-card-img-wrapper" style={{ height: '130px', position: 'relative', overflow: 'hidden' }}>
+                          <img 
+                            src={item.image_url} 
+                            alt={item.name} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <div className="img-fallback" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                            <Compass size={24} />
+                            <span style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>No Photo</span>
+                          </div>
+                        </div>
+                        <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                              <span style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase' }}>
+                                {item.class}
+                              </span>
+                              {item.is_shipping_available && (
+                                <span style={{ fontSize: '0.55rem', color: 'var(--secondary)', fontWeight: 600 }}>
+                                  Kirim
+                                </span>
+                              )}
+                            </div>
+                            <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, margin: '0.15rem 0' }}>
+                              {item.name}
+                            </h3>
+                            <div style={{ fontStyle: 'italic', fontSize: '0.7rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '0.5rem' }}>
+                              {item.scientific_name}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444' }}>
+                            {formatRupiah(item.price)}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Infinite Scroll loading indicator */}
+                {displayLimit < faunas.length && (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem 0', gap: '0.5rem' }}>
+                    <Loader className="animate-spin" size={18} style={{ color: 'var(--primary)' }} />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Memuat produk lainnya...</span>
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </>
         )}
@@ -1612,6 +1692,16 @@ function App() {
                       required
                       value={settingsForm.store_slogan}
                       onChange={(e) => setSettingsForm({ ...settingsForm, store_slogan: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Banner Promo (Kosongkan jika tidak ada promo)</label>
+                    <textarea 
+                      rows={3}
+                      className="form-input" 
+                      placeholder="Tulis detail promo di sini (contoh: 🎉 PROMO MERDEKA: Diskon 15% untuk semua jenis Mamalia!)..."
+                      value={settingsForm.promo_banner}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, promo_banner: e.target.value })}
                     />
                   </div>
                   <button 

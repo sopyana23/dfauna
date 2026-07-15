@@ -38,6 +38,7 @@ class SettingController extends Controller
             'settings' => 'required|array',
             'settings.whatsapp_number' => 'required|string|max:50',
             'settings.store_slogan' => 'required|string|max:255',
+            'settings.promo_banner' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {

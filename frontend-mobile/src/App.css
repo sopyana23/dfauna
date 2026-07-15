@@ -1,11 +1,16 @@
+/* Hide scrollbars for WebKit and Firefox */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 /* Mobile Header - Solid Premium Dark */
 .mobile-header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
   background: #0b0e0c;
-  border-bottom: 1px solid var(--border-light);
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   text-align: center;
 }
 
@@ -84,9 +89,15 @@
   height: 1.25rem;
 }
 
-/* Mobile search section */
 .mobile-search-section {
-  padding: 1.25rem 0 0.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  background: rgba(11, 14, 12, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1rem;
+  margin: 0 -1rem 1rem -1rem;
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -438,4 +449,24 @@
   background: #112019;
   border: 1px solid #1a3c2e;
   color: #34d399;
+}
+
+/* 2-Column Catalog Listing Grid */
+.mobile-list-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding-bottom: 1.5rem;
+}
+
+.mobile-grid-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+}
+
+.mobile-grid-card:active {
+  transform: scale(0.98);
 }

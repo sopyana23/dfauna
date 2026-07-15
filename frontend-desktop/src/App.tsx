@@ -50,6 +50,7 @@ interface Fauna {
 interface ShopSettings {
   whatsapp_number: string
   store_slogan: string
+  promo_banner?: string
 }
 
 const API_BASE = 'http://localhost:8000/api'
@@ -58,7 +59,8 @@ function App() {
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
-    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia'
+    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia',
+    promo_banner: ''
   })
   const [selectedFauna, setSelectedFauna] = useState<Fauna | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
@@ -76,6 +78,7 @@ function App() {
   // Modals
   const [showCrudModal, setShowCrudModal] = useState<boolean>(false)
   const [isDetailActive, setIsDetailActive] = useState<boolean>(false)
+  const [displayLimit, setDisplayLimit] = useState<number>(8)
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
@@ -166,7 +169,8 @@ function App() {
   // Settings Form State
   const [settingsForm, setSettingsForm] = useState<ShopSettings>({
     whatsapp_number: '',
-    store_slogan: ''
+    store_slogan: '',
+    promo_banner: ''
   })
   const [settingsLoading, setSettingsLoading] = useState<boolean>(false)
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
@@ -249,7 +253,8 @@ function App() {
       if (settingsData.success && settingsData.data) {
         const fetchedSettings = {
           whatsapp_number: settingsData.data.whatsapp_number || '628123456789',
-          store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium'
+          store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium',
+          promo_banner: settingsData.data.promo_banner || ''
         }
         setSettings(fetchedSettings)
         setSettingsForm(fetchedSettings)
@@ -287,6 +292,26 @@ function App() {
     }, 200)
     return () => clearTimeout(delayDebounceFn)
   }, [search, classFilter, habitatFilter])
+
+  // Reset displayLimit on search or filter change
+  useEffect(() => {
+    setDisplayLimit(8)
+  }, [search, classFilter, habitatFilter])
+
+  // Infinite scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isDetailActive) return
+      const threshold = 150
+      const position = window.innerHeight + window.scrollY
+      const limit = document.documentElement.scrollHeight - threshold
+      if (position >= limit) {
+        setDisplayLimit(prev => Math.min(prev + 8, faunas.length))
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [faunas.length, isDetailActive])
 
   // Sync profile form when user state loads
   useEffect(() => {
@@ -1084,6 +1109,9 @@ function App() {
                     />
                     <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                       <div>
+                        <span style={{ display: 'inline-block', fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                          {rec.class}
+                        </span>
                         <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.3, marginBottom: '0.5rem' }}>
                           {rec.name}
                         </div>
@@ -1221,7 +1249,6 @@ function App() {
             <Compass className="logo-icon" />
             <div>
               <h1 className="logo-text">DFauna</h1>
-              <div className="logo-tagline">{settings.store_slogan}</div>
             </div>
           </div>
           <div className="nav-actions">
@@ -1261,6 +1288,45 @@ function App() {
                 </span>
               </div>
             </section>
+
+            {/* Dynamic Promo Banner */}
+            {settings.promo_banner && settings.promo_banner.trim() !== '' && (
+              <div 
+                className="glass-panel" 
+                style={{ 
+                  padding: '1.25rem 2rem', 
+                  borderRadius: '1rem', 
+                  border: '1px dashed var(--primary)', 
+                  backgroundColor: 'rgba(16, 185, 129, 0.04)', 
+                  marginBottom: '2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}
+              >
+                <div style={{ 
+                  backgroundColor: 'var(--primary)', 
+                  color: '#0b0e0c', 
+                  borderRadius: '50%', 
+                  width: '36px', 
+                  height: '36px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold'
+                }}>
+                  %
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Promo Spesial Hari Ini!</h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>
+                    {settings.promo_banner}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Filter Panel */}
             <section className="glass-panel controls-panel">
@@ -1326,46 +1392,56 @@ function App() {
                     <p style={{ fontSize: '0.9rem' }}>Coba ubah filter pencarian Anda.</p>
                   </div>
                 ) : (
-                  <div className="fauna-grid">
-                    {faunas.map((fauna) => (
-                      <div 
-                        key={fauna.id} 
-                        className="glass-panel glass-panel-hover fauna-card"
-                        onClick={() => fetchDetails(fauna.id)}
-                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-                      >
-                        <div className="card-image-container" style={{ height: '240px' }}>
-                          <img 
-                            src={fauna.image_url} 
-                            alt={fauna.name} 
-                            className="card-img" 
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
-                            }}
-                          />
-                          {fauna.is_shipping_available && (
-                            <div className="card-shipping-badge">
-                              Bisa Dikirim
+                  <>
+                    <div className="fauna-grid">
+                      {faunas.slice(0, displayLimit).map((fauna) => (
+                        <div 
+                          key={fauna.id} 
+                          className="glass-panel glass-panel-hover fauna-card"
+                          onClick={() => fetchDetails(fauna.id)}
+                          style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+                        >
+                          <div className="card-image-container" style={{ height: '240px' }}>
+                            <img 
+                              src={fauna.image_url} 
+                              alt={fauna.name} 
+                              className="card-img" 
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                              }}
+                            />
+                            {fauna.is_shipping_available && (
+                              <div className="card-shipping-badge">
+                                Bisa Dikirim
+                              </div>
+                            )}
+                          </div>
+                          <div className="card-body" style={{ padding: '1.25rem 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span className="card-meta" style={{ fontSize: '0.7rem', margin: 0 }}>{fauna.class}</span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{fauna.habitat}</span>
                             </div>
-                          )}
-                        </div>
-                        <div className="card-body" style={{ padding: '1.25rem 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span className="card-meta" style={{ fontSize: '0.7rem', margin: 0 }}>{fauna.class}</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{fauna.habitat}</span>
-                          </div>
-                          <h3 className="card-title" style={{ fontSize: '1.1rem', margin: '0.2rem 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#ffffff' }}>{fauna.name}</h3>
-                          <div className="card-subtitle" style={{ fontSize: '0.8rem', margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' }}>{fauna.scientific_name}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
-                            <div className="card-price" style={{ fontSize: '1.25rem', margin: 0, fontWeight: 800 }}>{formatRupiah(fauna.price)}</div>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
-                              Beli / Detail &rarr;
-                            </span>
+                            <h3 className="card-title" style={{ fontSize: '1.1rem', margin: '0.2rem 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#ffffff' }}>{fauna.name}</h3>
+                            <div className="card-subtitle" style={{ fontSize: '0.8rem', margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' }}>{fauna.scientific_name}</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
+                              <div className="card-price" style={{ fontSize: '1.25rem', margin: 0, fontWeight: 800 }}>{formatRupiah(fauna.price)}</div>
+                              <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
+                                Beli / Detail &rarr;
+                              </span>
+                            </div>
                           </div>
                         </div>
+                      ))}
+                    </div>
+
+                    {/* Infinite Scroll loading indicator */}
+                    {displayLimit < faunas.length && (
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem 0', gap: '0.5rem' }}>
+                        <Loader className="animate-spin" size={24} style={{ color: 'var(--primary)' }} />
+                        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Memuat produk lainnya...</span>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1649,6 +1725,16 @@ function App() {
                       required
                       value={settingsForm.store_slogan}
                       onChange={(e) => setSettingsForm({ ...settingsForm, store_slogan: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Banner Promo (Kosongkan jika tidak ada promo)</label>
+                    <textarea 
+                      rows={3}
+                      className="form-input" 
+                      placeholder="Tulis detail promo di sini (contoh: 🎉 PROMO MERDEKA: Diskon 15% untuk semua jenis Mamalia!)..."
+                      value={settingsForm.promo_banner}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, promo_banner: e.target.value })}
                     />
                   </div>
                   <button 
