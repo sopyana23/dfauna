@@ -1416,11 +1416,7 @@ function App() {
                                 e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
                               }}
                             />
-                            {fauna.is_shipping_available && (
-                              <div className="card-shipping-badge">
-                                Bisa Dikirim
-                              </div>
-                            )}
+
                           </div>
                           <div className="card-body" style={{ padding: '1.25rem 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

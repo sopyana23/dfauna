@@ -9,9 +9,8 @@ import {
   Settings, 
   Trash2, 
   Edit3, 
-  Send,
   Loader,
-  MessageCircle,
+  FileText,
   Lock,
   LogOut,
   Upload,
@@ -68,8 +67,8 @@ function App() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Mobile navigation tabs: 'catalog' | 'contact' | 'admin'
-  const [activeTab, setActiveTab] = useState<'catalog' | 'contact' | 'admin'>('catalog')
+  // Mobile navigation tabs: 'catalog' | 'about' | 'articles' | 'admin'
+  const [activeTab, setActiveTab] = useState<'catalog' | 'about' | 'articles' | 'admin'>('catalog')
   const [adminSubTab, setAdminSubTab] = useState<'items' | 'settings' | 'profile'>('items')
 
   // Search & Filters
@@ -439,9 +438,14 @@ function App() {
     setActiveTab('catalog')
   }
 
-  const goToContact = () => {
+  const goToAbout = () => {
     window.history.pushState({}, '', '/')
-    setActiveTab('contact')
+    setActiveTab('about')
+  }
+
+  const goToArticles = () => {
+    window.history.pushState({}, '', '/')
+    setActiveTab('articles')
   }
 
   // Handle Logout
@@ -1388,11 +1392,6 @@ function App() {
                               <span style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase' }}>
                                 {item.class}
                               </span>
-                              {item.is_shipping_available && (
-                                <span style={{ fontSize: '0.55rem', color: 'var(--secondary)', fontWeight: 600 }}>
-                                  Kirim
-                                </span>
-                              )}
                             </div>
                             <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, margin: '0.15rem 0' }}>
                               {item.name}
@@ -1440,35 +1439,95 @@ function App() {
         )}
 
         {/* ==========================================================
-           TAB 2: CONTACT & PICKUP
+           TAB 2: TENTANG KAMI
            ========================================================== */}
-        {activeTab === 'contact' && (
-          <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MessageCircle style={{ color: 'var(--primary)' }} /> Hubungi DFauna
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-              Untuk pemesanan langsung, negosiasi harga grosir, atau info pengiriman hewan, Anda dapat menghubungi tim support kami langsung melalui WhatsApp.
+        {activeTab === 'about' && (
+          <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ backgroundColor: 'var(--primary)', color: '#0b0e0c', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', flexShrink: 0, fontWeight: 'bold', justifyContent: 'center' }}>
+                <Info size={18} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Tentang DFauna</h2>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Premium Quality Pet & Aquatic Gallery</p>
+              </div>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', margin: 0 }}>
+              DFauna adalah galeri satwa hias premium terpercaya yang berkomitmen menyediakan satwa hias berkualitas tinggi, mulai dari ikan hias eksotis, reptil unik, hingga mamalia kecil yang lucu. Kami berdedikasi menjaga kesehatan prima setiap satwa demi kepuasan dan kebahagiaan para pecinta satwa di Indonesia.
             </p>
 
-            <a 
-              href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20ingin%20tanya-tanya%20mengenai%20katalog%20hewan%20hias.`}
-              target="_blank"
-              className="btn-full btn-primary"
-              style={{ fontSize: '0.95rem' }}
-            >
-              <Send size={18} />
-              Hubungi via WhatsApp
-            </a>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>✨ Garansi Kesehatan</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Setiap satwa melewati proses karantina ketat dan pemeriksaan kesehatan berkala sebelum dipasarkan.</p>
+              </div>
+              <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>🔒 Transaksi Aman & Terpercaya</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Kami mendukung sistem pembayaran aman secara langsung maupun menggunakan jasa Rekber Syariah.</p>
+              </div>
+              <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>💬 Konsultasi Purna Jual</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Tim ahli kami siap membantu Anda berkonsultasi seputar pakan, akuarium, dan perawatan jangka panjang.</p>
+              </div>
+            </div>
 
-            <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '1.5rem', paddingTop: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <MapPin size={16} style={{ color: 'var(--secondary)' }} /> Ketentuan Pengiriman
-              </h3>
-              <ul style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <li><strong>Pengiriman Nasional</strong>: Hanya berlaku untuk ikan hias dan mamalia kecil bertanda "Bisa Dikirim" dengan packing bergaransi *Live on Arrival*.</li>
-                <li><strong>Local Pickup Only</strong>: Untuk hewan berukuran sedang/kucing, pembelian wajib dilakukan dengan mengambil langsung ke toko (local pickup) atau via GoSend Instant area sekitar demi keselamatan hewan.</li>
-              </ul>
+            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Hubungi Galeri Kami</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                <div>📍 <strong>Lokasi:</strong> Bandung, Jawa Barat, Indonesia</div>
+                <div>🕒 <strong>Jam Operasional:</strong> 08:00 - 21:00 WIB (Setiap Hari)</div>
+                <div>📞 <strong>WhatsApp:</strong> +{settings.whatsapp_number}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================================
+           TAB 3: ARTIKEL & PANDUAN
+           ========================================================== */}
+        {activeTab === 'articles' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FileText size={20} style={{ color: 'var(--primary)' }} /> Artikel & Panduan
+              </h2>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Panduan ahli seputar perawatan dan tips memelihara satwa kesayangan Anda.</p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[
+                {
+                  title: 'Panduan Memelihara Sugar Glider untuk Pemula',
+                  desc: 'Pelajari langkah dasar cara menjinakkan sugar glider joey, bonding, hingga menyusun pola makan bubur sehat berkualitas.',
+                  author: 'Tim Ahli DFauna',
+                  readTime: '5 mnt baca',
+                  date: '12 Juli 2026'
+                },
+                {
+                  title: 'Menjaga Kualitas Air Ideal Akuarium Ikan Discus',
+                  desc: 'Suhu optimal, pengaturan kadar pH, dan pentingnya penggantian air rutin untuk menjaga warna cerah Blue Diamond tetap bersinar.',
+                  author: 'Aquascaper Pro',
+                  readTime: '4 mnt baca',
+                  date: '10 Juli 2026'
+                },
+                {
+                  title: 'Mengenal Perilaku Unik Landak Mini Albino',
+                  desc: 'Mengapa landak mini melumuri duri dengan ludah berbusa? Pelajari proses self-anointing dan cara melatihnya tidak takut disentuh.',
+                  author: 'Dunia Satwa',
+                  readTime: '3 mnt baca',
+                  date: '08 Juli 2026'
+                }
+              ].map((article, idx) => (
+                <div key={idx} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{article.title}</h4>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{article.desc}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
+                    <span>Oleh: <strong>{article.author}</strong></span>
+                    <span>{article.date} &bull; {article.readTime}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -2436,7 +2495,7 @@ function App() {
         </div>
       )}
 
-      {/* Fixed Bottom Navigation Bar (No Admin tab visible publicly) */}
+      {/* Fixed Bottom Navigation Bar */}
       <nav className="bottom-nav">
         <button 
           className={`nav-item ${activeTab === 'catalog' ? 'active' : ''}`}
@@ -2446,15 +2505,22 @@ function App() {
           <span>Katalog</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'contact' ? 'active' : ''}`}
-          onClick={goToContact}
+          className={`nav-item ${activeTab === 'about' ? 'active' : ''}`}
+          onClick={goToAbout}
         >
-          <MessageCircle size={20} />
-          <span>Hubungi</span>
+          <Info size={20} />
+          <span>Tentang Kami</span>
         </button>
-        {activeTab === 'admin' && (
+        <button 
+          className={`nav-item ${activeTab === 'articles' ? 'active' : ''}`}
+          onClick={goToArticles}
+        >
+          <FileText size={20} />
+          <span>Artikel</span>
+        </button>
+        {token && (
           <button 
-            className="nav-item active"
+            className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
             onClick={() => setActiveTab('admin')}
           >
             <Settings size={20} />
