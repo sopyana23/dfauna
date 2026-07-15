@@ -20,7 +20,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Eye
+  Eye,
+  ArrowLeft,
+  AlertTriangle,
+  ShieldAlert
 } from 'lucide-react'
 import './App.css'
 
@@ -75,8 +78,9 @@ function App() {
   const [habitatFilter, setHabitatFilter] = useState<string>('all')
 
   // Bottom Sheets
-  const [showDetailSheet, setShowDetailSheet] = useState<boolean>(false)
   const [showCrudSheet, setShowCrudSheet] = useState<boolean>(false)
+  const [isDetailActive, setIsDetailActive] = useState<boolean>(false)
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState<boolean>(false)
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
@@ -207,7 +211,7 @@ function App() {
 
   // Lock scroll when bottom sheets are open
   useEffect(() => {
-    if (showDetailSheet || showCrudSheet) {
+    if (showCrudSheet) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
@@ -215,7 +219,7 @@ function App() {
     return () => {
       document.body.style.overflow = ''
     }
-  }, [showDetailSheet, showCrudSheet])
+  }, [showCrudSheet])
 
   // Listen to popstate
   useEffect(() => {
@@ -852,7 +856,8 @@ function App() {
       if (data.success) {
         setSelectedFauna(data.data)
         setActiveImageIndex(0)
-        setShowDetailSheet(true)
+        setIsDetailActive(true)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (err) {
       console.error(err)
@@ -860,9 +865,387 @@ function App() {
     }
   }
 
+  // Get recommendations for mobile
+  const getRecommendations = (fauna: Fauna) => {
+    const otherFaunas = faunas.filter(f => f.id !== fauna.id)
+    const sameClass = otherFaunas.filter(f => f.class === fauna.class)
+    const differentClass = otherFaunas.filter(f => f.class !== fauna.class)
+    const combined = [...sameClass, ...differentClass]
+    return combined.slice(0, 4)
+  }
   return (
     <>
-      <div className="animate-fade-in" style={{ paddingBottom: '80px' }}>
+      {isDetailActive && selectedFauna ? (
+        /* ==========================================================
+           FULL-PAGE MOBILE DETAIL VIEW (CUSTOM ONLINE SHOP AESTHETICS)
+           ========================================================== */
+        <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-card)' }}>
+          {/* Header */}
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            backgroundColor: 'var(--bg-card)',
+            borderBottom: '1px solid var(--border-light)',
+            padding: '0.85rem 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            zIndex: 100
+          }}>
+            <button 
+              onClick={() => {
+                setIsDetailActive(false);
+                setSelectedFauna(null);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.25rem'
+              }}
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>Detail Produk</span>
+          </div>
+
+          {/* Scrollable Content */}
+          <div style={{ flex: 1, paddingBottom: '90px', overflowY: 'auto' }}>
+            {/* Large Center Image */}
+            <img 
+              src={
+                (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
+                  ? (selectedFauna.detailed_info.images[activeImageIndex] || selectedFauna.image_url)
+                  : selectedFauna.image_url
+              } 
+              alt={selectedFauna.name} 
+              style={{ width: '100%', height: '320px', objectFit: 'cover', cursor: 'zoom-in' }} 
+              onClick={() => {
+                setLightboxIndex(activeImageIndex)
+                setZoomScale(1)
+                setPanPosition({ x: 0, y: 0 })
+                setShowLightbox(true)
+              }}
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+              }}
+            />
+
+            {/* Click to Zoom Hint */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem', marginBottom: '0.25rem' }}>
+              <ZoomIn size={12} />
+              <span>Ketuk gambar untuk memperbesar & melihat detail</span>
+            </div>
+
+            {/* Thumbnails List */}
+            {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', marginBottom: '0.75rem', overflowX: 'auto', maxWidth: '100%', padding: '0 1rem', paddingBottom: '0.25rem' }}>
+                {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
+                  <img 
+                    key={idx}
+                    src={imgUrl} 
+                    alt="" 
+                    onClick={() => setActiveImageIndex(idx)}
+                    style={{
+                      width: '45px',
+                      height: '45px',
+                      objectFit: 'cover',
+                      borderRadius: '0.35rem',
+                      border: activeImageIndex === idx ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                      cursor: 'pointer',
+                      flexShrink: 0
+                    }} 
+                    onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Text Info (Price, Title, Category) */}
+            <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)' }}>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#ef4444', marginBottom: '0.35rem' }}>
+                {formatRupiah(selectedFauna.price)}
+              </div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: '0.5rem' }}>
+                {selectedFauna.name}
+              </h2>
+              <div style={{ fontStyle: 'italic', fontSize: '0.85rem', color: 'var(--primary-hover)', marginBottom: '0.5rem' }}>
+                {selectedFauna.scientific_name}
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Kategori: <span style={{ color: '#10b981', fontWeight: 700 }}>{selectedFauna.class.toUpperCase()}</span>
+              </div>
+            </div>
+
+            {/* Product Specifications */}
+            <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Spesifikasi</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Bobot</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedFauna.detailed_info?.weight || 'N/A'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Habitat</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedFauna.habitat}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Jangkauan Pengiriman</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedFauna.detailed_info?.shipping_coverage || (selectedFauna.is_shipping_available ? 'Bisa Kirim se-Indonesia' : 'Ambil Sendiri')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Status Konservasi</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedFauna.conservation_status}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Asal Wilayah</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedFauna.detailed_info?.native_region || 'N/A'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Masa Hidup</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedFauna.detailed_info?.lifespan || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Deskripsi</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                {selectedFauna.description}
+              </p>
+            </div>
+
+            {/* Shipping & Warranty Information */}
+            {(selectedFauna.detailed_info?.shipping_terms || selectedFauna.detailed_info?.warranty_info) && (
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Informasi Tambahan</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {selectedFauna.detailed_info?.shipping_terms && (
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '0.4rem', border: '1px solid var(--border-light)' }}>
+                      <h4 style={{ fontSize: '0.8rem', color: 'var(--primary-hover)', fontWeight: 700, marginBottom: '0.25rem' }}>Ketentuan Pengiriman</h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
+                        {selectedFauna.detailed_info.shipping_terms}
+                      </p>
+                    </div>
+                  )}
+                  {selectedFauna.detailed_info?.warranty_info && (
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: '0.4rem', border: '1px solid var(--border-light)' }}>
+                      <h4 style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 700, marginBottom: '0.25rem' }}>Ketentuan Garansi</h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
+                        {selectedFauna.detailed_info.warranty_info}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* YouTube Embed */}
+            {selectedFauna.video_url && getYoutubeEmbedUrl(selectedFauna.video_url) && (
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Video Dokumentasi</h3>
+                <div className="mobile-video-container" style={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
+                  <iframe 
+                    src={getYoutubeEmbedUrl(selectedFauna.video_url)} 
+                    title={selectedFauna.name}
+                    allowFullScreen
+                    style={{ width: '100%', height: '200px', border: 'none' }}
+                  ></iframe>
+                </div>
+              </div>
+            )}
+
+            {/* Related Products Section */}
+            <div style={{ padding: '1rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Rekomendasi Satwa Serupa</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                {getRecommendations(selectedFauna).map(rec => (
+                  <div 
+                    key={rec.id} 
+                    className="glass-panel" 
+                    onClick={() => {
+                      setSelectedFauna(rec);
+                      setActiveImageIndex(0);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    style={{ cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)', borderRadius: '0.5rem' }}
+                  >
+                    <img 
+                      src={rec.image_url} 
+                      alt={rec.name} 
+                      style={{ width: '100%', height: '110px', objectFit: 'cover' }}
+                      onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
+                    />
+                    <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, marginBottom: '0.25rem' }}>
+                        {rec.name}
+                      </div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ef4444' }}>
+                        {formatRupiah(rec.price)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer (Sticky/Floating) */}
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#0b0e0c',
+            borderTop: '1px solid var(--border-light)',
+            padding: '0.75rem 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            zIndex: 90
+          }}>
+            {activeTab === 'admin' ? (
+              // Admin footer actions
+              <>
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  onClick={() => {
+                    setIsDetailActive(false);
+                    setSelectedFauna(null);
+                  }}
+                  style={{ flex: 1, height: '42px', fontSize: '0.85rem', borderRadius: '0.35rem' }}
+                >
+                  Kembali
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-primary"
+                  onClick={() => {
+                    openEditSheet(selectedFauna)
+                  }}
+                  style={{ flex: 1, height: '42px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: '0.35rem' }}
+                >
+                  <Edit3 size={14} />
+                  Edit
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-danger"
+                  onClick={async () => {
+                    const deleted = await handleFaunaDelete(selectedFauna.id)
+                    if (deleted) {
+                      setIsDetailActive(false);
+                      setSelectedFauna(null);
+                    }
+                  }}
+                  style={{ flex: 1, height: '42px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: '0.35rem' }}
+                >
+                  <Trash2 size={14} />
+                  Hapus
+                </button>
+              </>
+            ) : (
+              // Customer footer actions (Warning, Rekber, WhatsApp)
+              <>
+                <button 
+                  onClick={() => setShowDisclaimerModal(true)}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #ef4444',
+                    borderRadius: '0.35rem',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  <AlertTriangle size={18} />
+                </button>
+                
+                <a 
+                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20via%20Rekber%20(Rekening%20Bersama).%20Mohon%20info%20prosedurnya.`}
+                  target="_blank"
+                  className="btn-secondary"
+                  style={{
+                    flex: 1,
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid #10b981',
+                    backgroundColor: 'transparent',
+                    color: '#10b981',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    borderRadius: '0.35rem',
+                    textDecoration: 'none'
+                  }}
+                >
+                  Beli via Rekber
+                </a>
+
+                <a 
+                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}.`}
+                  target="_blank"
+                  className="btn-primary"
+                  style={{
+                    flex: 1.2,
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#10b981',
+                    borderColor: '#10b981',
+                    color: '#fff',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    borderRadius: '0.35rem',
+                    textDecoration: 'none'
+                  }}
+                >
+                  Hubungi WhatsApp
+                </a>
+              </>
+            )}
+          </div>
+
+          {/* Disclaimer Modal */}
+          {showDisclaimerModal && (
+            <div className="modal-overlay" onClick={() => setShowDisclaimerModal(false)}>
+              <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '300px', width: '85%', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.5rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <ShieldAlert size={18} /> Peringatan Transaksi
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4', marginBottom: '1rem' }}>
+                  1. DFauna menjamin garansi hewan hidup selamat sampai tujuan (D.O.A) jika menyertakan video unboxing utuh tanpa dipotong.<br/><br/>
+                  2. Transaksi via Rekening Bersama (Rekber) resmi kami hanya diproses melalui admin WhatsApp terdaftar toko ini.<br/><br/>
+                  3. Hati-hati penipuan yang mengatasnamakan DFauna di luar nomor resmi WhatsApp.
+                </p>
+                <button 
+                  type="button" 
+                  className="btn-primary btn-full"
+                  onClick={() => setShowDisclaimerModal(false)}
+                  style={{ fontSize: '0.75rem', padding: '0.4rem 0', borderRadius: '0.35rem' }}
+                >
+                  Saya Mengerti
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="animate-fade-in" style={{ paddingBottom: '80px' }}>
       {/* Mobile Top Header */}
       <header className="mobile-header">
         <div className="container">
@@ -1524,186 +1907,7 @@ function App() {
       </main>
     </div>
 
-    {/* MOBILE BOTTOM SHEET: DETAILS PANEL */}
-      {showDetailSheet && selectedFauna && (
-        <div className="bottom-sheet-overlay" onClick={() => setShowDetailSheet(false)}>
-          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="sheet-handle"></div>
-            <div className="sheet-content">
-              {/* Header Details */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.25rem' }}>
-                {/* Large Center Image */}
-                <img 
-                  src={
-                    (selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 0)
-                      ? (selectedFauna.detailed_info.images[activeImageIndex] || selectedFauna.image_url)
-                      : selectedFauna.image_url
-                  } 
-                  alt={selectedFauna.name} 
-                  style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: '0.75rem', border: '1px solid var(--border-light)', cursor: 'zoom-in' }} 
-                  onClick={() => {
-                    setLightboxIndex(activeImageIndex)
-                    setZoomScale(1)
-                    setPanPosition({ x: 0, y: 0 })
-                    setShowLightbox(true)
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
-                  }}
-                />
 
-                {/* Click to Zoom Hint */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem', marginBottom: '0.25rem' }}>
-                  <ZoomIn size={12} />
-                  <span>Ketuk gambar untuk memperbesar & melihat detail</span>
-                </div>
-
-                {/* Large Thumbnails List */}
-                {selectedFauna.detailed_info?.images && Array.isArray(selectedFauna.detailed_info.images) && selectedFauna.detailed_info.images.length > 1 && (
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem', overflowX: 'auto', maxWidth: '100%', paddingBottom: '0.25rem' }}>
-                    {selectedFauna.detailed_info.images.map((imgUrl: string, idx: number) => (
-                      <img 
-                        key={idx}
-                        src={imgUrl} 
-                        alt="" 
-                        onClick={() => setActiveImageIndex(idx)}
-                        style={{
-                          width: '38px',
-                          height: '38px',
-                          objectFit: 'cover',
-                          borderRadius: '0.25rem',
-                          border: activeImageIndex === idx ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                          cursor: 'pointer',
-                          flexShrink: 0
-                        }} 
-                        onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Text Info Box (Name, Subtitle, Price) */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%', marginTop: '0.75rem', padding: '0 0.5rem' }}>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{selectedFauna.name}</h2>
-                  <div style={{ fontStyle: 'italic', fontSize: '0.85rem', color: 'var(--primary-hover)', marginTop: '0.15rem', marginBottom: '0.35rem' }}>
-                    {selectedFauna.scientific_name}
-                  </div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--secondary)' }}>
-                    {formatRupiah(selectedFauna.price)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Badges Info */}
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                <span className="badge badge-least-concern">{selectedFauna.class}</span>
-                <span className="badge badge-least-concern">{selectedFauna.habitat}</span>
-                <span className={`badge ${selectedFauna.is_shipping_available ? 'badge-least-concern' : 'badge-vulnerable'}`}>
-                  {selectedFauna.detailed_info?.shipping_coverage || (selectedFauna.is_shipping_available ? 'Bisa Kirim' : 'Pickup Only')}
-                </span>
-              </div>
-
-              {/* Description */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '0.9rem', marginBottom: '0.25rem', color: 'var(--primary)' }}>Deskripsi</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                  {selectedFauna.description}
-                </p>
-              </div>
-
-              {/* Shipping Terms & Warranty */}
-              {(selectedFauna.detailed_info?.shipping_terms || selectedFauna.detailed_info?.warranty_info) && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#0b0e0c', padding: '0.75rem', borderRadius: '0.35rem', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
-                  {selectedFauna.detailed_info?.shipping_terms && (
-                    <div>
-                      <h5 style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.2rem' }}>Ketentuan Pengiriman</h5>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
-                        {selectedFauna.detailed_info.shipping_terms}
-                      </p>
-                    </div>
-                  )}
-                  {selectedFauna.detailed_info?.warranty_info && (
-                    <div>
-                      <h5 style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 700, marginBottom: '0.2rem' }}>Ketentuan Garansi</h5>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
-                        {selectedFauna.detailed_info.warranty_info}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Extra Meta */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '0.35rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', display: 'block' }}>Asal</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{selectedFauna.detailed_info?.native_region || 'N/A'}</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '0.35rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', display: 'block' }}>Masa Hidup</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{selectedFauna.detailed_info?.lifespan || 'N/A'}</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '0.35rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', display: 'block' }}>Bobot</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{selectedFauna.detailed_info?.weight || 'N/A'}</span>
-                </div>
-              </div>
-
-              {/* YouTube Embed */}
-              {selectedFauna.video_url && getYoutubeEmbedUrl(selectedFauna.video_url) && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.9rem', marginBottom: '0.25rem', color: 'var(--primary)' }}>Video Dokumentasi</h4>
-                  <div className="mobile-video-container">
-                    <iframe 
-                      src={getYoutubeEmbedUrl(selectedFauna.video_url)} 
-                      title={selectedFauna.name}
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </div>
-              )}
-
-              {/* Buying Dispatch CTA */}
-              {activeTab === 'admin' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', width: '100%', marginTop: '0.5rem' }}>
-                  <button 
-                    className="btn-primary btn-full"
-                    onClick={() => {
-                      setShowDetailSheet(false)
-                      openEditSheet(selectedFauna)
-                    }}
-                    style={{ fontSize: '0.85rem', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}
-                  >
-                    <Edit3 size={14} />
-                    Edit Data
-                  </button>
-                  <button 
-                    className="btn-danger btn-full"
-                    onClick={async () => {
-                      const deleted = await handleFaunaDelete(selectedFauna.id)
-                      if (deleted) setShowDetailSheet(false)
-                    }}
-                    style={{ fontSize: '0.85rem', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}
-                  >
-                    <Trash2 size={14} />
-                    Hapus
-                  </button>
-                </div>
-              ) : (
-                <a 
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}.`}
-                  target="_blank"
-                  className="btn-full btn-primary"
-                  style={{ fontSize: '0.9rem' }}
-                >
-                  <Send size={16} />
-                  Hubungi via WA & Beli
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* CUSTOM CONFIRMATION DIALOG FOR MASTER OPTION DELETION */}
       {deleteMasterModalData && (
@@ -2191,6 +2395,8 @@ function App() {
           </button>
         )}
       </nav>
+        </>
+      )}
 
       {/* LIGHTBOX OVERLAY WITH ZOOM & PAN FOR MOBILE */}
       {showLightbox && selectedFauna && (
