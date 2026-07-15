@@ -54,6 +54,17 @@ interface ShopSettings {
   promo_banner?: string
 }
 
+interface Article {
+  id: number
+  title: string
+  content: string
+  image_url?: string
+  author?: string
+  read_time?: string
+  created_at: string
+  updated_at: string
+}
+
 const API_BASE = 'http://localhost:8000/api'
 
 function App() {
@@ -69,7 +80,21 @@ function App() {
 
   // Mobile navigation tabs: 'catalog' | 'about' | 'articles' | 'admin'
   const [activeTab, setActiveTab] = useState<'catalog' | 'about' | 'articles' | 'admin'>('catalog')
-  const [adminSubTab, setAdminSubTab] = useState<'items' | 'settings' | 'profile'>('items')
+  const [adminSubTab, setAdminSubTab] = useState<'items' | 'settings' | 'profile' | 'articles'>('items')
+
+  // Articles state
+  const [articles, setArticles] = useState<Article[]>([])
+  const [articlesLoading, setArticlesLoading] = useState<boolean>(false)
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null) // for reading full article
+  const [showArticleFormSheet, setShowArticleFormSheet] = useState<boolean>(false)
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null)
+  const [articleForm, setArticleForm] = useState({
+    title: '',
+    content: '',
+    image_url: '',
+    author: 'Admin DFauna',
+    read_time: '5 mnt baca'
+  })
 
   // Search & Filters
   const [search, setSearch] = useState<string>('')
@@ -279,11 +304,29 @@ function App() {
       } else {
         setError('Gagal memuat produk.')
       }
+
+      // Fetch articles
+      await fetchArticles()
     } catch (err) {
       console.error(err)
       setError('Koneksi terputus. Pastikan server backend Laravel aktif.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchArticles = async () => {
+    setArticlesLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/articles`)
+      const data = await res.json()
+      if (data.success) {
+        setArticles(data.data)
+      }
+    } catch (err) {
+      console.error('Error fetching articles:', err)
+    } finally {
+      setArticlesLoading(false)
     }
   }
 
@@ -795,6 +838,87 @@ function App() {
     return Array.isArray(masterShippingCoverages) ? masterShippingCoverages : []
   }
 
+  const openAddArticleSheet = () => {
+    setEditingArticle(null)
+    setArticleForm({
+      title: '',
+      content: '',
+      image_url: '',
+      author: 'Admin DFauna',
+      read_time: '5 mnt baca'
+    })
+    setShowArticleFormSheet(true)
+  }
+
+  const openEditArticleSheet = (article: Article) => {
+    setEditingArticle(article)
+    setArticleForm({
+      title: article.title,
+      content: article.content,
+      image_url: article.image_url || '',
+      author: article.author || 'Admin DFauna',
+      read_time: article.read_time || '5 mnt baca'
+    })
+    setShowArticleFormSheet(true)
+  }
+
+  const handleSaveArticle = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setArticlesLoading(true)
+    try {
+      const url = editingArticle 
+        ? `${API_BASE}/articles/${editingArticle.id}` 
+        : `${API_BASE}/articles`
+      const method = editingArticle ? 'PUT' : 'POST'
+      
+      const res = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(articleForm)
+      })
+      
+      const data = await res.json()
+      if (data.success) {
+        setShowArticleFormSheet(false)
+        await fetchArticles()
+      } else {
+        alert(data.message || 'Gagal menyimpan artikel.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Terjadi kesalahan saat menyimpan artikel.')
+    } finally {
+      setArticlesLoading(false)
+    }
+  }
+
+  const handleDeleteArticle = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus artikel ini?')) return
+    setArticlesLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/articles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        await fetchArticles()
+      } else {
+        alert(data.message || 'Gagal menghapus artikel.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Terjadi kesalahan saat menghapus artikel.')
+    } finally {
+      setArticlesLoading(false)
+    }
+  }
+
   const handleDeleteMasterOption = (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
     // Determine the list of available options for replacement
     let options: string[] = []
@@ -1241,7 +1365,7 @@ function App() {
         <>
           <div className="animate-fade-in" style={{ paddingBottom: '80px' }}>
       {/* Mobile Top Header */}
-      <header className="mobile-header">
+      <header className={`mobile-header ${activeTab !== 'catalog' ? 'sticky-header' : ''}`}>
         <div className="container">
           <div className="logo-container">
             <Compass className="logo-icon" />
@@ -1487,49 +1611,117 @@ function App() {
            TAB 3: ARTIKEL & PANDUAN
            ========================================================== */}
         {activeTab === 'articles' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-            <div className="glass-panel" style={{ padding: '1.25rem' }}>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FileText size={20} style={{ color: 'var(--primary)' }} /> Artikel & Panduan
-              </h2>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Panduan ahli seputar perawatan dan tips memelihara satwa kesayangan Anda.</p>
-            </div>
+          selectedArticle ? (
+            /* FULL ARTICLE DETAIL READ VIEW */
+            <div className="glass-panel animate-fade-in" style={{ padding: '1.25rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <button 
+                onClick={() => setSelectedArticle(null)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  color: 'var(--primary)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.25rem', 
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  padding: 0,
+                  marginBottom: '0.5rem',
+                  alignSelf: 'flex-start'
+                }}
+              >
+                <ArrowLeft size={16} /> Kembali ke Artikel
+              </button>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {[
-                {
-                  title: 'Panduan Memelihara Sugar Glider untuk Pemula',
-                  desc: 'Pelajari langkah dasar cara menjinakkan sugar glider joey, bonding, hingga menyusun pola makan bubur sehat berkualitas.',
-                  author: 'Tim Ahli DFauna',
-                  readTime: '5 mnt baca',
-                  date: '12 Juli 2026'
-                },
-                {
-                  title: 'Menjaga Kualitas Air Ideal Akuarium Ikan Discus',
-                  desc: 'Suhu optimal, pengaturan kadar pH, dan pentingnya penggantian air rutin untuk menjaga warna cerah Blue Diamond tetap bersinar.',
-                  author: 'Aquascaper Pro',
-                  readTime: '4 mnt baca',
-                  date: '10 Juli 2026'
-                },
-                {
-                  title: 'Mengenal Perilaku Unik Landak Mini Albino',
-                  desc: 'Mengapa landak mini melumuri duri dengan ludah berbusa? Pelajari proses self-anointing dan cara melatihnya tidak takut disentuh.',
-                  author: 'Dunia Satwa',
-                  readTime: '3 mnt baca',
-                  date: '08 Juli 2026'
-                }
-              ].map((article, idx) => (
-                <div key={idx} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{article.title}</h4>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{article.desc}</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
-                    <span>Oleh: <strong>{article.author}</strong></span>
-                    <span>{article.date} &bull; {article.readTime}</span>
-                  </div>
+              {selectedArticle.image_url && (
+                <img 
+                  src={selectedArticle.image_url} 
+                  alt={selectedArticle.title} 
+                  style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '0.5rem', border: '1px solid var(--border-light)' }}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              )}
+
+              <div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: '0.5rem' }}>
+                  {selectedArticle.title}
+                </h2>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                  <span>Oleh: <strong>{selectedArticle.author || 'Admin'}</strong></span>
+                  <span>&bull;</span>
+                  <span>{new Date(selectedArticle.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  <span>&bull;</span>
+                  <span>{selectedArticle.read_time || '5 mnt baca'}</span>
                 </div>
-              ))}
+              </div>
+
+              <div 
+                style={{ 
+                  color: 'var(--text-secondary)', 
+                  fontSize: '0.85rem', 
+                  lineHeight: '1.6', 
+                  whiteSpace: 'pre-wrap',
+                  borderTop: '1px solid var(--border-light)',
+                  paddingTop: '1rem'
+                }}
+              >
+                {selectedArticle.content}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* ARTICLES LIST VIEW */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <div className="glass-panel" style={{ padding: '1.25rem' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FileText size={20} style={{ color: 'var(--primary)' }} /> Artikel & Panduan
+                </h2>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Panduan ahli seputar perawatan dan tips memelihara satwa kesayangan Anda.</p>
+              </div>
+
+              {articlesLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                  <Loader className="animate-spin" size={24} style={{ color: 'var(--primary)' }} />
+                </div>
+              ) : articles.length === 0 ? (
+                <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <BookOpen size={36} style={{ marginBottom: '0.75rem', color: 'var(--text-muted)' }} />
+                  <p style={{ margin: 0, fontSize: '0.85rem' }}>Belum ada artikel yang diterbitkan.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {articles.map((article) => (
+                    <div 
+                      key={article.id} 
+                      className="glass-panel" 
+                      onClick={() => {
+                        setSelectedArticle(article);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer' }}
+                    >
+                      {article.image_url && (
+                        <img 
+                          src={article.image_url} 
+                          alt={article.title} 
+                          style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '0.35rem', marginBottom: '0.25rem', border: '1px solid var(--border-light)' }}
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{article.title}</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {article.content}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
+                        <span>Oleh: <strong>{article.author}</strong></span>
+                        <span>{new Date(article.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} &bull; {article.read_time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
         )}
 
         {/* ==========================================================
@@ -1685,7 +1877,7 @@ function App() {
               </div>
 
               {/* Sub Tabs */}
-              <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.25rem' }}>
+              <div className="admin-sub-tabs" style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.25rem' }}>
                 <button 
                   style={{ background: 'transparent', border: 'none', color: adminSubTab === 'items' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'items' ? '2px solid var(--primary)' : 'none' }}
                   onClick={() => setAdminSubTab('items')}
@@ -1696,7 +1888,13 @@ function App() {
                   style={{ background: 'transparent', border: 'none', color: adminSubTab === 'settings' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'settings' ? '2px solid var(--primary)' : 'none' }}
                   onClick={() => setAdminSubTab('settings')}
                 >
-                  Pengaturan Toko
+                  Toko
+                </button>
+                <button 
+                  style={{ background: 'transparent', border: 'none', color: adminSubTab === 'articles' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'articles' ? '2px solid var(--primary)' : 'none' }}
+                  onClick={() => setAdminSubTab('articles')}
+                >
+                  Artikel
                 </button>
                 <button 
                   style={{ background: 'transparent', border: 'none', color: adminSubTab === 'profile' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'profile' ? '2px solid var(--primary)' : 'none' }}
@@ -2026,6 +2224,64 @@ function App() {
                     {profileLoading ? 'Memproses...' : 'Perbarui Profil'}
                   </button>
                 </form>
+              )}
+
+              {adminSubTab === 'articles' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Daftar Artikel</h3>
+                    <button 
+                      className="btn-primary" 
+                      onClick={openAddArticleSheet}
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                    >
+                      <Plus size={14} /> Tulis Baru
+                    </button>
+                  </div>
+
+                  {articles.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center', padding: '2rem' }}>Belum ada artikel terbit.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {articles.map(article => (
+                        <div key={article.id} className="glass-panel" style={{ padding: '0.85rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                          <img 
+                            src={article.image_url || 'https://images.unsplash.com/photo-1548247416-ec66f4900b2e?auto=format&fit=crop&w=150&q=80'} 
+                            alt={article.title} 
+                            style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '0.25rem' }}
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <h4 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.15rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {article.title}
+                            </h4>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
+                              {article.author} &bull; {article.read_time}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.25rem' }}>
+                            <button 
+                              className="btn-secondary" 
+                              style={{ padding: '0.35rem', borderRadius: '4px' }}
+                              onClick={() => openEditArticleSheet(article)}
+                              title="Edit"
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                            <button 
+                              className="btn-primary" 
+                              style={{ padding: '0.35rem', borderRadius: '4px', backgroundColor: 'var(--danger)', borderColor: 'var(--danger)' }}
+                              onClick={() => handleDeleteArticle(article.id)}
+                              title="Hapus"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )
@@ -2488,6 +2744,93 @@ function App() {
                   style={{ marginTop: '0.5rem' }}
                 >
                   {crudLoading ? 'Menyimpan...' : 'Simpan Postingan'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE BOTTOM SHEET: ARTICLE CRUD FORM */}
+      {showArticleFormSheet && (
+        <div className="bottom-sheet-overlay" onClick={() => setShowArticleFormSheet(false)}>
+          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
+            <div className="sheet-handle"></div>
+            <div className="sheet-content">
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>
+                {editingArticle ? 'Edit Artikel Edukasi' : 'Tulis Artikel Baru'}
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '1.25rem' }}>
+                Lengkapi rincian formulir untuk menerbitkan artikel.
+              </p>
+
+              <form onSubmit={handleSaveArticle}>
+                <div className="form-group">
+                  <label className="form-label">Judul Artikel *</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Judul artikel menarik..."
+                    required
+                    value={articleForm.title}
+                    onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">URL Gambar Sampul (Opsional)</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="https://images.unsplash.com/..."
+                    value={articleForm.image_url}
+                    onChange={(e) => setArticleForm({ ...articleForm, image_url: e.target.value })}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Penulis *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      required
+                      value={articleForm.author}
+                      onChange={(e) => setArticleForm({ ...articleForm, author: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Estimasi Baca *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="contoh: 5 mnt baca"
+                      required
+                      value={articleForm.read_time}
+                      onChange={(e) => setArticleForm({ ...articleForm, read_time: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Isi Konten Artikel *</label>
+                  <textarea 
+                    rows={6} 
+                    className="form-textarea" 
+                    placeholder="Tulis seluruh isi artikel..."
+                    required
+                    value={articleForm.content}
+                    onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="btn-full btn-primary"
+                  disabled={articlesLoading}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  {articlesLoading ? 'Menyimpan...' : 'Terbitkan Artikel'}
                 </button>
               </form>
             </div>

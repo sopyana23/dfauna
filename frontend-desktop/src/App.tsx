@@ -53,6 +53,17 @@ interface ShopSettings {
   promo_banner?: string
 }
 
+interface Article {
+  id: number
+  title: string
+  content: string
+  image_url?: string
+  author?: string
+  read_time?: string
+  created_at: string
+  updated_at: string
+}
+
 const API_BASE = 'http://localhost:8000/api'
 
 function App() {
@@ -68,7 +79,20 @@ function App() {
 
   // Navigation: 'catalog' or 'admin'
   const [view, setView] = useState<'catalog' | 'admin'>('catalog')
-  const [adminTab, setAdminTab] = useState<'items' | 'settings' | 'profile'>('items')
+  const [adminTab, setAdminTab] = useState<'items' | 'settings' | 'profile' | 'articles'>('items')
+
+  // Articles state
+  const [articles, setArticles] = useState<Article[]>([])
+  const [articlesLoading, setArticlesLoading] = useState<boolean>(false)
+  const [showArticleFormModal, setShowArticleFormModal] = useState<boolean>(false)
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null)
+  const [articleForm, setArticleForm] = useState({
+    title: '',
+    content: '',
+    image_url: '',
+    author: 'Admin DFauna',
+    read_time: '5 mnt baca'
+  })
 
   // Search & Filters
   const [search, setSearch] = useState<string>('')
@@ -278,11 +302,29 @@ function App() {
       } else {
         setError('Gagal memuat katalog fauna.')
       }
+
+      // Fetch articles
+      await fetchArticles()
     } catch (err) {
       console.error(err)
       setError('Koneksi terputus. Pastikan server backend Laravel berjalan di http://localhost:8000.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchArticles = async () => {
+    setArticlesLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/articles`)
+      const data = await res.json()
+      if (data.success) {
+        setArticles(data.data)
+      }
+    } catch (err) {
+      console.error('Error fetching articles:', err)
+    } finally {
+      setArticlesLoading(false)
     }
   }
 
@@ -784,6 +826,87 @@ function App() {
 
   const getUniqueShippingCoverages = () => {
     return Array.isArray(masterShippingCoverages) ? masterShippingCoverages : []
+  }
+
+  const openAddArticleModal = () => {
+    setEditingArticle(null)
+    setArticleForm({
+      title: '',
+      content: '',
+      image_url: '',
+      author: 'Admin DFauna',
+      read_time: '5 mnt baca'
+    })
+    setShowArticleFormModal(true)
+  }
+
+  const openEditArticleModal = (article: Article) => {
+    setEditingArticle(article)
+    setArticleForm({
+      title: article.title,
+      content: article.content,
+      image_url: article.image_url || '',
+      author: article.author || 'Admin DFauna',
+      read_time: article.read_time || '5 mnt baca'
+    })
+    setShowArticleFormModal(true)
+  }
+
+  const handleSaveArticle = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setArticlesLoading(true)
+    try {
+      const url = editingArticle 
+        ? `${API_BASE}/articles/${editingArticle.id}` 
+        : `${API_BASE}/articles`
+      const method = editingArticle ? 'PUT' : 'POST'
+      
+      const res = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(articleForm)
+      })
+      
+      const data = await res.json()
+      if (data.success) {
+        setShowArticleFormModal(false)
+        await fetchArticles()
+      } else {
+        alert(data.message || 'Gagal menyimpan artikel.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Terjadi kesalahan saat menyimpan artikel.')
+    } finally {
+      setArticlesLoading(false)
+    }
+  }
+
+  const handleDeleteArticle = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus artikel ini?')) return
+    setArticlesLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/articles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        await fetchArticles()
+      } else {
+        alert(data.message || 'Gagal menghapus artikel.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Terjadi kesalahan saat menghapus artikel.')
+    } finally {
+      setArticlesLoading(false)
+    }
   }
 
   const handleDeleteMasterOption = (field: 'class' | 'habitat' | 'conservation_status' | 'shipping_coverage', value: string) => {
@@ -1636,6 +1759,12 @@ function App() {
                 >
                   Profil & Password Admin
                 </button>
+                <button 
+                  className={`admin-tab ${adminTab === 'articles' ? 'active' : ''}`}
+                  onClick={() => setAdminTab('articles')}
+                >
+                  Artikel & Edukasi
+                </button>
               </div>
 
               {/* Admin Tabs Content */}
@@ -1998,6 +2127,87 @@ function App() {
                   </button>
                 </form>
               )}
+
+              {adminTab === 'articles' && (
+                <div style={{ marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Kelola Artikel & Edukasi</h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Tulis, edit, dan hapus artikel edukasi yang akan tampil di aplikasi mobile.</p>
+                    </div>
+                    <button 
+                      className="btn-primary" 
+                      onClick={openAddArticleModal}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                      <Plus size={16} /> Tambah Artikel Baru
+                    </button>
+                  </div>
+
+                  {articles.length === 0 ? (
+                    <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                      <BookOpen size={48} style={{ marginBottom: '1rem', color: 'var(--text-muted)' }} />
+                      <h3>Belum Ada Artikel</h3>
+                      <p style={{ fontSize: '0.9rem' }}>Klik tombol di kanan atas untuk menulis artikel pertama Anda.</p>
+                    </div>
+                  ) : (
+                    <div className="table-responsive" style={{ border: '1px solid var(--border-light)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid var(--border-light)' }}>
+                            <th style={{ padding: '1rem' }}>Gambar</th>
+                            <th style={{ padding: '1rem' }}>Judul Artikel</th>
+                            <th style={{ padding: '1rem' }}>Penulis / Estimasi</th>
+                            <th style={{ padding: '1rem' }}>Tanggal Dibuat</th>
+                            <th style={{ padding: '1rem', textAlign: 'center' }}>Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {articles.map((article) => (
+                            <tr key={article.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                              <td style={{ padding: '1rem' }}>
+                                <img 
+                                  src={article.image_url || 'https://images.unsplash.com/photo-1548247416-ec66f4900b2e?auto=format&fit=crop&w=150&q=80'} 
+                                  alt={article.title} 
+                                  style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
+                                />
+                              </td>
+                              <td style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {article.title}
+                              </td>
+                              <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
+                                <div>{article.author}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{article.read_time}</div>
+                              </td>
+                              <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
+                                {new Date(article.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </td>
+                              <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                  <button 
+                                    className="btn-secondary" 
+                                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                    onClick={() => openEditArticleModal(article)}
+                                  >
+                                    <Edit3 size={14} /> Edit
+                                  </button>
+                                  <button 
+                                    className="btn-primary" 
+                                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                    onClick={() => handleDeleteArticle(article.id)}
+                                  >
+                                    <Trash2 size={14} /> Hapus
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )
         )}
@@ -2085,6 +2295,110 @@ function App() {
                 Hapus & Alihkan
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ARTICLE ADD/EDIT MODAL */}
+      {showArticleFormModal && (
+        <div className="modal-overlay" onClick={() => setShowArticleFormModal(false)}>
+          <div className="glass-panel modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <button className="modal-close-btn" onClick={() => setShowArticleFormModal(false)}>
+              <X size={18} />
+            </button>
+            
+            <div className="modal-header-section">
+              <h2 style={{ fontSize: '1.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800 }}>
+                <FileText style={{ color: 'var(--primary)' }} />
+                {editingArticle ? 'Edit Artikel Edukasi' : 'Tulis Artikel Baru'}
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+                Lengkapi form di bawah ini untuk menerbitkan atau mengedit artikel Anda.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveArticle}>
+              <div className="modal-body-scroll" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Judul Artikel *</label>
+                    <input 
+                      type="text"
+                      className="form-input"
+                      placeholder="Masukkan judul menarik..."
+                      required
+                      value={articleForm.title}
+                      onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">URL Gambar Sampul (Opsional)</label>
+                    <input 
+                      type="text"
+                      className="form-input"
+                      placeholder="https://images.unsplash.com/..."
+                      value={articleForm.image_url}
+                      onChange={(e) => setArticleForm({ ...articleForm, image_url: e.target.value })}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Penulis / Sumber *</label>
+                      <input 
+                        type="text"
+                        className="form-input"
+                        required
+                        value={articleForm.author}
+                        onChange={(e) => setArticleForm({ ...articleForm, author: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Estimasi Waktu Baca *</label>
+                      <input 
+                        type="text"
+                        className="form-input"
+                        placeholder="contoh: 5 mnt baca"
+                        required
+                        value={articleForm.read_time}
+                        onChange={(e) => setArticleForm({ ...articleForm, read_time: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Isi Konten Artikel *</label>
+                    <textarea 
+                      rows={8}
+                      className="form-input"
+                      placeholder="Tulis seluruh isi artikel secara lengkap di sini..."
+                      required
+                      value={articleForm.content}
+                      onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-cta-section" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => setShowArticleFormModal(false)}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary"
+                  disabled={articlesLoading}
+                >
+                  {articlesLoading ? 'Menyimpan...' : 'Terbitkan Artikel'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

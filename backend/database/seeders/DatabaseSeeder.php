@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(FaunaSeeder::class);
+        $this->call(ArticleSeeder::class);
 
         // Seed default admin user
         \App\Models\User::create([

@@ -6,11 +6,14 @@ use App\Http\Controllers\FaunaController;
 use App\Http\Controllers\SightingController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ArticleController;
 
 // Public Endpoints
 Route::get('/fauna', [FaunaController::class, 'index']);
 Route::get('/fauna/{id}', [FaunaController::class, 'show']);
 Route::get('/settings', [SettingController::class, 'index']);
+Route::get('/articles', [ArticleController::class, 'index']);
+Route::get('/articles/{id}', [ArticleController::class, 'show']);
 Route::post('/sightings', [SightingController::class, 'store']); // kept for compatibility
 
 // Authentication Endpoint
@@ -31,4 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Manage Settings
     Route::post('/settings', [SettingController::class, 'store']);
+
+    // Article CRUD
+    Route::post('/articles', [ArticleController::class, 'store']);
+    Route::put('/articles/{id}', [ArticleController::class, 'update']);
+    Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);
 });
