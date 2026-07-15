@@ -21,9 +21,7 @@ import {
   ChevronRight,
   X,
   Eye,
-  ArrowLeft,
-  AlertTriangle,
-  ShieldAlert
+  ArrowLeft
 } from 'lucide-react'
 import './App.css'
 
@@ -80,7 +78,6 @@ function App() {
   // Bottom Sheets
   const [showCrudSheet, setShowCrudSheet] = useState<boolean>(false)
   const [isDetailActive, setIsDetailActive] = useState<boolean>(false)
-  const [showDisclaimerModal, setShowDisclaimerModal] = useState<boolean>(false)
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
@@ -1151,29 +1148,10 @@ function App() {
                 </button>
               </>
             ) : (
-              // Customer footer actions (Warning, Rekber, WhatsApp)
+              // Customer footer actions (Rekber & WhatsApp)
               <>
-                <button 
-                  onClick={() => setShowDisclaimerModal(true)}
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #ef4444',
-                    borderRadius: '0.35rem',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    flexShrink: 0
-                  }}
-                >
-                  <AlertTriangle size={18} />
-                </button>
-                
                 <a 
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20via%20Rekber%20(Rekening%20Bersama).%20Mohon%20info%20prosedurnya.`}
+                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
                   target="_blank"
                   className="btn-secondary"
                   style={{
@@ -1195,11 +1173,11 @@ function App() {
                 </a>
 
                 <a 
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}.`}
+                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
                   target="_blank"
                   className="btn-primary"
                   style={{
-                    flex: 1.2,
+                    flex: 1,
                     height: '42px',
                     display: 'flex',
                     alignItems: 'center',
@@ -1218,30 +1196,6 @@ function App() {
               </>
             )}
           </div>
-
-          {/* Disclaimer Modal */}
-          {showDisclaimerModal && (
-            <div className="modal-overlay" onClick={() => setShowDisclaimerModal(false)}>
-              <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '300px', width: '85%', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)' }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.5rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <ShieldAlert size={18} /> Peringatan Transaksi
-                </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: '1.4', marginBottom: '1rem' }}>
-                  1. DFauna menjamin garansi hewan hidup selamat sampai tujuan (D.O.A) jika menyertakan video unboxing utuh tanpa dipotong.<br/><br/>
-                  2. Transaksi via Rekening Bersama (Rekber) resmi kami hanya diproses melalui admin WhatsApp terdaftar toko ini.<br/><br/>
-                  3. Hati-hati penipuan yang mengatasnamakan DFauna di luar nomor resmi WhatsApp.
-                </p>
-                <button 
-                  type="button" 
-                  className="btn-primary btn-full"
-                  onClick={() => setShowDisclaimerModal(false)}
-                  style={{ fontSize: '0.75rem', padding: '0.4rem 0', borderRadius: '0.35rem' }}
-                >
-                  Saya Mengerti
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         <>
