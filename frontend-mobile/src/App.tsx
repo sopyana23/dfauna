@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { 
   Search, 
-  Compass, 
   Plus, 
   MapPin, 
   Info, 
@@ -14,13 +13,36 @@ import {
   Lock,
   LogOut,
   Upload,
+  Database,
+  User,
   ZoomIn,
   ZoomOut,
   ChevronLeft,
   ChevronRight,
   X,
   Eye,
-  ArrowLeft
+  ArrowLeft,
+  ShieldCheck,
+  MessageCircle,
+  Heart,
+  Truck,
+  Sparkles,
+  Star,
+  Compass,
+  ShoppingCart,
+  AlertTriangle,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  List,
+  Link as LinkIcon,
+  Image,
+  Clock,
+  Heading
 } from 'lucide-react'
 import './App.css'
 
@@ -45,13 +67,129 @@ interface Fauna {
     warranty_info?: string
     shipping_coverage?: string
     images?: string[]
+    shopee_url?: string
+    tokopedia_url?: string
+    lazada_url?: string
+    bukalapak_url?: string
+    custom_shop_name?: string
+    custom_shop_url?: string
+    purchase_links?: Array<{ platform: string, url: string }>
   }
 }
+
+export const ABOUT_ICONS_OPTIONS = [
+  { key: 'shield', label: '🛡️ Garansi / Keamanan' },
+  { key: 'lock', label: '🔒 Transaksi / Terpercaya' },
+  { key: 'message', label: '💬 Konsultasi / Chat' },
+  { key: 'heart', label: '❤️ Kesehatan / Kasih Sayang' },
+  { key: 'truck', label: '🚚 Pengiriman / Delivery' },
+  { key: 'sparkles', label: '✨ Kualitas / Premium' },
+  { key: 'star', label: '⭐ Rekomendasi / Terbaik' },
+  { key: 'compass', label: '🧭 Eksplorasi / Visi' }
+];
+
+export const renderAboutIcon = (key: string, size = 20, color = 'var(--primary)') => {
+  switch (key) {
+    case 'shield': return <ShieldCheck size={size} style={{ color }} />;
+    case 'lock': return <Lock size={size} style={{ color }} />;
+    case 'message': return <MessageCircle size={size} style={{ color }} />;
+    case 'heart': return <Heart size={size} style={{ color }} />;
+    case 'truck': return <Truck size={size} style={{ color }} />;
+    case 'sparkles': return <Sparkles size={size} style={{ color }} />;
+    case 'star': return <Star size={size} style={{ color }} />;
+    case 'compass': return <Compass size={size} style={{ color }} />;
+    default: return <Compass size={size} style={{ color }} />;
+  }
+};
+
+export const renderSocialIcon = (platform: string, size = 18, color = 'currentColor') => {
+  switch (platform) {
+    case 'Instagram':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      );
+    case 'Facebook':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+        </svg>
+      );
+    case 'TikTok':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+        </svg>
+      );
+    case 'Youtube':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
+          <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" />
+        </svg>
+      );
+    case 'Twitter':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      );
+  }
+};
 
 interface ShopSettings {
   whatsapp_number: string
   store_slogan: string
   promo_banner?: string
+  articles_enabled?: string
+  about_title?: string
+  about_slogan?: string
+  about_description?: string
+  about_cards?: string
+  about_location?: string
+  about_hours?: string
+  about_disclaimer?: string
+  social_links?: string
+  store_title?: string
+  store_logo_url?: string
+  default_is_comments_enabled?: string
+  default_require_comment_approval?: string
+  default_require_comment_email?: string
+  default_verify_comment_email_domain?: string
+}
+
+interface CommentItem {
+  id: number
+  article_id: number
+  name: string
+  email?: string
+  content: string
+  parent_id?: number
+  reply_to_name?: string
+  status?: string
+  created_at: string
+  updated_at: string
+  article?: {
+    id: number
+    title: string
+    slug: string
+  }
+  parent?: {
+    id: number
+    name: string
+  }
+  replies?: CommentItem[]
 }
 
 interface Article {
@@ -61,50 +199,221 @@ interface Article {
   image_url?: string
   author?: string
   read_time?: string
+  slug?: string
+  meta_description?: string
+  is_comments_enabled?: boolean
+  require_comment_approval?: boolean
+  require_comment_email?: boolean
+  verify_comment_email_domain?: boolean
+  comments?: CommentItem[]
+  comments_count?: number
   created_at: string
   updated_at: string
 }
 
 const API_BASE = 'http://localhost:8000/api'
 
+const stripHtml = (html: string) => {
+  return html.replace(/<[^>]*>/g, '')
+}
+
+interface PaginationProps {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}
+
+const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+  if (totalPages <= 1) return null
+
+  const pages = []
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i)
+  }
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.35rem', marginTop: '1.25rem', marginBottom: '0.5rem' }}>
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        style={{
+          background: 'var(--border-light)',
+          border: 'none',
+          borderRadius: '0.35rem',
+          width: '28px',
+          height: '28px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: currentPage === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+          cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+          opacity: currentPage === 1 ? 0.4 : 1,
+          transition: 'var(--transition-smooth)'
+        }}
+      >
+        <ChevronLeft size={14} />
+      </button>
+
+      {pages.map(page => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          style={{
+            border: page === currentPage ? '1px solid var(--primary)' : 'none',
+            borderRadius: '0.35rem',
+            width: '28px',
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: page === currentPage ? 'var(--primary)' : 'var(--border-light)',
+            color: page === currentPage ? '#000000' : 'var(--text-primary)',
+            fontWeight: page === currentPage ? '800' : '500',
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            boxShadow: page === currentPage ? '0 0 8px rgba(16, 185, 129, 0.25)' : 'none',
+            transition: 'var(--transition-smooth)'
+          }}
+        >
+          {page}
+        </button>
+      ))}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        style={{
+          background: 'var(--border-light)',
+          border: 'none',
+          borderRadius: '0.35rem',
+          width: '28px',
+          height: '28px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: currentPage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)',
+          cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+          opacity: currentPage === totalPages ? 0.4 : 1,
+          transition: 'var(--transition-smooth)'
+        }}
+      >
+        <ChevronRight size={14} />
+      </button>
+    </div>
+  )
+}
+
 function App() {
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
     store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia',
-    promo_banner: ''
+    promo_banner: '',
+    articles_enabled: '1',
+    store_title: 'DFauna',
+    store_logo_url: '',
+    default_is_comments_enabled: '1',
+    default_require_comment_approval: '0',
+    default_require_comment_email: '0',
+    default_verify_comment_email_domain: '0'
   })
   const [selectedFauna, setSelectedFauna] = useState<Fauna | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  // Mobile navigation tabs: 'catalog' | 'about' | 'articles' | 'admin'
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  }
+
+  const editorRef = useRef<HTMLDivElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const savedRangeRef = useRef<Range | null>(null)
+
+  const saveSelection = () => {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0)
+      if (editorRef.current && editorRef.current.contains(range.commonAncestorContainer)) {
+        savedRangeRef.current = range
+      }
+    }
+  }
+
+  const restoreSelection = () => {
+    if (savedRangeRef.current) {
+      const sel = window.getSelection()
+      if (sel) {
+        sel.removeAllRanges()
+        sel.addRange(savedRangeRef.current)
+      }
+    }
+  }
+
+  // Mobile navigation views: 'tabs' | 'article-editor'
+  const [view, setView] = useState<'tabs' | 'article-editor' | 'fauna-editor'>('tabs')
   const [activeTab, setActiveTab] = useState<'catalog' | 'about' | 'articles' | 'admin'>('catalog')
-  const [adminSubTab, setAdminSubTab] = useState<'items' | 'settings' | 'profile' | 'articles'>('items')
+  const [adminSubTab, setAdminSubTab] = useState<'menu' | 'items' | 'settings' | 'profile' | 'articles'>('menu')
+  const [faunasPage, setFaunasPage] = useState(1)
+  const [articlesPage, setArticlesPage] = useState(1)
+  const [itemsPage, setItemsPage] = useState<number>(1)
+  const [logoUploading, setLogoUploading] = useState<boolean>(false)
 
   // Articles state
   const [articles, setArticles] = useState<Article[]>([])
   const [articlesLoading, setArticlesLoading] = useState<boolean>(false)
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null) // for reading full article
-  const [showArticleFormSheet, setShowArticleFormSheet] = useState<boolean>(false)
   const [editingArticle, setEditingArticle] = useState<Article | null>(null)
+  
+  // Public comment states
+  const [commentName, setCommentName] = useState<string>('')
+  const [commentEmail, setCommentEmail] = useState<string>('')
+  const [commentContent, setCommentContent] = useState<string>('')
+  const [submittingComment, setSubmittingComment] = useState<boolean>(false)
+  const [replyingTo, setReplyingTo] = useState<{ id: number; name: string } | null>(null)
+
+  // Admin comments & hub states
+  const [articleTabState, setArticleTabState] = useState<'hub' | 'articles' | 'comments'>('hub')
+  const [adminComments, setAdminComments] = useState<CommentItem[]>([])
+  const [loadingComments, setLoadingComments] = useState<boolean>(false)
+  const [commentsFilter, setCommentsFilter] = useState<'all' | 'pending' | 'approved'>('all')
+
   const [articleForm, setArticleForm] = useState({
     title: '',
     content: '',
     image_url: '',
     author: 'Admin DFauna',
-    read_time: '5 mnt baca'
+    read_time: '5 mnt baca',
+    slug: '',
+    meta_description: '',
+    is_comments_enabled: true,
+    require_comment_approval: false,
+    require_comment_email: false,
+    verify_comment_email_domain: false
   })
+  const [editorTab, setEditorTab] = useState<'compose' | 'html' | 'preview'>('compose')
 
   // Search & Filters
   const [search, setSearch] = useState<string>('')
   const [classFilter, setClassFilter] = useState<string>('all')
   const [habitatFilter, setHabitatFilter] = useState<string>('all')
+  const [commentFilter, setCommentFilter] = useState<'all' | 'pending' | 'approved'>('all')
 
   // Bottom Sheets
   const [showCrudSheet, setShowCrudSheet] = useState<boolean>(false)
   const [isDetailActive, setIsDetailActive] = useState<boolean>(false)
   const [displayLimit, setDisplayLimit] = useState<number>(6)
+
+  const ITEMS_PER_PAGE = 5
+  const totalItemsPages = Math.ceil(faunas.length / ITEMS_PER_PAGE)
+  const paginatedItems = faunas.slice((itemsPage - 1) * ITEMS_PER_PAGE, itemsPage * ITEMS_PER_PAGE)
+
+  const ARTICLES_PER_PAGE = 5
+  const totalArticlesPages = Math.ceil(articles.length / ARTICLES_PER_PAGE)
+  const paginatedArticles = articles.slice((articlesPage - 1) * ARTICLES_PER_PAGE, articlesPage * ARTICLES_PER_PAGE)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
 
   // Authentication State
@@ -132,6 +441,8 @@ function App() {
     replacementOptions: string[]
     selectedReplacement: string
   } | null>(null)
+
+  const [faunaToDelete, setFaunaToDelete] = useState<Fauna | null>(null)
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [loginLoading, setLoginLoading] = useState(false)
@@ -167,7 +478,8 @@ function App() {
     weight: '',
     shipping_terms: '',
     warranty_info: '',
-    shipping_coverage: 'Bisa Kirim se-Indonesia'
+    shipping_coverage: 'Bisa Kirim se-Indonesia',
+    purchase_links: [] as { platform: string, url: string }[]
   })
 
   // Dynamic Master dropdown custom inputs
@@ -182,11 +494,21 @@ function App() {
 
   // Lightbox Galeri Interaktif
   const [showLightbox, setShowLightbox] = useState<boolean>(false)
+  const [activeLightboxImage, setActiveLightboxImage] = useState<string | null>(null)
+  const [showPurchaseOptions, setShowPurchaseOptions] = useState<boolean>(false)
+  const [showMarketplacesSubMenu, setShowMarketplacesSubMenu] = useState<boolean>(false)
   const [lightboxIndex, setLightboxIndex] = useState<number>(0)
   const [zoomScale, setZoomScale] = useState<number>(1)
   const [panPosition, setPanPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [dragStart, setDragStart] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+
+  // Blogger-style Image Formatting states
+  const [selectedEditorImage, setSelectedEditorImage] = useState<HTMLImageElement | null>(null)
+  const [showImageSettingsModal, setShowImageSettingsModal] = useState<boolean>(false)
+  const [imageAltText, setImageAltText] = useState<string>('')
+  const [imageCaptionText, setImageCaptionText] = useState<string>('')
+  const [imageSizeSelection, setImageSizeSelection] = useState<'kecil' | 'sedang' | 'besar' | 'ekstrabesar' | 'asli'>('sedang')
 
   // Multi-image management states
   const [crudImages, setCrudImages] = useState<string[]>([''])
@@ -197,10 +519,18 @@ function App() {
   const [settingsForm, setSettingsForm] = useState<ShopSettings>({
     whatsapp_number: '',
     store_slogan: '',
-    promo_banner: ''
+    promo_banner: '',
+    articles_enabled: '1',
+    store_title: '',
+    store_logo_url: '',
+    default_is_comments_enabled: '1',
+    default_require_comment_approval: '0',
+    default_require_comment_email: '0',
+    default_verify_comment_email_domain: '0'
   })
   const [settingsLoading, setSettingsLoading] = useState<boolean>(false)
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
+  const [mobileSettingsTab, setMobileSettingsTab] = useState<'menu' | 'general' | 'features' | 'about' | 'social' | 'master'>('menu')
 
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
@@ -281,7 +611,22 @@ function App() {
         const fetchedSettings = {
           whatsapp_number: settingsData.data.whatsapp_number || '628123456789',
           store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium',
-          promo_banner: settingsData.data.promo_banner || ''
+          promo_banner: settingsData.data.promo_banner || '',
+          articles_enabled: settingsData.data.articles_enabled !== undefined ? settingsData.data.articles_enabled : '1',
+          about_title: settingsData.data.about_title || '',
+          about_slogan: settingsData.data.about_slogan || '',
+          about_description: settingsData.data.about_description || '',
+          about_cards: settingsData.data.about_cards || '',
+          about_location: settingsData.data.about_location || '',
+          about_hours: settingsData.data.about_hours || '',
+          about_disclaimer: settingsData.data.about_disclaimer || '',
+          social_links: settingsData.data.social_links || '',
+          store_title: settingsData.data.store_title || 'DFauna',
+          store_logo_url: settingsData.data.store_logo_url || '',
+          default_is_comments_enabled: settingsData.data.default_is_comments_enabled !== undefined ? settingsData.data.default_is_comments_enabled : '1',
+          default_require_comment_approval: settingsData.data.default_require_comment_approval !== undefined ? settingsData.data.default_require_comment_approval : '0',
+          default_require_comment_email: settingsData.data.default_require_comment_email !== undefined ? settingsData.data.default_require_comment_email : '0',
+          default_verify_comment_email_domain: settingsData.data.default_verify_comment_email_domain !== undefined ? settingsData.data.default_verify_comment_email_domain : '0'
         }
         setSettings(fetchedSettings)
         setSettingsForm(fetchedSettings)
@@ -329,6 +674,233 @@ function App() {
       setArticlesLoading(false)
     }
   }
+
+  const fetchAdminComments = async () => {
+    setLoadingComments(true)
+    try {
+      const res = await fetch(`${API_BASE}/admin/comments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAdminComments(data.data)
+      }
+    } catch (err) {
+      console.error('Error fetching admin comments:', err)
+    } finally {
+      setLoadingComments(false)
+    }
+  }
+
+  const handleDeleteComment = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus komentar ini?')) return
+    try {
+      const res = await fetch(`${API_BASE}/admin/comments/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('Komentar berhasil dihapus!')
+        await fetchAdminComments()
+      } else {
+        showToast(data.message || 'Gagal menghapus komentar.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Koneksi bermasalah. Gagal menghapus komentar.', 'error')
+    }
+  }
+
+  const handleApproveComment = async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/comments/${id}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('Komentar berhasil disetujui!')
+        await fetchAdminComments()
+      } else {
+        showToast(data.message || 'Gagal menyetujui komentar.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Koneksi bermasalah. Gagal menyetujui komentar.', 'error')
+    }
+  }
+
+  const handleSelectArticle = async (article: Article) => {
+    setSelectedArticle(article)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    try {
+      const res = await fetch(`${API_BASE}/articles/${article.id}`)
+      const data = await res.json()
+      if (data.success) {
+        setSelectedArticle(data.data)
+      }
+    } catch (err) {
+      console.error("Error fetching article details:", err)
+    }
+  }
+
+  const handlePostComment = async (e: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!selectedArticle) return
+    if (!commentName.trim() || !commentContent.trim()) {
+      showToast('Nama dan komentar harus diisi.', 'error')
+      return
+    }
+
+    setSubmittingComment(true)
+    try {
+      const res = await fetch(`${API_BASE}/articles/${selectedArticle.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: commentName,
+          email: commentEmail || null,
+          content: commentContent,
+          parent_id: replyingTo ? replyingTo.id : null
+        })
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        showToast(data.message || 'Komentar Anda berhasil diterbitkan!')
+        setCommentName('')
+        setCommentEmail('')
+        setCommentContent('')
+        setReplyingTo(null)
+        
+        // Reload details
+        const reloadRes = await fetch(`${API_BASE}/articles/${selectedArticle.id}`)
+        const reloadData = await reloadRes.json()
+        if (reloadData.success) {
+          setSelectedArticle(reloadData.data)
+        }
+      } else {
+        showToast(data.message || 'Gagal mengirim komentar.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Koneksi terputus. Gagal mengirim komentar.', 'error')
+    } finally {
+      setSubmittingComment(false)
+    }
+  }
+
+  // Synchronize article editor visual contenteditable
+  useEffect(() => {
+    if (view === 'article-editor' && editorTab === 'compose' && editorRef.current) {
+      if (editorRef.current.innerHTML !== articleForm.content) {
+        editorRef.current.innerHTML = articleForm.content
+      }
+    }
+  }, [view, editorTab, articleForm.content])
+
+  // Dynamic SEO & JSON-LD Schema markup injection
+  useEffect(() => {
+    if (selectedArticle) {
+      // 1. Update Title tag
+      const originalTitle = document.title
+      document.title = `${selectedArticle.title} - ${settings.store_title || 'DFauna'} Edukasi`
+
+      // 2. Meta tags update/injection
+      let metaDesc = document.querySelector('meta[name="description"]')
+      let oldDesc = metaDesc ? metaDesc.getAttribute('content') : ''
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta')
+        metaDesc.setAttribute('name', 'description')
+        document.head.appendChild(metaDesc)
+      }
+      const descContent = selectedArticle.meta_description || selectedArticle.content.replace(/<[^>]*>/g, '').substring(0, 155)
+      metaDesc.setAttribute('content', descContent)
+
+      // Add OpenGraph / Twitter metadata tags for AI crawlers
+      const ogTitle = document.createElement('meta')
+      ogTitle.setAttribute('property', 'og:title')
+      ogTitle.setAttribute('content', selectedArticle.title)
+      ogTitle.setAttribute('id', 'seo-og-title')
+      document.head.appendChild(ogTitle)
+
+      const ogDesc = document.createElement('meta')
+      ogDesc.setAttribute('property', 'og:description')
+      ogDesc.setAttribute('content', descContent)
+      ogDesc.setAttribute('id', 'seo-og-desc')
+      document.head.appendChild(ogDesc)
+
+      let ogImage: HTMLMetaElement | null = null
+      if (selectedArticle.image_url) {
+        ogImage = document.createElement('meta')
+        ogImage.setAttribute('property', 'og:image')
+        ogImage.setAttribute('content', selectedArticle.image_url)
+        ogImage.setAttribute('id', 'seo-og-image')
+        document.head.appendChild(ogImage)
+      }
+
+      // 3. JSON-LD Schema injection
+      const schemaScript = document.createElement('script')
+      schemaScript.type = 'application/ld+json'
+      schemaScript.id = 'article-json-ld'
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": selectedArticle.title,
+        "image": selectedArticle.image_url ? [selectedArticle.image_url] : [],
+        "datePublished": selectedArticle.created_at,
+        "dateModified": selectedArticle.updated_at || selectedArticle.created_at,
+        "author": [{
+          "@type": "Person",
+          "name": selectedArticle.author || 'Admin DFauna',
+          "jobTitle": "Editor",
+          "url": "https://dfauna.com"
+        }],
+        "publisher": {
+          "@type": "Organization",
+          "name": "DFauna Premium",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=150&h=150"
+          }
+        },
+        "description": descContent,
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": window.location.href + '#/articles/' + (selectedArticle.slug || selectedArticle.id)
+        }
+      }
+      schemaScript.innerHTML = JSON.stringify(jsonLd)
+      document.head.appendChild(schemaScript)
+
+      // Cleanup function to restore original state when article is closed
+      return () => {
+        document.title = originalTitle
+        if (metaDesc) {
+          metaDesc.setAttribute('content', oldDesc || 'Galeri Satwa Hias Premium')
+        }
+        const titleEl = document.getElementById('seo-og-title')
+        if (titleEl) titleEl.remove()
+        const descEl = document.getElementById('seo-og-desc')
+        if (descEl) descEl.remove()
+        const imgEl = document.getElementById('seo-og-image')
+        if (imgEl) imgEl.remove()
+        const element = document.getElementById('article-json-ld')
+        if (element) {
+          element.remove()
+        }
+      }
+    }
+  }, [selectedArticle])
 
   // Trigger reloading data
   useEffect(() => {
@@ -528,6 +1100,7 @@ function App() {
         setIsPasswordChanged(true)
         setProfileForm(prev => ({ ...prev, password: '' }))
         setProfileSuccess('Profil admin berhasil diperbarui!')
+        showToast('Profil admin berhasil diperbarui!')
         setTimeout(() => setProfileSuccess(null), 2000)
       } else {
         if (res.status === 401) {
@@ -535,13 +1108,16 @@ function App() {
         } else if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[]
           setProfileError(firstErr[0])
+          showToast(firstErr[0], 'error')
         } else {
           setProfileError(data.message || 'Gagal memperbarui profil.')
+          showToast(data.message || 'Gagal memperbarui profil.', 'error')
         }
       }
     } catch (err) {
       console.error(err)
       setProfileError('Koneksi ke server terputus.')
+      showToast('Koneksi internet terputus. Gagal memperbarui profil.', 'error')
     } finally {
       setProfileLoading(false)
     }
@@ -579,24 +1155,70 @@ function App() {
       })
       const data = await res.json()
       if (res.ok && data.success) {
-        setSettings({
-          whatsapp_number: data.data.whatsapp_number,
-          store_slogan: data.data.store_slogan
-        })
-        setSettingsSuccess('Pengaturan berhasil diperbarui!')
-        setTimeout(() => setSettingsSuccess(null), 2000)
+        const updated = {
+          whatsapp_number: data.data.whatsapp_number || '',
+          store_slogan: data.data.store_slogan || '',
+          promo_banner: data.data.promo_banner || '',
+          articles_enabled: data.data.articles_enabled !== undefined ? data.data.articles_enabled : '1',
+          about_title: data.data.about_title || '',
+          about_slogan: data.data.about_slogan || '',
+          about_description: data.data.about_description || '',
+          about_cards: data.data.about_cards || '',
+          about_location: data.data.about_location || '',
+          about_hours: data.data.about_hours || '',
+          about_disclaimer: data.data.about_disclaimer || '',
+          social_links: data.data.social_links || '',
+          store_title: data.data.store_title || 'DFauna',
+          store_logo_url: data.data.store_logo_url || ''
+        }
+        setSettings(updated)
+        setSettingsForm(updated)
+        showToast('Pengaturan toko Anda berhasil disimpan!')
       } else {
         if (res.status === 401) {
           handleUnauthorized()
         } else {
-          alert('Gagal menyimpan pengaturan.')
+          showToast('Akses ditolak atau sesi Anda telah habis. Silakan masuk kembali.', 'error')
         }
       }
     } catch (err) {
       console.error(err)
-      alert('Gagal memperbarui pengaturan.')
+      showToast('Koneksi internet bermasalah. Gagal menyimpan pengaturan.', 'error')
     } finally {
       setSettingsLoading(false)
+    }
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setLogoUploading(true)
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const res = await fetch(`${API_BASE}/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: formData
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setSettingsForm(prev => ({ ...prev, store_logo_url: data.url }))
+        showToast('Gambar logo berhasil diunggah!')
+      } else {
+        showToast(data.message || 'Gagal mengunggah gambar logo.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Koneksi terputus ke server saat mengunggah logo.', 'error')
+    } finally {
+      setLogoUploading(false)
     }
   }
 
@@ -621,7 +1243,8 @@ function App() {
       weight: '',
       shipping_terms: '',
       warranty_info: '',
-      shipping_coverage: 'Bisa Kirim se-Indonesia'
+      shipping_coverage: 'Bisa Kirim se-Indonesia',
+      purchase_links: []
     })
     setCustomClass('')
     setShowCustomClassInput(false)
@@ -633,7 +1256,8 @@ function App() {
     setShowCustomShippingCoverageInput(false)
     setCrudImages([''])
     setCrudError(null)
-    setShowCrudSheet(true)
+    setView('fauna-editor')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Open Edit Form
@@ -657,7 +1281,14 @@ function App() {
       weight: item.detailed_info?.weight || '',
       shipping_terms: item.detailed_info?.shipping_terms || '',
       warranty_info: item.detailed_info?.warranty_info || '',
-      shipping_coverage: item.detailed_info?.shipping_coverage || (item.is_shipping_available ? 'Bisa Kirim se-Indonesia' : 'Ambil Sendiri di Toko (No Shipping)')
+      shipping_coverage: item.detailed_info?.shipping_coverage || (item.is_shipping_available ? 'Bisa Kirim se-Indonesia' : 'Ambil Sendiri di Toko (No Shipping)'),
+      purchase_links: item.detailed_info?.purchase_links || [
+        ...(item.detailed_info?.shopee_url ? [{ platform: 'Shopee', url: item.detailed_info.shopee_url }] : []),
+        ...(item.detailed_info?.tokopedia_url ? [{ platform: 'Tokopedia', url: item.detailed_info.tokopedia_url }] : []),
+        ...(item.detailed_info?.lazada_url ? [{ platform: 'Lazada', url: item.detailed_info.lazada_url }] : []),
+        ...(item.detailed_info?.bukalapak_url ? [{ platform: 'Bukalapak', url: item.detailed_info.bukalapak_url }] : []),
+        ...(item.detailed_info?.custom_shop_url ? [{ platform: item.detailed_info.custom_shop_name || 'Marketplace', url: item.detailed_info.custom_shop_url }] : [])
+      ]
     })
     setCustomClass('')
     setShowCustomClassInput(false)
@@ -672,7 +1303,8 @@ function App() {
       : [item.image_url];
     setCrudImages(initialImages)
     setCrudError(null)
-    setShowCrudSheet(true)
+    setView('fauna-editor')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Save Fauna
@@ -738,7 +1370,8 @@ function App() {
         shipping_terms: crudForm.shipping_terms,
         warranty_info: crudForm.warranty_info,
         shipping_coverage: selectedShippingCoverage,
-        images: filteredImages
+        images: filteredImages,
+        purchase_links: crudForm.purchase_links.filter(link => link.platform.trim() !== '' && link.url.trim() !== '')
       }
     }
 
@@ -757,20 +1390,27 @@ function App() {
       const data = await res.json()
       if (res.ok && data.success) {
         setShowCrudSheet(false)
+        setView('tabs')
+        setActiveTab('admin')
+        setAdminSubTab('items')
         loadData()
+        showToast('Data satwa berhasil disimpan!')
       } else {
         if (res.status === 401) {
           handleUnauthorized()
         } else if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[]
           setCrudError(firstErr[0])
+          showToast(firstErr[0], 'error')
         } else {
           setCrudError(data.message || 'Gagal menyimpan data.')
+          showToast(data.message || 'Gagal menyimpan data satwa.', 'error')
         }
       }
     } catch (err) {
       console.error(err)
       setCrudError('Koneksi terputus ke server.')
+      showToast('Koneksi terputus ke server. Periksa jaringan Anda.', 'error')
     } finally {
       setCrudLoading(false)
     }
@@ -838,6 +1478,100 @@ function App() {
     return Array.isArray(masterShippingCoverages) ? masterShippingCoverages : []
   }
 
+  const handleTitleChange = (newTitle: string) => {
+    const generatedSlug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+    setArticleForm(prev => ({
+      ...prev,
+      title: newTitle,
+      slug: editingArticle ? prev.slug : generatedSlug
+    }))
+  }
+
+  const handleVisualInput = () => {
+    if (editorRef.current) {
+      setArticleForm(prev => ({ ...prev, content: editorRef.current!.innerHTML }))
+    }
+  }
+
+  const preventDefaultOnDesktop = (e: React.MouseEvent) => {
+    if (!('ontouchstart' in window)) {
+      e.preventDefault()
+    }
+  }
+
+  const execFormat = (cmd: string, val: string = '') => {
+    if (editorRef.current) {
+      editorRef.current.focus()
+    }
+    restoreSelection()
+    document.execCommand(cmd, false, val)
+    handleVisualInput()
+    saveSelection()
+  }
+
+  const insertImageUrl = () => {
+    if (imageInputRef.current) {
+      imageInputRef.current.click()
+    }
+  }
+
+  const handleArticleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setArticlesLoading(true)
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const res = await fetch(`${API_BASE}/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
+
+      if (res.status === 401) {
+        showToast('Sesi Anda berakhir. Silakan login kembali untuk mengunggah gambar.', 'error')
+        return
+      }
+
+      const data = await res.json()
+      if (data.success && data.url) {
+        if (editorRef.current) {
+          editorRef.current.focus()
+        }
+        const imgHtml = `<img src="${data.url}" alt="Gambar Artikel" style="max-width:100%; height:auto; border-radius:0.5rem; margin:1rem 0; border: 1px solid var(--border-light);" />`
+        execFormat('insertHTML', imgHtml)
+        showToast('Gambar berhasil diunggah dan disisipkan!')
+      } else {
+        showToast(data.message || 'Gagal mengunggah gambar.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Terjadi kesalahan saat mengunggah gambar. Silakan login ulang.', 'error')
+    } finally {
+      setArticlesLoading(false)
+      e.target.value = ''
+    }
+  }
+
+  const insertLinkUrl = () => {
+    const url = prompt('Masukkan URL Tautan:', 'https://')
+    if (url) {
+      if (editorRef.current) {
+        editorRef.current.focus()
+      }
+      execFormat('createLink', url)
+    }
+  }
+
+  const clearFormatting = () => {
+    execFormat('removeFormat')
+  }
+
   const openAddArticleSheet = () => {
     setEditingArticle(null)
     setArticleForm({
@@ -845,9 +1579,15 @@ function App() {
       content: '',
       image_url: '',
       author: 'Admin DFauna',
-      read_time: '5 mnt baca'
+      read_time: '5 mnt baca',
+      slug: '',
+      meta_description: '',
+      is_comments_enabled: settings.default_is_comments_enabled !== '0',
+      require_comment_approval: settings.default_require_comment_approval === '1',
+      require_comment_email: settings.default_require_comment_email === '1',
+      verify_comment_email_domain: settings.default_verify_comment_email_domain === '1'
     })
-    setShowArticleFormSheet(true)
+    setView('article-editor')
   }
 
   const openEditArticleSheet = (article: Article) => {
@@ -857,14 +1597,21 @@ function App() {
       content: article.content,
       image_url: article.image_url || '',
       author: article.author || 'Admin DFauna',
-      read_time: article.read_time || '5 mnt baca'
+      read_time: article.read_time || '5 mnt baca',
+      slug: article.slug || '',
+      meta_description: article.meta_description || '',
+      is_comments_enabled: article.is_comments_enabled !== undefined ? article.is_comments_enabled : true,
+      require_comment_approval: article.require_comment_approval !== undefined ? article.require_comment_approval : false,
+      require_comment_email: article.require_comment_email !== undefined ? article.require_comment_email : false,
+      verify_comment_email_domain: article.verify_comment_email_domain !== undefined ? article.verify_comment_email_domain : false
     })
-    setShowArticleFormSheet(true)
+    setView('article-editor')
   }
 
-  const handleSaveArticle = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSaveArticle = async (e: React.FormEvent, customPayload?: typeof articleForm) => {
+    if (e) e.preventDefault()
     setArticlesLoading(true)
+    const payload = customPayload || articleForm
     try {
       const url = editingArticle 
         ? `${API_BASE}/articles/${editingArticle.id}` 
@@ -877,19 +1624,22 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(articleForm)
+        body: JSON.stringify(payload)
       })
       
       const data = await res.json()
       if (data.success) {
-        setShowArticleFormSheet(false)
+        setView('tabs')
+        setActiveTab('admin')
+        setAdminSubTab('articles')
         await fetchArticles()
+        showToast('Artikel berhasil disimpan!')
       } else {
-        alert(data.message || 'Gagal menyimpan artikel.')
+        showToast(data.message || 'Gagal menyimpan artikel.', 'error')
       }
     } catch (err) {
       console.error(err)
-      alert('Terjadi kesalahan saat menyimpan artikel.')
+      showToast('Koneksi bermasalah. Gagal menyimpan artikel.', 'error')
     } finally {
       setArticlesLoading(false)
     }
@@ -908,12 +1658,13 @@ function App() {
       const data = await res.json()
       if (data.success) {
         await fetchArticles()
+        showToast('Artikel berhasil dihapus!')
       } else {
-        alert(data.message || 'Gagal menghapus artikel.')
+        showToast(data.message || 'Gagal menghapus artikel.', 'error')
       }
     } catch (err) {
       console.error(err)
-      alert('Terjadi kesalahan saat menghapus artikel.')
+      showToast('Koneksi bermasalah. Gagal menghapus artikel.', 'error')
     } finally {
       setArticlesLoading(false)
     }
@@ -931,7 +1682,7 @@ function App() {
     const replacementOptions = options.filter(opt => opt !== value && opt !== '+ Tambah Baru...' && opt !== '__NEW__')
 
     if (replacementOptions.length === 0) {
-      alert('Tidak dapat menghapus opsi ini karena tidak ada opsi lain yang tersedia sebagai pengganti.')
+      showToast('Tidak ada opsi pengganti lain yang tersedia untuk menghapus opsi ini.', 'error')
       return
     }
 
@@ -950,7 +1701,7 @@ function App() {
   ) => {
     const trimmed = value.trim()
     if (!trimmed) {
-      alert('Nilai opsi tidak boleh kosong.')
+      showToast('Nilai opsi tidak boleh kosong.', 'error')
       return
     }
 
@@ -963,14 +1714,14 @@ function App() {
       })
       const data = await res.json()
       if (res.ok && data.success) {
-        alert(data.message || 'Opsi master berhasil ditambahkan.')
+        showToast('Kategori/Opsi baru berhasil ditambahkan!')
         resetInput('')
         loadData()
       } else {
-        alert(data.message || 'Gagal menambahkan opsi master.')
+        showToast(data.message || 'Gagal menambahkan opsi baru.', 'error')
       }
     } catch (err) {
-      alert('Terjadi kesalahan saat menambahkan opsi master.')
+      showToast('Terjadi kesalahan koneksi saat menambah opsi baru.', 'error')
     } finally {
       setCrudLoading(false)
     }
@@ -978,8 +1729,6 @@ function App() {
 
   // Delete Item
   const handleFaunaDelete = async (id: number): Promise<boolean> => {
-    if (!window.confirm('Yakin ingin menghapus postingan hewan ini?')) return false
-
     try {
       const res = await fetch(`${API_BASE}/fauna/${id}`, {
         method: 'DELETE',
@@ -988,18 +1737,19 @@ function App() {
       const data = await res.json()
       if (res.ok && data.success) {
         loadData()
+        showToast('Data satwa berhasil dihapus!')
         return true
       } else {
         if (res.status === 401) {
           handleUnauthorized()
         } else {
-          alert(data.message || 'Gagal menghapus.')
+          showToast(data.message || 'Gagal menghapus data satwa.', 'error')
         }
         return false
       }
     } catch (err) {
       console.error(err)
-      alert('Koneksi terputus.')
+      showToast('Koneksi terputus. Gagal menghapus data satwa.', 'error')
       return false
     }
   }
@@ -1031,6 +1781,15 @@ function App() {
   }
   return (
     <>
+      {/* Hidden File Input for WYSIWYG Editor Image Upload */}
+      <input 
+        type="file" 
+        ref={imageInputRef} 
+        style={{ display: 'none' }} 
+        accept="image/*" 
+        onChange={handleArticleImageUpload} 
+      />
+
       {isDetailActive && selectedFauna ? (
         /* ==========================================================
            FULL-PAGE MOBILE DETAIL VIEW (CUSTOM ONLINE SHOP AESTHETICS)
@@ -1217,43 +1976,45 @@ function App() {
             )}
 
             {/* Related Products Section */}
-            <div style={{ padding: '1rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Rekomendasi Satwa Serupa</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                {getRecommendations(selectedFauna).map(rec => (
-                  <div 
-                    key={rec.id} 
-                    className="glass-panel" 
-                    onClick={() => {
-                      setSelectedFauna(rec);
-                      setActiveImageIndex(0);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    style={{ cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)', borderRadius: '0.5rem' }}
-                  >
-                    <img 
-                      src={rec.image_url} 
-                      alt={rec.name} 
-                      style={{ width: '100%', height: '110px', objectFit: 'cover' }}
-                      onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
-                    />
-                    <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                      <div>
-                        <span style={{ display: 'inline-block', fontSize: '0.6rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.15rem' }}>
-                          {rec.class}
-                        </span>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, marginBottom: '0.25rem' }}>
-                          {rec.name}
+            {activeTab !== 'admin' && (
+              <div style={{ padding: '1rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Rekomendasi Satwa Serupa</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  {getRecommendations(selectedFauna).map(rec => (
+                    <div 
+                      key={rec.id} 
+                      className="glass-panel" 
+                      onClick={() => {
+                        setSelectedFauna(rec);
+                        setActiveImageIndex(0);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      style={{ cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)', borderRadius: '0.5rem' }}
+                    >
+                      <img 
+                        src={rec.image_url} 
+                        alt={rec.name} 
+                        style={{ width: '100%', height: '110px', objectFit: 'cover' }}
+                        onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }}
+                      />
+                      <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                        <div>
+                          <span style={{ display: 'inline-block', fontSize: '0.6rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.15rem' }}>
+                            {rec.class}
+                          </span>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.4em', lineHeight: 1.2, marginBottom: '0.25rem' }}>
+                            {rec.name}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ef4444' }}>
+                          {formatRupiah(rec.price)}
                         </div>
                       </div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ef4444' }}>
-                        {formatRupiah(rec.price)}
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Footer (Sticky/Floating) */}
@@ -1288,7 +2049,10 @@ function App() {
                   type="button" 
                   className="btn-primary"
                   onClick={() => {
-                    openEditSheet(selectedFauna)
+                    const temp = selectedFauna;
+                    setIsDetailActive(false);
+                    setSelectedFauna(null);
+                    openEditSheet(temp);
                   }}
                   style={{ flex: 1, height: '42px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: '0.35rem' }}
                 >
@@ -1298,12 +2062,8 @@ function App() {
                 <button 
                   type="button" 
                   className="btn-danger"
-                  onClick={async () => {
-                    const deleted = await handleFaunaDelete(selectedFauna.id)
-                    if (deleted) {
-                      setIsDetailActive(false);
-                      setSelectedFauna(null);
-                    }
+                  onClick={() => {
+                    setFaunaToDelete(selectedFauna);
                   }}
                   style={{ flex: 1, height: '42px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: '0.35rem' }}
                 >
@@ -1312,33 +2072,14 @@ function App() {
                 </button>
               </>
             ) : (
-              // Customer footer actions (Rekber & WhatsApp)
+              // Customer footer actions (Dynamic Purchase Options)
               <>
-                <a 
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
-                  target="_blank"
-                  className="btn-secondary"
-                  style={{
-                    flex: 1,
-                    height: '42px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid #10b981',
-                    backgroundColor: 'transparent',
-                    color: '#10b981',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    borderRadius: '0.35rem',
-                    textDecoration: 'none'
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowMarketplacesSubMenu(false);
+                    setShowPurchaseOptions(true);
                   }}
-                >
-                  Beli via Rekber
-                </a>
-
-                <a 
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20DFauna%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
-                  target="_blank"
                   className="btn-primary"
                   style={{
                     flex: 1,
@@ -1349,23 +2090,1440 @@ function App() {
                     backgroundColor: '#10b981',
                     borderColor: '#10b981',
                     color: '#fff',
-                    fontSize: '0.8rem',
+                    fontSize: '0.85rem',
                     fontWeight: 700,
                     borderRadius: '0.35rem',
-                    textDecoration: 'none'
+                    gap: '0.5rem',
+                    cursor: 'pointer'
                   }}
                 >
-                  Hubungi WhatsApp
-                </a>
+                  <ShoppingCart size={16} /> Beli Sekarang / Pilih Pembelian
+                </button>
               </>
             )}
           </div>
+
+          {/* RENDER IN-DETAIL FAUNA DELETE MODAL CONFIRMATION */}
+          {faunaToDelete && (
+            <div className="bottom-sheet-confirm-overlay" onClick={() => setFaunaToDelete(null)}>
+              <div className="bottom-sheet-confirm" onClick={(e) => e.stopPropagation()}>
+                <div className="sheet-handle" style={{ marginTop: 0, marginBottom: '1.25rem' }}></div>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem auto',
+                  border: '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  <AlertTriangle size={24} style={{ color: '#f87171' }} />
+                </div>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)', textAlign: 'center' }}>
+                  Hapus Postingan?
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem', lineHeight: '1.45', textAlign: 'center' }}>
+                  Apakah Anda yakin ingin menghapus postingan fauna <strong>"{faunaToDelete.name}"</strong>? Tindakan ini tidak dapat dibatalkan.
+                </p>
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    type="button" 
+                    className="btn-secondary" 
+                    onClick={() => setFaunaToDelete(null)}
+                    style={{ flex: 1, fontSize: '0.85rem', padding: '0.65rem', borderRadius: '0.35rem', cursor: 'pointer' }}
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-primary"
+                    style={{ flex: 1, backgroundColor: '#ef4444', borderColor: '#ef4444', color: '#fff', fontSize: '0.85rem', padding: '0.65rem', borderRadius: '0.35rem', fontWeight: 'bold', cursor: 'pointer' }}
+                    onClick={async () => {
+                      const deleted = await handleFaunaDelete(faunaToDelete.id)
+                      if (deleted) {
+                        setIsDetailActive(false);
+                        setSelectedFauna(null);
+                      }
+                      setFaunaToDelete(null)
+                    }}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showPurchaseOptions && selectedFauna && (() => {
+            const normalizedLinks = selectedFauna.detailed_info?.purchase_links || [
+              ...(selectedFauna.detailed_info?.shopee_url ? [{ platform: 'Shopee', url: selectedFauna.detailed_info.shopee_url }] : []),
+              ...(selectedFauna.detailed_info?.tokopedia_url ? [{ platform: 'Tokopedia', url: selectedFauna.detailed_info.tokopedia_url }] : []),
+              ...(selectedFauna.detailed_info?.lazada_url ? [{ platform: 'Lazada', url: selectedFauna.detailed_info.lazada_url }] : []),
+              ...(selectedFauna.detailed_info?.bukalapak_url ? [{ platform: 'Bukalapak', url: selectedFauna.detailed_info.bukalapak_url }] : []),
+              ...(selectedFauna.detailed_info?.custom_shop_url ? [{ platform: selectedFauna.detailed_info.custom_shop_name || 'Marketplace', url: selectedFauna.detailed_info.custom_shop_url }] : [])
+            ];
+
+            return (
+              <div className="bottom-sheet-confirm-overlay" onClick={() => setShowPurchaseOptions(false)}>
+                <div className="bottom-sheet-confirm" onClick={(e) => e.stopPropagation()} style={{ borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem', padding: '1.5rem' }}>
+                  <div className="sheet-handle" style={{ marginTop: 0, marginBottom: '1.25rem' }}></div>
+                  
+                  {showMarketplacesSubMenu ? (
+                    <>
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.25rem', color: 'var(--text-primary)', textAlign: 'center' }}>
+                        Pilih Marketplace
+                      </h3>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '1.25rem', textAlign: 'center' }}>
+                        Kami juga tersedia di platform marketplace resmi berikut:
+                      </p>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '2px', paddingBottom: '0.5rem' }}>
+                        {normalizedLinks.map((link, index) => (
+                          <a 
+                            key={index}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
+                          >
+                            <ShoppingCart size={18} style={{ color: 'var(--primary)' }} />
+                            <div style={{ flex: 1, textAlign: 'left' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 700, display: 'block' }}>Beli di {link.platform}</span>
+                              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Buka halaman produk resmi di {link.platform}</span>
+                            </div>
+                            <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                          </a>
+                        ))}
+                      </div>
+
+                      <button 
+                        type="button" 
+                        className="btn-secondary" 
+                        onClick={() => setShowMarketplacesSubMenu(false)}
+                        style={{ width: '100%', marginTop: '1rem', padding: '0.65rem', borderRadius: '0.35rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}
+                      >
+                        <ArrowLeft size={16} /> Kembali
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.25rem', color: 'var(--text-primary)', textAlign: 'center' }}>
+                        Pilih Cara Pembelian
+                      </h3>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '1.25rem', textAlign: 'center' }}>
+                        Pilih salah satu metode atau platform transaksi resmi di bawah ini:
+                      </p>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '2px', paddingBottom: '0.5rem' }}>
+                        {/* Marketplace Single or Multi toggle */}
+                        {normalizedLinks.length === 1 && (
+                          <a 
+                            href={normalizedLinks[0].url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
+                          >
+                            <ShoppingCart size={18} style={{ color: 'var(--primary)' }} />
+                            <div style={{ flex: 1, textAlign: 'left' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 700, display: 'block' }}>Beli di {normalizedLinks[0].platform}</span>
+                              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Buka transaksi resmi kami di {normalizedLinks[0].platform}</span>
+                            </div>
+                            <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                          </a>
+                        )}
+
+                        {normalizedLinks.length >= 2 && (
+                          <div 
+                            onClick={() => setShowMarketplacesSubMenu(true)}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', cursor: 'pointer', transition: 'var(--transition-smooth)' }}
+                          >
+                            <ShoppingCart size={18} style={{ color: 'var(--primary)' }} />
+                            <div style={{ flex: 1, textAlign: 'left' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 700, display: 'block' }}>Beli via Online Shop / Marketplace</span>
+                              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Tersedia di {normalizedLinks.map(l => l.platform).join(', ')}</span>
+                            </div>
+                            <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                          </div>
+                        )}
+
+                        {/* Rekber Option */}
+                        <a 
+                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'DFauna')}%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
+                        >
+                          <ShieldCheck size={18} style={{ color: 'var(--primary)' }} />
+                          <div style={{ flex: 1, textAlign: 'left' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, display: 'block' }}>Chat WA & Rekber Syariah</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Gunakan Rekening Bersama Syariah (Sangat Aman)</span>
+                          </div>
+                          <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                        </a>
+
+                        {/* WA Direct Option */}
+                        <a 
+                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'DFauna')}%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
+                        >
+                          <MessageCircle size={18} style={{ color: 'var(--text-muted)' }} />
+                          <div style={{ flex: 1, textAlign: 'left' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, display: 'block' }}>Chat WA (Transaksi Langsung)</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Hubungi kami langsung via chat WhatsApp</span>
+                          </div>
+                          <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                        </a>
+                      </div>
+
+                      <button 
+                        type="button" 
+                        className="btn-secondary" 
+                        onClick={() => setShowPurchaseOptions(false)}
+                        style={{ width: '100%', marginTop: '1rem', padding: '0.65rem', borderRadius: '0.35rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        Tutup
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      ) : selectedArticle ? (
+        /* ==========================================================
+           FULL-PAGE MOBILE ARTICLE READER (PREMIUM READ VIEW)
+           ========================================================== */
+        <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-card)', padding: '1.25rem', paddingTop: '4.5rem', paddingBottom: '3rem', overflowY: 'auto' }}>
+          {/* Fixed Top Sub-Header */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            height: '3.5rem', 
+            zIndex: 100, 
+            backgroundColor: 'rgba(11, 14, 12, 0.95)',
+            backdropFilter: 'blur(10px)',
+            padding: '0 1rem', 
+            borderBottom: '1px solid var(--border-light)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
+            <button 
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setSelectedArticle(null);
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}
+              style={{
+                fontSize: '0.8rem',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '0.35rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                cursor: 'pointer',
+                background: 'var(--border-light)',
+                border: 'none',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <ArrowLeft size={14} /> Kembali
+            </button>
+            <span style={{ 
+              color: 'var(--text-primary)', 
+              fontWeight: 800, 
+              fontSize: '0.85rem',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              flex: 1,
+              textAlign: 'center',
+              margin: '0 0.75rem'
+            }}>
+              Edukasi {settings.store_title || 'DFauna'}
+            </span>
+            <div style={{ width: '48px' }} /> {/* To balance the back button */}
+          </div>
+
+          {/* Article Reading Content */}
+          <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+            {selectedArticle.image_url && (
+              <img 
+                src={selectedArticle.image_url} 
+                alt={selectedArticle.title} 
+                style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '0.75rem', marginBottom: '1.25rem', border: '1px solid var(--border-light)', cursor: 'zoom-in' }}
+                onClick={() => {
+                  setActiveLightboxImage(selectedArticle.image_url || null);
+                  setZoomScale(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            )}
+
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: '1.3', marginBottom: '0.5rem' }}>
+              {selectedArticle.title}
+            </h2>
+
+            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+              <span>Oleh: <strong>{selectedArticle.author || 'Admin'}</strong></span>
+              <span>&bull;</span>
+              <span>Terakhir Diperbarui: <strong>{new Date(selectedArticle.updated_at || selectedArticle.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></span>
+              <span>&bull;</span>
+              <span>{selectedArticle.read_time || '5 mnt baca'}</span>
+            </div>
+
+            <div 
+              className="article-content-rich"
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'IMG') {
+                  const src = (target as HTMLImageElement).src;
+                  if (src) {
+                    setActiveLightboxImage(src);
+                    setZoomScale(1);
+                    setPanPosition({ x: 0, y: 0 });
+                  }
+                }
+              }}
+              style={{ 
+                color: 'var(--text-primary)', 
+                fontSize: '0.9rem', 
+                lineHeight: '1.7', 
+                textAlign: 'justify' 
+              }}
+              dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+            />
+
+            {/* Tautan Sosial Media (Opsional) */}
+            {(() => {
+              const socialLinks = (() => {
+                try {
+                  return settings.social_links ? JSON.parse(settings.social_links) : [];
+                } catch (e) {
+                  return [];
+                }
+              })();
+              if (!socialLinks || socialLinks.length === 0) return null;
+              return (
+                <div style={{ marginTop: '2.5rem', padding: '1.25rem', borderRadius: '0.75rem', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Temukan Kami Di Media Sosial</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    {socialLinks.map((link: any, idx: number) => {
+                      let label = link.platform;
+                      let iconLabel = '🌐';
+                      if (link.platform.toLowerCase().includes('instagram')) { label = 'Instagram'; iconLabel = '📸'; }
+                      else if (link.platform.toLowerCase().includes('facebook')) { label = 'Facebook'; iconLabel = '👥'; }
+                      else if (link.platform.toLowerCase().includes('tiktok')) { label = 'TikTok'; iconLabel = '🎵'; }
+                      else if (link.platform.toLowerCase().includes('youtube')) { label = 'YouTube'; iconLabel = '🎥'; }
+                      
+                      return (
+                        <a 
+                          key={idx} 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            color: 'var(--primary)',
+                            padding: '0.4rem 0.8rem',
+                            backgroundColor: 'rgba(var(--primary-rgb), 0.08)',
+                            borderRadius: '0.35rem',
+                            textDecoration: 'none'
+                          }}
+                        >
+                          <span>{iconLabel}</span>
+                          <span>{label}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Kolom Komentar */}
+            <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)' }}>
+              {!selectedArticle.is_comments_enabled ? (
+                <div className="glass-panel" style={{ padding: '1.25rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  🔒 Kolom komentar dinonaktifkan untuk artikel ini.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.25rem 0' }}>
+                      Diskusi & Komentar ({selectedArticle.comments_count || 0})
+                    </h3>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      Bagikan tanggapan Anda mengenai artikel edukasi ini.
+                    </p>
+                  </div>
+
+                  {/* Comments List */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {(!selectedArticle.comments || selectedArticle.comments.length === 0) ? (
+                      <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0.5rem 0' }}>Belum ada komentar. Jadilah yang pertama memberikan tanggapan!</p>
+                    ) : (
+                      selectedArticle.comments.map((comment: CommentItem) => {
+                        const initial = comment.name ? comment.name.trim().charAt(0).toUpperCase() : 'U';
+                        return (
+                          <div key={comment.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                            <div style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(var(--primary-rgb), 0.15)',
+                              color: 'var(--primary)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: '0.85rem',
+                              flexShrink: 0
+                            }}>
+                              {initial}
+                            </div>
+                            <div className="glass-panel" style={{ padding: '0.75rem 1rem', borderRadius: '0 0.75rem 0.75rem 0.75rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>{comment.name}</span>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                                  {new Date(comment.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                </span>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>
+                                {comment.content}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Comment Form */}
+                  <form onSubmit={handlePostComment} className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px solid var(--border-light)' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>Kirim Tanggapan</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <input 
+                          type="text" 
+                          className="form-input" 
+                          placeholder="Nama Anda *" 
+                          required
+                          value={commentName}
+                          onChange={(e) => setCommentName(e.target.value)}
+                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}
+                        />
+                      </div>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <input 
+                          type="email" 
+                          className="form-input" 
+                          placeholder="Email (Opsional)" 
+                          value={commentEmail}
+                          onChange={(e) => setCommentEmail(e.target.value)}
+                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <textarea 
+                        rows={3} 
+                        className="form-input" 
+                        placeholder="Tulis tanggapan Anda di sini... *" 
+                        required
+                        value={commentContent}
+                        onChange={(e) => setCommentContent(e.target.value)}
+                        style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem', lineHeight: '1.4' }}
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="btn-primary" 
+                      disabled={submittingComment}
+                      style={{ padding: '0.5rem', fontSize: '0.8rem', fontWeight: 700, alignSelf: 'flex-end', minWidth: '100px' }}
+                    >
+                      {submittingComment ? 'Mengirim...' : 'Kirim Komentar'}
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : view === 'fauna-editor' ? (
+        /* ==========================================================
+           MOBILE FULL-PAGE FAUNA EDITOR (PREMIUM FORM VIEW)
+           ========================================================== */
+        <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-card)', padding: '1rem', paddingTop: '4.5rem', paddingBottom: '4rem', overflowY: 'auto' }}>
+          {/* Sub-Header / Back Bar (Fixed Top) */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            height: '3.5rem', 
+            zIndex: 100, 
+            backgroundColor: 'rgba(11, 14, 12, 0.95)',
+            backdropFilter: 'blur(10px)',
+            padding: '0 1rem', 
+            borderBottom: '1px solid var(--border-light)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
+            <button 
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setView('tabs')
+                setActiveTab('admin')
+                setAdminSubTab('items')
+              }}
+              style={{
+                fontSize: '0.8rem',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '0.35rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                cursor: 'pointer'
+              }}
+            >
+              <ArrowLeft size={14} /> Batal
+            </button>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              {crudMode === 'create' ? 'Tambah Postingan Hewan' : 'Edit Postingan Hewan'}
+            </h3>
+            <div style={{ width: '60px' }} /> {/* Spacer to center the title */}
+          </div>
+
+          {/* Form Content */}
+          <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
+              Silakan isi data inventaris toko dengan benar untuk menjaga kualitas katalog.
+            </p>
+
+            {crudError && (
+              <div className="alert-box alert-success" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)', marginBottom: '1.25rem' }}>
+                {crudError}
+              </div>
+            )}
+
+            <form onSubmit={handleFaunaSubmit}>
+              <div className="form-group">
+                <label className="form-label">Nama Hewan *</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="Nama hewan hias..."
+                  required
+                  value={crudForm.name}
+                  onChange={(e) => setCrudForm({ ...crudForm, name: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Nama Ilmiah *</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="Nama ilmiah/taksonomi..."
+                  required
+                  value={crudForm.scientific_name}
+                  onChange={(e) => setCrudForm({ ...crudForm, scientific_name: e.target.value })}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Kelas *</label>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <select 
+                      className="form-select"
+                      style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                      value={showCustomClassInput ? '__NEW__' : crudForm.class}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomClassInput(true)
+                          setCustomClass('')
+                        } else {
+                          setShowCustomClassInput(false)
+                          setCrudForm({ ...crudForm, class: e.target.value })
+                        }
+                      }}
+                    >
+                      {getUniqueClasses().map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
+                    </select>
+                  </div>
+                  {showCustomClassInput && (
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      style={{ marginTop: '0.35rem' }} 
+                      placeholder="Ketik Kelas Baru..." 
+                      value={customClass} 
+                      onChange={(e) => setCustomClass(e.target.value)} 
+                      required 
+                    />
+                  )}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Habitat *</label>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <select 
+                      className="form-select"
+                      style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                      value={showCustomHabitatInput ? '__NEW__' : crudForm.habitat}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomHabitatInput(true)
+                          setCustomHabitat('')
+                        } else {
+                          setShowCustomHabitatInput(false)
+                          setCrudForm({ ...crudForm, habitat: e.target.value })
+                        }
+                      }}
+                    >
+                      {getUniqueHabitats().map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
+                    </select>
+                  </div>
+                  {showCustomHabitatInput && (
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      style={{ marginTop: '0.35rem' }} 
+                      placeholder="Ketik Habitat Baru..." 
+                      value={customHabitat} 
+                      onChange={(e) => setCustomHabitat(e.target.value)} 
+                      required 
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Makanan/Diet *</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Cacing/Katak/Pelet..."
+                    required
+                    value={crudForm.diet}
+                    onChange={(e) => setCrudForm({ ...crudForm, diet: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Status *</label>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <select 
+                      className="form-select"
+                      style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                      value={showCustomConservationStatusInput ? '__NEW__' : crudForm.conservation_status}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setShowCustomConservationStatusInput(true)
+                          setCustomConservationStatus('')
+                        } else {
+                          setShowCustomConservationStatusInput(false)
+                          setCrudForm({ ...crudForm, conservation_status: e.target.value })
+                        }
+                      }}
+                    >
+                      {getUniqueConservationStatuses().map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                      <option value="__NEW__">+ Tambah Baru...</option>
+                    </select>
+                  </div>
+                  {showCustomConservationStatusInput && (
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      style={{ marginTop: '0.35rem' }} 
+                      placeholder="Ketik Status Baru..." 
+                      value={customConservationStatus} 
+                      onChange={(e) => setCustomConservationStatus(e.target.value)} 
+                      required 
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Harga (IDR) *</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Harga jual..."
+                    required
+                    value={formatRupiahInput(crudForm.price)}
+                    onChange={(e) => setCrudForm({ ...crudForm, price: parseRupiahInput(e.target.value) })}
+                  />
+                </div>
+              </div>
+              {/* Multi-image upload section */}
+              <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Foto Satwa (1-5 Foto) *</label>
+                  {crudImages.length < 5 && (
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderRadius: '0.25rem' }}
+                      onClick={() => setCrudImages([...crudImages, ''])}
+                    >
+                      + Foto
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {crudImages.map((imgUrl, index) => (
+                    <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '0.5rem', borderRadius: '0.35rem', border: '1px solid var(--border-light)' }}>
+                      {/* Preview Thumbnail */}
+                      <div style={{ width: '45px', height: '45px', borderRadius: '0.25rem', overflow: 'hidden', border: '1px solid var(--border-light)', background: '#131916', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={`Preview ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80'; }} />
+                        ) : (
+                          <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)' }}>Foto</span>
+                        )}
+                        {uploadingIndex === index && (
+                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Loader className="animate-spin" size={10} style={{ color: 'var(--primary)' }} />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Input & Upload Controls */}
+                      <div style={{ flexGrow: 1, display: 'flex', gap: '0.35rem' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder={`Tautan Foto ${index === 0 ? 'Utama *' : `${index + 1}`}`}
+                          value={imgUrl}
+                          onChange={(e) => {
+                            const newImages = [...crudImages]
+                            newImages[index] = e.target.value
+                            setCrudImages(newImages)
+                          }}
+                          required={index === 0}
+                          style={{ height: '34px', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                        />
+                        
+                        {/* Device File Upload Button */}
+                        <label className="btn-secondary" style={{ padding: '0.35rem 0.5rem', height: '34px', borderRadius: '0.25rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.15rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          <Upload size={12} />
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleImageUpload(index, e.target.files[0])
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Delete Row Button */}
+                      {crudImages.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '0.35rem', color: 'var(--danger)', borderColor: 'var(--danger-border)', height: '34px', width: '34px', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                          onClick={() => {
+                            const newImages = crudImages.filter((_, i) => i !== index)
+                            setCrudImages(newImages)
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Video YouTube (URL - Opsional)</label>
+                <input 
+                  type="url" 
+                  className="form-input" 
+                  placeholder="Tautan video YouTube..."
+                  value={crudForm.video_url}
+                  onChange={(e) => setCrudForm({ ...crudForm, video_url: e.target.value })}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.25rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Asal</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Kalimantan..."
+                    value={crudForm.native_region}
+                    onChange={(e) => setCrudForm({ ...crudForm, native_region: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Lifespan</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="10 tahun..."
+                    value={crudForm.lifespan}
+                    onChange={(e) => setCrudForm({ ...crudForm, lifespan: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Bobot</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="1 kg..."
+                    value={crudForm.weight}
+                    onChange={(e) => setCrudForm({ ...crudForm, weight: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Jangkauan Pengiriman *</label>
+                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                  <select 
+                    className="form-select"
+                    style={{ flex: 1, height: '34px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                    value={showCustomShippingCoverageInput ? '__NEW__' : crudForm.shipping_coverage}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setShowCustomShippingCoverageInput(true)
+                        setCustomShippingCoverage('')
+                      } else {
+                        setShowCustomShippingCoverageInput(false)
+                        setCrudForm({ ...crudForm, shipping_coverage: e.target.value })
+                      }
+                    }}
+                  >
+                    {getUniqueShippingCoverages().map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                    <option value="__NEW__">+ Tambah Baru...</option>
+                  </select>
+                </div>
+                {showCustomShippingCoverageInput && (
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    style={{ marginTop: '0.35rem' }} 
+                    placeholder="Ketik Jangkauan Pengiriman Baru..." 
+                    value={customShippingCoverage} 
+                    onChange={(e) => setCustomShippingCoverage(e.target.value)} 
+                    required 
+                  />
+                )}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Deskripsi Hewan *</label>
+                <textarea 
+                  rows={3} 
+                  className="form-textarea" 
+                  placeholder="Tuliskan keterangan detail kondisi fisik..."
+                  required
+                  value={crudForm.description}
+                  onChange={(e) => setCrudForm({ ...crudForm, description: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Ketentuan Pengiriman</label>
+                <textarea 
+                  rows={2} 
+                  className="form-textarea" 
+                  placeholder="Contoh: Pengiriman via ojek online..."
+                  value={crudForm.shipping_terms}
+                  onChange={(e) => setCrudForm({ ...crudForm, shipping_terms: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Ketentuan Garansi</label>
+                <textarea 
+                  rows={2} 
+                  className="form-textarea" 
+                  placeholder="Contoh: Garansi hidup sampai tujuan..."
+                  value={crudForm.warranty_info}
+                  onChange={(e) => setCrudForm({ ...crudForm, warranty_info: e.target.value })}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn-full btn-primary"
+                disabled={crudLoading}
+                style={{ marginTop: '1rem', height: '44px', fontSize: '0.9rem', fontWeight: 'bold' }}
+              >
+                {crudLoading ? 'Menyimpan...' : 'Simpan Postingan'}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : view === 'article-editor' ? (
+        /* ==========================================================
+           MOBILE FULL-PAGE ARTICLE EDITOR (WORDPRESS/BLOGGER STYLE)
+           ========================================================== */
+        <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-card)', padding: '1rem', paddingBottom: '4rem', overflowY: 'auto' }}>
+          {/* Sub-Header / Back Bar */}
+          <div style={{ 
+            position: 'sticky', 
+            top: 0, 
+            zIndex: 100, 
+            backgroundColor: 'var(--bg-card)', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            paddingTop: '1rem',
+            paddingBottom: '0.75rem', 
+            borderBottom: '1px solid var(--border-light)', 
+            marginTop: '-1rem', 
+            marginLeft: '-1rem', 
+            marginRight: '-1rem', 
+            paddingLeft: '1rem', 
+            paddingRight: '1rem',
+            marginBottom: '1.25rem' 
+          }}>
+            <button 
+              onClick={() => {
+                setView('tabs')
+                setActiveTab('admin')
+                setAdminSubTab('articles')
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              <ArrowLeft size={16} /> Batal
+            </button>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+              {editingArticle ? 'Edit Artikel' : 'Tulis Artikel'}
+            </span>
+            <button 
+              onClick={(e) => handleSaveArticle(e)}
+              className="btn-primary"
+              disabled={articlesLoading}
+              style={{ padding: '0.35rem 1rem', fontSize: '0.8rem', borderRadius: '0.35rem' }}
+            >
+              {articlesLoading ? '...' : 'Terbitkan'}
+            </button>
+          </div>
+
+          {/* Title Editor */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <input 
+              type="text"
+              placeholder="Masukkan Judul Artikel..."
+              value={articleForm.title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '2px solid var(--border-light)',
+                fontSize: '1.5rem',
+                fontWeight: 800,
+                color: 'var(--text-primary)',
+                paddingBottom: '0.5rem',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* Visual / HTML / Preview Tabs */}
+          <div className="editor-tab-row" style={{ marginBottom: '0.75rem' }}>
+            <button 
+              className={`editor-tab-btn ${editorTab === 'compose' ? 'active' : ''}`}
+              onClick={() => {
+                if (editorTab === 'html' && editorRef.current) {
+                  editorRef.current.innerHTML = articleForm.content
+                }
+                setEditorTab('compose')
+              }}
+              style={{ flex: 1, textAlign: 'center' }}
+            >
+              Compose
+            </button>
+            <button 
+              className={`editor-tab-btn ${editorTab === 'html' ? 'active' : ''}`}
+              onClick={() => setEditorTab('html')}
+              style={{ flex: 1, textAlign: 'center' }}
+            >
+              HTML
+            </button>
+            <button 
+              className={`editor-tab-btn ${editorTab === 'preview' ? 'active' : ''}`}
+              onClick={() => setEditorTab('preview')}
+              style={{ flex: 1, textAlign: 'center' }}
+            >
+              Preview
+            </button>
+          </div>
+
+          {/* Editor Area */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: '300px' }}>
+            {editorTab === 'compose' && (
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                {/* Visual Toolbar */}
+                <div className="editor-toolbar" style={{ display: 'flex', gap: '0.15rem', padding: '0.35rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('bold')}><Bold size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('italic')}><Italic size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('underline')}><Underline size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('strikeThrough')}><Strikethrough size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('formatBlock', '<h2>')} style={{ fontWeight: 800, fontSize: '0.75rem' }}>H2</button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('formatBlock', '<h3>')} style={{ fontWeight: 800, fontSize: '0.75rem' }}>H3</button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('justifyLeft')}><AlignLeft size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('justifyCenter')}><AlignCenter size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('justifyRight')}><AlignRight size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={() => execFormat('insertUnorderedList')}><List size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={insertLinkUrl}><LinkIcon size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={insertImageUrl}><Image size={14} /></button>
+                  <button type="button" className="editor-btn" onClick={clearFormatting}><Heading size={14} /></button>
+                </div>
+                {/* Editor canvas */}
+                <div className="editor-canvas-container">
+                  <div 
+                    ref={editorRef}
+                    contentEditable
+                    className="editor-canvas"
+                    onInput={handleVisualInput}
+                    onKeyUp={saveSelection}
+                    onMouseUp={saveSelection}
+                    onTouchEnd={saveSelection}
+                    onFocus={saveSelection}
+                    onBlur={saveSelection}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.tagName === 'IMG') {
+                        const imgEl = target as HTMLImageElement;
+                        setSelectedEditorImage(imgEl);
+                        setImageAltText(imgEl.getAttribute('alt') || '');
+                        
+                        const nextSib = imgEl.nextElementSibling;
+                        if (nextSib && nextSib.getAttribute('data-img-caption') === 'true') {
+                          setImageCaptionText((nextSib as HTMLElement).innerText);
+                        } else {
+                          setImageCaptionText('');
+                        }
+                        
+                        const w = imgEl.style.width || imgEl.getAttribute('width') || '';
+                        if (w === '150px' || w === '15%') {
+                          setImageSizeSelection('kecil');
+                        } else if (w === '300px' || w === '35%') {
+                          setImageSizeSelection('sedang');
+                        } else if (w === '500px' || w === '60%') {
+                          setImageSizeSelection('besar');
+                        } else if (w === '800px' || w === '90%') {
+                          setImageSizeSelection('ekstrabesar');
+                        } else if (w === '100%') {
+                          setImageSizeSelection('asli');
+                        } else {
+                          setImageSizeSelection('sedang');
+                        }
+                      } else {
+                        setSelectedEditorImage(null);
+                      }
+                    }}
+                    style={{ fontSize: '0.9rem', padding: '1rem' }}
+                  />
+                </div>
+
+                {/* Blogger-style Image Settings Toolbar */}
+                {selectedEditorImage && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.5rem',
+                    backgroundColor: '#1b221e',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 0.75rem',
+                    marginTop: '0.5rem',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                    animation: 'fadeIn 0.2s ease',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                      <button 
+                        type="button" 
+                        className="editor-btn"
+                        onClick={() => {
+                          const parent = selectedEditorImage.parentElement;
+                          const isWrapped = parent && parent.classList.contains('img-caption-wrapper');
+                          const targetEl = isWrapped ? parent : selectedEditorImage;
+
+                          targetEl.style.display = isWrapped ? 'inline-block' : 'inline';
+                          targetEl.style.float = 'left';
+                          targetEl.style.margin = '0.5rem 1rem 0.5rem 0';
+                          targetEl.style.clear = 'none';
+
+                          if (isWrapped) {
+                            selectedEditorImage.style.display = 'block';
+                            selectedEditorImage.style.float = 'none';
+                            selectedEditorImage.style.margin = '0 auto';
+                            selectedEditorImage.style.clear = 'none';
+                            
+                            const capDiv = parent.querySelector('.img-caption-text') as HTMLElement;
+                            if (capDiv) {
+                              capDiv.style.textAlign = 'left';
+                              capDiv.style.borderLeft = '2px solid var(--primary)';
+                              capDiv.style.borderRight = 'none';
+                              capDiv.style.borderRadius = '0 0.25rem 0.25rem 0';
+                            }
+                          }
+                          handleVisualInput();
+                        }}
+                        title="Rata Kiri"
+                      >
+                        <AlignLeft size={14} />
+                      </button>
+                      <button 
+                        type="button" 
+                        className="editor-btn"
+                        onClick={() => {
+                          const parent = selectedEditorImage.parentElement;
+                          const isWrapped = parent && parent.classList.contains('img-caption-wrapper');
+                          const targetEl = isWrapped ? parent : selectedEditorImage;
+
+                          targetEl.style.display = 'block';
+                          targetEl.style.float = 'none';
+                          targetEl.style.margin = '1rem auto';
+                          targetEl.style.clear = 'both';
+
+                          if (isWrapped) {
+                            selectedEditorImage.style.display = 'block';
+                            selectedEditorImage.style.float = 'none';
+                            selectedEditorImage.style.margin = '0 auto';
+                            selectedEditorImage.style.clear = 'none';
+
+                            const capDiv = parent.querySelector('.img-caption-text') as HTMLElement;
+                            if (capDiv) {
+                              capDiv.style.textAlign = 'center';
+                              capDiv.style.borderLeft = 'none';
+                              capDiv.style.borderRight = 'none';
+                              capDiv.style.borderRadius = '0.25rem';
+                            }
+                          }
+                          handleVisualInput();
+                        }}
+                        title="Rata Tengah"
+                      >
+                        <AlignCenter size={14} />
+                      </button>
+                      <button 
+                        type="button" 
+                        className="editor-btn"
+                        onClick={() => {
+                          const parent = selectedEditorImage.parentElement;
+                          const isWrapped = parent && parent.classList.contains('img-caption-wrapper');
+                          const targetEl = isWrapped ? parent : selectedEditorImage;
+
+                          targetEl.style.display = isWrapped ? 'inline-block' : 'inline';
+                          targetEl.style.float = 'right';
+                          targetEl.style.margin = '0.5rem 0 0.5rem 1rem';
+                          targetEl.style.clear = 'none';
+
+                          if (isWrapped) {
+                            selectedEditorImage.style.display = 'block';
+                            selectedEditorImage.style.float = 'none';
+                            selectedEditorImage.style.margin = '0 auto';
+                            selectedEditorImage.style.clear = 'none';
+
+                            const capDiv = parent.querySelector('.img-caption-text') as HTMLElement;
+                            if (capDiv) {
+                              capDiv.style.textAlign = 'right';
+                              capDiv.style.borderLeft = 'none';
+                              capDiv.style.borderRight = '2px solid var(--primary)';
+                              capDiv.style.borderRadius = '0.25rem 0 0 0.25rem';
+                            }
+                          }
+                          handleVisualInput();
+                        }}
+                        title="Rata Kanan"
+                      >
+                        <AlignRight size={14} />
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <button 
+                        type="button" 
+                        className="btn-secondary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        onClick={() => {
+                          setShowImageSettingsModal(true);
+                        }}
+                      >
+                        <Settings size={12} /> Edit
+                      </button>
+                      <button 
+                        type="button" 
+                        className="btn-primary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        onClick={() => {
+                          selectedEditorImage.remove();
+                          setSelectedEditorImage(null);
+                          handleVisualInput();
+                        }}
+                      >
+                        <Trash2 size={12} /> Hapus
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {editorTab === 'html' && (
+              <div className="editor-canvas-container">
+                <textarea 
+                  className="editor-textarea"
+                  placeholder="Kode HTML..."
+                  value={articleForm.content}
+                  onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
+                  style={{ fontSize: '0.85rem', padding: '1rem' }}
+                />
+              </div>
+            )}
+
+            {editorTab === 'preview' && (
+              <div className="editor-canvas-container">
+                <div className="editor-preview" style={{ padding: '1rem' }}>
+                  {articleForm.image_url ? (
+                    <img 
+                      src={articleForm.image_url} 
+                      alt="Cover" 
+                      style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '1rem', border: '1px solid var(--border-light)' }} 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%',
+                      height: '140px',
+                      borderRadius: '0.5rem',
+                      marginBottom: '1rem',
+                      border: '1px solid var(--border-light)',
+                      background: 'linear-gradient(135deg, #131916 0%, #0b0e0c 100%)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem',
+                      color: 'var(--text-muted)'
+                    }}>
+                      <Image size={24} style={{ opacity: 0.2 }} />
+                      <span style={{ fontSize: '0.7rem', letterSpacing: '0.05em', opacity: 0.4, fontWeight: 700, textTransform: 'uppercase' }}>No Cover Image</span>
+                    </div>
+                  )}
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+                    {articleForm.title || 'Judul Artikel'}
+                  </h3>
+                  <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>
+                    <span>Oleh: {articleForm.author}</span>
+                    <span>&bull;</span>
+                    <span>{articleForm.read_time}</span>
+                  </div>
+                  <div dangerouslySetInnerHTML={{ __html: articleForm.content || '<p style="color:var(--text-muted)">Konten kosong...</p>' }} style={{ fontSize: '0.85rem' }} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Settings Section (SEO & Metadata) */}
+          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)' }}>
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: 0, paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-light)', color: 'var(--text-primary)' }}>
+              SEO & Metadata
+            </h4>
+            
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.75rem' }}>Permalink (Slug URL) *</label>
+              <input 
+                type="text"
+                className="form-input"
+                required
+                value={articleForm.slug}
+                onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })}
+                style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Meta Deskripsi SEO</span>
+                <span style={{ 
+                  fontWeight: 'bold', 
+                  color: articleForm.meta_description.length > 160 ? 'var(--danger)' : 'var(--success)' 
+                }}>
+                  {articleForm.meta_description.length}/160
+                </span>
+              </label>
+              <textarea 
+                rows={3}
+                className="form-input"
+                placeholder="Meta deskripsi untuk Google..."
+                value={articleForm.meta_description}
+                onChange={(e) => setArticleForm({ ...articleForm, meta_description: e.target.value })}
+                style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.75rem' }}>URL Gambar Sampul</label>
+              <input 
+                type="text"
+                className="form-input"
+                value={articleForm.image_url}
+                onChange={(e) => setArticleForm({ ...articleForm, image_url: e.target.value })}
+                style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <div className="form-group">
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Penulis *</label>
+                <input 
+                  type="text"
+                  className="form-input"
+                  required
+                  value={articleForm.author}
+                  onChange={(e) => setArticleForm({ ...articleForm, author: e.target.value })}
+                  style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Waktu Baca *</label>
+                <input 
+                  type="text"
+                  className="form-input"
+                  required
+                  value={articleForm.read_time}
+                  onChange={(e) => setArticleForm({ ...articleForm, read_time: e.target.value })}
+                  style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+                />
+              </div>
+
+              {/* Comments Toggle */}
+              <div className="form-group" style={{ gridColumn: 'span 2', marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', margin: 0 }}>
+                  <input 
+                    type="checkbox"
+                    checked={articleForm.is_comments_enabled}
+                    onChange={(e) => setArticleForm({ ...articleForm, is_comments_enabled: e.target.checked })}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      accentColor: 'var(--primary)',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Aktifkan Komentar Pembaca</span>
+                </label>
+                <small style={{ display: 'block', marginTop: '0.2rem', fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
+                  Jika diaktifkan, pembaca dapat meninggalkan komentar.
+                </small>
+              </div>
+
+              {articleForm.is_comments_enabled && (
+                <div style={{ gridColumn: 'span 2', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderLeft: '2px solid var(--border-light)', marginTop: '0.25rem' }}>
+                  {/* Require Approval */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox"
+                        checked={articleForm.require_comment_approval}
+                        onChange={(e) => setArticleForm({ ...articleForm, require_comment_approval: e.target.checked })}
+                        style={{ width: '16px', height: '16px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: 600 }}>Tahan Komentar untuk Moderasi</span>
+                    </label>
+                    <small style={{ display: 'block', marginTop: '0.1rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                      Komentar harus disetujui admin sebelum tampil publik.
+                    </small>
+                  </div>
+
+                  {/* Require Email */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox"
+                        checked={articleForm.require_comment_email}
+                        onChange={(e) => setArticleForm({ ...articleForm, require_comment_email: e.target.checked })}
+                        style={{ width: '16px', height: '16px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: 600 }}>Wajibkan Email Komentator</span>
+                    </label>
+                    <small style={{ display: 'block', marginTop: '0.1rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                      Pengunjung wajib mengisi alamat email untuk mengirim komentar.
+                    </small>
+                  </div>
+
+                  {/* Verify Email Domain */}
+                  {articleForm.require_comment_email && (
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input 
+                          type="checkbox"
+                          checked={articleForm.verify_comment_email_domain}
+                          onChange={(e) => setArticleForm({ ...articleForm, verify_comment_email_domain: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                        />
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', fontWeight: 600 }}>Verifikasi Domain Email (DNS MX)</span>
+                      </label>
+                      <small style={{ display: 'block', marginTop: '0.1rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                        Memeriksa keaslian server domain email (mencegah dummy email).
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Bottom padding spacer to prevent clipping */}
+          <div style={{ height: '3.5rem' }} />
         </div>
       ) : (
         <>
           <div className="animate-fade-in" style={{ paddingBottom: '80px' }}>
       {/* Mobile Top Header */}
-      <header className={`mobile-header ${activeTab !== 'catalog' ? 'sticky-header' : ''}`}>
+      <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
         <div className="container">
           <div className="logo-container">
             <Compass className="logo-icon" />
@@ -1496,19 +3654,21 @@ function App() {
                         onClick={() => openDetailsSheet(item.id)}
                         style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
                       >
-                        <div className="mobile-card-img-wrapper" style={{ height: '130px', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ width: '100%', height: '130px', position: 'relative', overflow: 'hidden', backgroundColor: '#131916' }}>
+                          {/* Fallback displayed under the image */}
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #131916 0%, #0b0e0c 100%)', color: 'var(--text-secondary)', zIndex: 1 }}>
+                            <Compass size={24} style={{ opacity: 0.3 }} />
+                            <span style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.3 }}>No Photo</span>
+                          </div>
+
                           <img 
                             src={item.image_url} 
                             alt={item.name} 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'relative', zIndex: 2 }}
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
                           />
-                          <div className="img-fallback" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
-                            <Compass size={24} />
-                            <span style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>No Photo</span>
-                          </div>
                         </div>
                         <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                           <div>
@@ -1565,163 +3725,250 @@ function App() {
         {/* ==========================================================
            TAB 2: TENTANG KAMI
            ========================================================== */}
-        {activeTab === 'about' && (
-          <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ backgroundColor: 'var(--primary)', color: '#0b0e0c', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', flexShrink: 0, fontWeight: 'bold', justifyContent: 'center' }}>
-                <Info size={18} />
+        {activeTab === 'about' && (() => {
+          const parsedCards = (() => {
+            try {
+              return settings.about_cards ? JSON.parse(settings.about_cards) : [];
+            } catch (e) {
+              return [];
+            }
+          })();
+
+          const getPremiumIcon = (card: any) => {
+            if (card.icon) {
+              return renderAboutIcon(card.icon, 20);
+            }
+            const t = card.title.toLowerCase();
+            if (t.includes('sehat') || t.includes('garansi') || t.includes('kesehatan')) {
+              return renderAboutIcon('shield', 20);
+            }
+            if (t.includes('aman') || t.includes('transaksi') || t.includes('bayar') || t.includes('percaya')) {
+              return renderAboutIcon('lock', 20);
+            }
+            if (t.includes('tanya') || t.includes('konsultasi') || t.includes('care') || t.includes('layanan') || t.includes('jual')) {
+              return renderAboutIcon('message', 20);
+            }
+            return renderAboutIcon('compass', 20);
+          };
+
+          const cleanEmoji = (text: string) => {
+            return text.replace(/[\u{1F300}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}\u{1F191}-\u{1F251}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F171}\u{1F17E}-\u{1F17F}\u{1F18E}\u{3030}\u{2B50}\u{2B55}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{303D}\u{00A9}\u{00AE}\u{2122}]/gu, '').trim();
+          };
+
+          return (
+            <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', color: 'var(--primary)', borderRadius: '50%', width: '38px', height: '38px', display: 'flex', alignItems: 'center', flexShrink: 0, justifyContent: 'center', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                  <Info size={20} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{settings.about_title || 'Tentang DFauna'}</h2>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>{settings.about_slogan || 'Premium Quality Pet & Aquatic Gallery'}</p>
+                </div>
               </div>
-              <div>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Tentang DFauna</h2>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Premium Quality Pet & Aquatic Gallery</p>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', margin: 0 }}>
+                {settings.about_description || 'DFauna adalah galeri satwa hias premium terpercaya...'}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+                {Array.isArray(parsedCards) && parsedCards.map((card: any, idx: number) => (
+                  <div key={idx} className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
+                    <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: '0.5rem', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                      {getPremiumIcon(card)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.2rem', marginTop: '0.1rem' }}>{cleanEmoji(card.title)}</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.45 }}>{card.content}</p>
+                    </div>
+                  </div>
+                ))}
+                
+                {settings.about_disclaimer && (
+                  <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
+                    <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: '0.5rem', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                      <ShieldCheck size={20} style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.2rem', marginTop: '0.1rem' }}>Komitmen & Disclaimer</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.45 }}>{settings.about_disclaimer}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem', textAlign: 'center', letterSpacing: '0.02em', textTransform: 'uppercase', opacity: 0.9 }}>
+                  Hubungi Galeri Kami
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {/* Lokasi */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.01)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.05)', color: 'var(--primary)', flexShrink: 0 }}>
+                      <MapPin size={16} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.02em' }}>Lokasi Galeri</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 700 }}>{settings.about_location || 'Bandung, Jawa Barat, Indonesia'}</span>
+                    </div>
+                  </div>
+
+                  {/* Jam Operasional */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.01)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.05)', color: 'var(--primary)', flexShrink: 0 }}>
+                      <Clock size={16} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.02em' }}>Jam Operasional</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 700 }}>{settings.about_hours || '08:00 - 21:00 WIB (Setiap Hari)'}</span>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp */}
+                  <a 
+                    href={`https://wa.me/${settings.whatsapp_number}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.25)', backgroundColor: 'rgba(16, 185, 129, 0.03)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', flexShrink: 0 }}>
+                      <MessageCircle size={16} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1, textAlign: 'left' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em' }}>Chat WhatsApp</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 700 }}>+{settings.whatsapp_number}</span>
+                    </div>
+                    <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                  </a>
+
+                  {/* Social Media Links */}
+                  {(() => {
+                    const parsedLinks = (() => {
+                      try {
+                        return settings.social_links ? JSON.parse(settings.social_links) : [];
+                      } catch (e) {
+                        return [];
+                      }
+                    })();
+
+                    if (!Array.isArray(parsedLinks) || parsedLinks.length === 0) return null;
+
+                    return (
+                      <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', margin: '0.5rem 0 0.25rem 0' }}>
+                          <span style={{ height: '1px', flex: 1, backgroundColor: 'var(--border-light)' }}></span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kunjungi Media Sosial</span>
+                          <span style={{ height: '1px', flex: 1, backgroundColor: 'var(--border-light)' }}></span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: parsedLinks.length === 1 ? '1fr' : '1fr 1fr', gap: '0.5rem' }}>
+                          {parsedLinks.map((link: any, idx: number) => (
+                            <a
+                              key={idx}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem',
+                                padding: '0.6rem 0.75rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                borderRadius: '0.35rem',
+                                backgroundColor: 'rgba(255,255,255,0.02)',
+                                border: '1px solid var(--border-light)',
+                                color: 'var(--text-primary)',
+                                transition: 'var(--transition-smooth)'
+                              }}
+                            >
+                              {renderSocialIcon(link.platform, 14, 'var(--primary)')}
+                              <span>{link.platform}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
-
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', margin: 0 }}>
-              DFauna adalah galeri satwa hias premium terpercaya yang berkomitmen menyediakan satwa hias berkualitas tinggi, mulai dari ikan hias eksotis, reptil unik, hingga mamalia kecil yang lucu. Kami berdedikasi menjaga kesehatan prima setiap satwa demi kepuasan dan kebahagiaan para pecinta satwa di Indonesia.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>✨ Garansi Kesehatan</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Setiap satwa melewati proses karantina ketat dan pemeriksaan kesehatan berkala sebelum dipasarkan.</p>
-              </div>
-              <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>🔒 Transaksi Aman & Terpercaya</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Kami mendukung sistem pembayaran aman secara langsung maupun menggunakan jasa Rekber Syariah.</p>
-              </div>
-              <div className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>💬 Konsultasi Purna Jual</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Tim ahli kami siap membantu Anda berkonsultasi seputar pakan, akuarium, dan perawatan jangka panjang.</p>
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Hubungi Galeri Kami</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                <div>📍 <strong>Lokasi:</strong> Bandung, Jawa Barat, Indonesia</div>
-                <div>🕒 <strong>Jam Operasional:</strong> 08:00 - 21:00 WIB (Setiap Hari)</div>
-                <div>📞 <strong>WhatsApp:</strong> +{settings.whatsapp_number}</div>
-              </div>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ==========================================================
            TAB 3: ARTIKEL & PANDUAN
            ========================================================== */}
         {activeTab === 'articles' && (
-          selectedArticle ? (
-            /* FULL ARTICLE DETAIL READ VIEW */
-            <div className="glass-panel animate-fade-in" style={{ padding: '1.25rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <button 
-                onClick={() => setSelectedArticle(null)}
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  color: 'var(--primary)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.25rem', 
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  padding: 0,
-                  marginBottom: '0.5rem',
-                  alignSelf: 'flex-start'
-                }}
-              >
-                <ArrowLeft size={16} /> Kembali ke Artikel
-              </button>
-
-              {selectedArticle.image_url && (
-                <img 
-                  src={selectedArticle.image_url} 
-                  alt={selectedArticle.title} 
-                  style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '0.5rem', border: '1px solid var(--border-light)' }}
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
-              )}
-
-              <div>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: '0.5rem' }}>
-                  {selectedArticle.title}
-                </h2>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                  <span>Oleh: <strong>{selectedArticle.author || 'Admin'}</strong></span>
-                  <span>&bull;</span>
-                  <span>{new Date(selectedArticle.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                  <span>&bull;</span>
-                  <span>{selectedArticle.read_time || '5 mnt baca'}</span>
-                </div>
-              </div>
-
-              <div 
-                style={{ 
-                  color: 'var(--text-secondary)', 
-                  fontSize: '0.85rem', 
-                  lineHeight: '1.6', 
-                  whiteSpace: 'pre-wrap',
-                  borderTop: '1px solid var(--border-light)',
-                  paddingTop: '1rem'
-                }}
-              >
-                {selectedArticle.content}
-              </div>
+          /* ARTICLES LIST VIEW */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FileText size={20} style={{ color: 'var(--primary)' }} /> Artikel & Panduan
+              </h2>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Panduan ahli seputar perawatan dan tips memelihara satwa kesayangan Anda.</p>
             </div>
-          ) : (
-            /* ARTICLES LIST VIEW */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-              <div className="glass-panel" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <FileText size={20} style={{ color: 'var(--primary)' }} /> Artikel & Panduan
-                </h2>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Panduan ahli seputar perawatan dan tips memelihara satwa kesayangan Anda.</p>
-              </div>
 
-              {articlesLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                  <Loader className="animate-spin" size={24} style={{ color: 'var(--primary)' }} />
-                </div>
-              ) : articles.length === 0 ? (
-                <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  <BookOpen size={36} style={{ marginBottom: '0.75rem', color: 'var(--text-muted)' }} />
-                  <p style={{ margin: 0, fontSize: '0.85rem' }}>Belum ada artikel yang diterbitkan.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {articles.map((article) => (
-                    <div 
-                      key={article.id} 
-                      className="glass-panel" 
-                      onClick={() => {
-                        setSelectedArticle(article);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer' }}
-                    >
-                      {article.image_url && (
-                        <img 
-                          src={article.image_url} 
-                          alt={article.title} 
-                          style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '0.35rem', marginBottom: '0.25rem', border: '1px solid var(--border-light)' }}
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
-                      )}
-                      <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{article.title}</h4>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {article.content}
-                      </p>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
-                        <span>Oleh: <strong>{article.author}</strong></span>
-                        <span>{new Date(article.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} &bull; {article.read_time}</span>
+            {articlesLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                <Loader className="animate-spin" size={24} style={{ color: 'var(--primary)' }} />
+              </div>
+            ) : articles.length === 0 ? (
+              <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <BookOpen size={36} style={{ marginBottom: '0.75rem', color: 'var(--text-muted)' }} />
+                <p style={{ margin: 0, fontSize: '0.85rem' }}>Belum ada artikel yang diterbitkan.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {articles.map((article) => (
+                  <div 
+                    key={article.id} 
+                    className="glass-panel" 
+                    onClick={() => {
+                      handleSelectArticle(article);
+                    }}
+                    style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer' }}
+                  >
+                    {article.image_url ? (
+                      <img 
+                        src={article.image_url} 
+                        alt={article.title} 
+                        style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '0.35rem', marginBottom: '0.25rem', border: '1px solid var(--border-light)' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        height: '120px',
+                        borderRadius: '0.35rem',
+                        marginBottom: '0.25rem',
+                        border: '1px solid var(--border-light)',
+                        background: 'linear-gradient(135deg, #131916 0%, #0b0e0c 100%)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.35rem',
+                        color: 'var(--text-muted)'
+                      }}>
+                        <Image size={18} style={{ opacity: 0.2 }} />
+                        <span style={{ fontSize: '0.65rem', letterSpacing: '0.05em', opacity: 0.4, fontWeight: 700, textTransform: 'uppercase' }}>No Image</span>
                       </div>
+                    )}
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{article.title}</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {stripHtml(article.content)}
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
+                      <span>Oleh: <strong>{article.author}</strong></span>
+                      <span>{new Date(article.updated_at || article.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} &bull; {article.read_time}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* ==========================================================
@@ -1733,7 +3980,7 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '2rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={32} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
-                <h2 style={{ fontSize: '1.15rem' }}>Login Admin DFauna</h2>
+                <h2 style={{ fontSize: '1.15rem' }}>Login Admin {settings.store_title || 'DFauna'}</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                   Autentikasi login diperlukan untuk masuk.
                 </p>
@@ -1849,109 +4096,332 @@ function App() {
           ) : (
             /* ADMIN DASHBOARD (MOBILE - LOGGED IN & PASSWORD CHANGED) */
             <div className="animate-fade-in" style={{ marginTop: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.25rem' }}>Admin Panel</h2>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Halo, {adminUser?.name}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '0.35rem' }}>
-                  {adminSubTab === 'items' && (
+              {adminSubTab === 'menu' ? (
+                /* MENU DASHBOARD VIEW */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }}>Admin Dashboard</h2>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Halo, {adminUser?.name || 'Administrator'}</span>
+                    </div>
                     <button 
-                      className="btn-primary" 
-                      style={{ padding: '0.35rem 0.65rem', borderRadius: '0.4rem', fontSize: '0.7rem' }}
-                      onClick={openCreateSheet}
+                      className="btn-danger" 
+                      style={{ padding: '0.4rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}
+                      onClick={handleLogout}
                     >
-                      <Plus size={14} />
-                      Tambah
+                      <LogOut size={14} />
+                      Keluar
                     </button>
-                  )}
-                  <button 
-                    className="btn-danger" 
-                    style={{ padding: '0.35rem 0.65rem', borderRadius: '0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.15rem' }}
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={12} />
-                    Keluar
-                  </button>
-                </div>
-              </div>
+                  </div>
 
-              {/* Sub Tabs */}
-              <div className="admin-sub-tabs" style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.25rem' }}>
-                <button 
-                  style={{ background: 'transparent', border: 'none', color: adminSubTab === 'items' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'items' ? '2px solid var(--primary)' : 'none' }}
-                  onClick={() => setAdminSubTab('items')}
-                >
-                  Inventaris
-                </button>
-                <button 
-                  style={{ background: 'transparent', border: 'none', color: adminSubTab === 'settings' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'settings' ? '2px solid var(--primary)' : 'none' }}
-                  onClick={() => setAdminSubTab('settings')}
-                >
-                  Toko
-                </button>
-                <button 
-                  style={{ background: 'transparent', border: 'none', color: adminSubTab === 'articles' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'articles' ? '2px solid var(--primary)' : 'none' }}
-                  onClick={() => setAdminSubTab('articles')}
-                >
-                  Artikel
-                </button>
-                <button 
-                  style={{ background: 'transparent', border: 'none', color: adminSubTab === 'profile' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '0.75rem', padding: '0.25rem 0.35rem', borderBottom: adminSubTab === 'profile' ? '2px solid var(--primary)' : 'none' }}
-                  onClick={() => setAdminSubTab('profile')}
-                >
-                  Profil
-                </button>
-              </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    {/* Item 1: Inventaris */}
+                    <div 
+                      className="glass-panel" 
+                      onClick={() => setAdminSubTab('items')}
+                      style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid var(--border-light)', borderRadius: '0.75rem', transition: 'var(--transition-smooth)' }}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '0.5rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                        <Database size={20} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Kelola Inventaris</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>Kelola data fauna, harga, status, & foto</p>
+                      </div>
+                      <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+
+                    {/* Item 2: Artikel */}
+                    {settings.articles_enabled !== '0' && (
+                      <div 
+                        className="glass-panel" 
+                        onClick={() => { setAdminSubTab('articles'); setArticleTabState('hub'); }}
+                        style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid var(--border-light)', borderRadius: '0.75rem', transition: 'var(--transition-smooth)' }}
+                      >
+                        <div style={{ width: '40px', height: '40px', borderRadius: '0.5rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                          <FileText size={20} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <h3 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Kelola Artikel</h3>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>Tulis artikel edukasi, permalink, & SEO</p>
+                        </div>
+                        <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                      </div>
+                    )}
+
+                    {/* Item 3: Toko */}
+                    <div 
+                      className="glass-panel" 
+                      onClick={() => setAdminSubTab('settings')}
+                      style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid var(--border-light)', borderRadius: '0.75rem', transition: 'var(--transition-smooth)' }}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '0.5rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                        <Settings size={20} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Pengaturan Toko</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>Ubah slogan toko dan nomor WhatsApp admin</p>
+                      </div>
+                      <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+
+                    {/* Item 4: Profil */}
+                    <div 
+                      className="glass-panel" 
+                      onClick={() => setAdminSubTab('profile')}
+                      style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid var(--border-light)', borderRadius: '0.75rem', transition: 'var(--transition-smooth)' }}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '0.5rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                        <User size={20} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Profil Admin</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>Ubah nama, email, dan password login</p>
+                      </div>
+                      <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* BACK BAR FOR SUB-VIEWS */
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  marginBottom: '1.25rem', 
+                  borderBottom: '1px solid var(--border-light)', 
+                  paddingBottom: '0.75rem',
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 99,
+                  backgroundColor: 'rgba(11, 14, 12, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  paddingTop: '0.75rem',
+                  marginTop: '-1rem'
+                }}>
+                  <button 
+                    onClick={() => setAdminSubTab('menu')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: '0.35rem',
+                      backgroundColor: 'var(--border-light)',
+                      transition: 'var(--transition-smooth)'
+                    }}
+                  >
+                    <ArrowLeft size={14} /> Kembali
+                  </button>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 800 }}>
+                    {adminSubTab === 'items' && 'Kelola Inventaris'}
+                    {adminSubTab === 'articles' && 'Kelola Artikel'}
+                    {adminSubTab === 'settings' && 'Pengaturan Toko'}
+                    {adminSubTab === 'profile' && 'Profil Admin'}
+                  </span>
+                  <div>
+                    {adminSubTab === 'items' && (
+                      <button 
+                        className="btn-primary" 
+                        style={{ padding: '0.35rem 0.65rem', borderRadius: '0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.15rem' }}
+                        onClick={openCreateSheet}
+                      >
+                        <Plus size={12} /> Tambah
+                      </button>
+                    )}
+                    {adminSubTab !== 'items' && <div style={{ width: '48px' }} />}
+                  </div>
+                </div>
+              )}
 
               {adminSubTab === 'items' && (
                 /* TAB 1: LISTING */
-                <div>
+                <div style={{ paddingTop: '4rem' }}>
                   {faunas.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center', padding: '2rem' }}>Belum ada hewan terdaftar.</p>
                   ) : (
-                    faunas.map(item => (
-                      <div key={item.id} className="glass-panel admin-item-card">
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', minWidth: 0 }}>
-                          <img 
-                            src={item.image_url} 
-                            alt={item.name} 
-                            style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} 
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=100&q=80';
-                            }}
-                          />
-                          <div style={{ minWidth: 0 }}>
-                            <h4 style={{ fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</h4>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--secondary)', fontWeight: 'bold' }}>
-                              {formatRupiah(item.price)}
-                            </span>
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {paginatedItems.map(item => (
+                          <div key={item.id} className="glass-panel admin-item-card">
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', minWidth: 0 }}>
+                              <img 
+                                src={item.image_url} 
+                                alt={item.name} 
+                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} 
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=100&q=80';
+                                }}
+                              />
+                              <div style={{ minWidth: 0 }}>
+                                <h4 style={{ fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</h4>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--secondary)', fontWeight: 'bold' }}>
+                                  {formatRupiah(item.price)}
+                                </span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.35rem' }}>
+                              <button 
+                                className="btn-secondary" 
+                                style={{ padding: '0.35rem 0.6rem', borderRadius: '0.35rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                                onClick={() => openDetailsSheet(item.id)}
+                              >
+                                <Eye size={12} />
+                                Detail
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        ))}
+                      </div>
+
+                      {/* Pagination Controls */}
+                      {totalItemsPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.35rem', marginTop: '1.25rem', paddingBottom: '1rem' }}>
                           <button 
-                            className="btn-secondary" 
-                            style={{ padding: '0.35rem 0.6rem', borderRadius: '0.35rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
-                            onClick={() => openDetailsSheet(item.id)}
+                            disabled={itemsPage === 1}
+                            onClick={() => setItemsPage(prev => Math.max(prev - 1, 1))}
+                            style={{
+                              background: 'none',
+                              border: '1px solid var(--border-light)',
+                              color: itemsPage === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                              borderRadius: '0.35rem',
+                              width: '32px',
+                              height: '32px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: itemsPage === 1 ? 'not-allowed' : 'pointer',
+                              backgroundColor: itemsPage === 1 ? 'transparent' : 'rgba(255,255,255,0.02)'
+                            }}
                           >
-                            <Eye size={12} />
-                            Detail
+                            &larr;
+                          </button>
+                          {Array.from({ length: totalItemsPages }).map((_, idx) => {
+                            const pageNum = idx + 1;
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setItemsPage(pageNum)}
+                                style={{
+                                  border: pageNum === itemsPage ? '1px solid var(--primary)' : '1px solid var(--border-light)',
+                                  backgroundColor: pageNum === itemsPage ? 'var(--primary)' : 'transparent',
+                                  color: pageNum === itemsPage ? '#fff' : 'var(--text-primary)',
+                                  borderRadius: '0.35rem',
+                                  width: '32px',
+                                  height: '32px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  fontWeight: pageNum === itemsPage ? 'bold' : 'normal'
+                                }}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                          <button 
+                            disabled={itemsPage === totalItemsPages}
+                            onClick={() => setItemsPage(prev => Math.min(prev + 1, totalItemsPages))}
+                            style={{
+                              background: 'none',
+                              border: '1px solid var(--border-light)',
+                              color: itemsPage === totalItemsPages ? 'var(--text-muted)' : 'var(--text-primary)',
+                              borderRadius: '0.35rem',
+                              width: '32px',
+                              height: '32px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: itemsPage === totalItemsPages ? 'not-allowed' : 'pointer',
+                              backgroundColor: itemsPage === totalItemsPages ? 'transparent' : 'rgba(255,255,255,0.02)'
+                            }}
+                          >
+                            &rarr;
                           </button>
                         </div>
-                      </div>
-                    ))
+                      )}
+                    </>
                   )}
                 </div>
               )}
 
               {adminSubTab === 'settings' && (
-                <>
+                <div style={{ paddingTop: '4rem' }}>
                   <form onSubmit={handleSettingsSave} className="glass-panel" style={{ padding: '1.25rem' }}>
                   {settingsSuccess && (
                     <div className="alert-box alert-success">
                       {settingsSuccess}
                     </div>
                   )}
+                  <div className="form-group">
+                    <label className="form-label">Nama/Judul Toko *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: DFauna"
+                      required
+                      value={settingsForm.store_title || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, store_title: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Logo Toko (Unggah Gambar atau Tempel URL)</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {/* Live Preview */}
+                      {settingsForm.store_logo_url && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border-light)', borderRadius: '4px' }}>
+                          <img 
+                            src={settingsForm.store_logo_url} 
+                            alt="Logo Preview" 
+                            style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
+                          />
+                          <button 
+                            type="button" 
+                            className="btn-danger btn-small"
+                            onClick={() => setSettingsForm({ ...settingsForm, store_logo_url: '' })}
+                            style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}
+                          >
+                            Hapus Logo
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* File Upload Input */}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleLogoUpload}
+                        disabled={logoUploading}
+                        style={{ display: 'none' }}
+                        id="store-logo-file-input"
+                      />
+                      <label 
+                        htmlFor="store-logo-file-input" 
+                        className="btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+                      >
+                        {logoUploading ? 'Mengunggah...' : 'Pilih File Logo dari Perangkat'}
+                      </label>
+
+                      {/* Text Input URL */}
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="Atau tempel URL gambar logo langsung..."
+                        value={settingsForm.store_logo_url || ''}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, store_logo_url: e.target.value })}
+                        style={{ fontSize: '0.8rem' }}
+                      />
+                    </div>
+                  </div>
+
                   <div className="form-group">
                     <label className="form-label">Nomor WhatsApp *</label>
                     <input 
@@ -1984,6 +4454,42 @@ function App() {
                       onChange={(e) => setSettingsForm({ ...settingsForm, promo_banner: e.target.value })}
                     />
                   </div>
+                  
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
+                    <div>
+                      <label className="form-label" style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.85rem' }}>Fitur Artikel (Edukasi)</label>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.15rem' }}>Tampilkan menu edukasi & tips satwa</span>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={settingsForm.articles_enabled !== '0'} 
+                        onChange={(e) => setSettingsForm({ ...settingsForm, articles_enabled: e.target.checked ? '1' : '0' })}
+                        style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                      />
+                      <span style={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: settingsForm.articles_enabled !== '0' ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                        transition: '0.3s',
+                        borderRadius: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '2px'
+                      }}>
+                        <span style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          backgroundColor: '#fff',
+                          transition: '0.3s',
+                          transform: settingsForm.articles_enabled !== '0' ? 'translateX(22px)' : 'translateX(0px)',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                        }} />
+                      </span>
+                    </label>
+                  </div>
+
                   <button 
                     type="submit" 
                     className="btn-full btn-primary" 
@@ -2169,12 +4675,13 @@ function App() {
                     </div>
                   </div>
                 </div>
-              </>
-            )}
+                </div>
+              )}
 
               {adminSubTab === 'profile' && (
                 /* TAB 3: ADMIN PROFILE FORM */
-                <form onSubmit={handleProfileUpdate} className="glass-panel" style={{ padding: '1.25rem' }}>
+                <div style={{ paddingTop: '4rem' }}>
+                  <form onSubmit={handleProfileUpdate} className="glass-panel" style={{ padding: '1.25rem' }}>
                   {profileSuccess && (
                     <div className="alert-box alert-success">
                       {profileSuccess}
@@ -2224,7 +4731,8 @@ function App() {
                     {profileLoading ? 'Memproses...' : 'Perbarui Profil'}
                   </button>
                 </form>
-              )}
+              </div>
+            )}
 
               {adminSubTab === 'articles' && (
                 <div>
@@ -2289,21 +4797,74 @@ function App() {
       </main>
     </div>
 
+      {/* PREMIUM CONFIRMATION DIALOG FOR FAUNA DELETION */}
+      {activeTab === 'admin' && faunaToDelete && (
+        <div className="bottom-sheet-confirm-overlay" onClick={() => setFaunaToDelete(null)}>
+          <div className="bottom-sheet-confirm" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-handle" style={{ marginTop: 0, marginBottom: '1.25rem' }}></div>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem auto',
+              border: '1px solid rgba(239, 68, 68, 0.2)'
+            }}>
+              <AlertTriangle size={24} style={{ color: '#f87171' }} />
+            </div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)', textAlign: 'center' }}>
+              Hapus Postingan?
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem', lineHeight: '1.45', textAlign: 'center' }}>
+              Apakah Anda yakin ingin menghapus postingan fauna <strong>"{faunaToDelete.name}"</strong>? Tindakan ini tidak dapat dibatalkan.
+            </p>
 
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setFaunaToDelete(null)}
+                style={{ flex: 1, fontSize: '0.85rem', padding: '0.65rem', borderRadius: '0.35rem', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button 
+                type="button" 
+                className="btn-primary"
+                style={{ flex: 1, backgroundColor: '#ef4444', borderColor: '#ef4444', color: '#fff', fontSize: '0.85rem', padding: '0.65rem', borderRadius: '0.35rem', fontWeight: 'bold', cursor: 'pointer' }}
+                onClick={async () => {
+                  const deleted = await handleFaunaDelete(faunaToDelete.id)
+                  if (deleted) {
+                    setIsDetailActive(false);
+                    setSelectedFauna(null);
+                  }
+                  setFaunaToDelete(null)
+                }}
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CUSTOM CONFIRMATION DIALOG FOR MASTER OPTION DELETION */}
-      {deleteMasterModalData && (
-        <div className="modal-overlay" onClick={() => setDeleteMasterModalData(null)}>
-          <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '340px', width: '90%', padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--danger)' }}>
+      {activeTab === 'admin' && deleteMasterModalData && (
+        <div className="bottom-sheet-confirm-overlay" onClick={() => setDeleteMasterModalData(null)}>
+          <div className="bottom-sheet-confirm" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-handle" style={{ marginTop: 0, marginBottom: '1.25rem' }}></div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--danger)', textAlign: 'center' }}>
               Konfirmasi Hapus
             </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', lineHeight: '1.4' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', lineHeight: '1.45', textAlign: 'center' }}>
               Anda yakin ingin menghapus <strong>"{deleteMasterModalData.value}"</strong>?
               Semua postingan fauna yang menggunakan opsi ini akan dialihkan ke opsi pengganti di bawah ini.
             </p>
 
-            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Pilih Opsi Pengganti *</label>
               <select 
                 className="form-select"
@@ -2320,19 +4881,19 @@ function App() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button 
                 type="button" 
                 className="btn-secondary" 
                 onClick={() => setDeleteMasterModalData(null)}
-                style={{ fontSize: '0.8rem', padding: '0.4rem 1rem', borderRadius: '0.35rem' }}
+                style={{ flex: 1, fontSize: '0.85rem', padding: '0.65rem', borderRadius: '0.35rem', cursor: 'pointer' }}
               >
                 Batal
               </button>
               <button 
                 type="button" 
                 className="btn-primary"
-                style={{ backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', fontSize: '0.8rem', padding: '0.4rem 1rem', borderRadius: '0.35rem' }}
+                style={{ flex: 1, backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', fontSize: '0.85rem', padding: '0.65rem', borderRadius: '0.35rem', fontWeight: 'bold', cursor: 'pointer' }}
                 onClick={async () => {
                   const { field, value, selectedReplacement } = deleteMasterModalData;
                   setDeleteMasterModalData(null); // Close modal
@@ -2346,13 +4907,13 @@ function App() {
                     })
                     const data = await res.json()
                     if (res.ok && data.success) {
-                      alert(data.message || 'Opsi master berhasil dihapus.')
+                      showToast('Kategori/Opsi berhasil dihapus!')
                       loadData()
                     } else {
-                      alert(data.message || 'Gagal menghapus opsi master.')
+                      showToast(data.message || 'Gagal menghapus opsi.', 'error')
                     }
                   } catch (err) {
-                    alert('Terjadi kesalahan saat menghapus opsi master.')
+                    showToast('Koneksi internet bermasalah. Gagal menghapus opsi.', 'error')
                   } finally {
                     setCrudLoading(false)
                   }
@@ -2751,126 +5312,45 @@ function App() {
         </div>
       )}
 
-      {/* MOBILE BOTTOM SHEET: ARTICLE CRUD FORM */}
-      {showArticleFormSheet && (
-        <div className="bottom-sheet-overlay" onClick={() => setShowArticleFormSheet(false)}>
-          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
-            <div className="sheet-handle"></div>
-            <div className="sheet-content">
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>
-                {editingArticle ? 'Edit Artikel Edukasi' : 'Tulis Artikel Baru'}
-              </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '1.25rem' }}>
-                Lengkapi rincian formulir untuk menerbitkan artikel.
-              </p>
 
-              <form onSubmit={handleSaveArticle}>
-                <div className="form-group">
-                  <label className="form-label">Judul Artikel *</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="Judul artikel menarik..."
-                    required
-                    value={articleForm.title}
-                    onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">URL Gambar Sampul (Opsional)</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="https://images.unsplash.com/..."
-                    value={articleForm.image_url}
-                    onChange={(e) => setArticleForm({ ...articleForm, image_url: e.target.value })}
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                  <div className="form-group">
-                    <label className="form-label">Penulis *</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      required
-                      value={articleForm.author}
-                      onChange={(e) => setArticleForm({ ...articleForm, author: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Estimasi Baca *</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="contoh: 5 mnt baca"
-                      required
-                      value={articleForm.read_time}
-                      onChange={(e) => setArticleForm({ ...articleForm, read_time: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Isi Konten Artikel *</label>
-                  <textarea 
-                    rows={6} 
-                    className="form-textarea" 
-                    placeholder="Tulis seluruh isi artikel..."
-                    required
-                    value={articleForm.content}
-                    onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
-                  />
-                </div>
-
-                <button 
-                  type="submit" 
-                  className="btn-full btn-primary"
-                  disabled={articlesLoading}
-                  style={{ marginTop: '0.5rem' }}
-                >
-                  {articlesLoading ? 'Menyimpan...' : 'Terbitkan Artikel'}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Fixed Bottom Navigation Bar */}
-      <nav className="bottom-nav">
-        <button 
-          className={`nav-item ${activeTab === 'catalog' ? 'active' : ''}`}
-          onClick={goToCatalog}
-        >
-          <BookOpen size={20} />
-          <span>Katalog</span>
-        </button>
-        <button 
-          className={`nav-item ${activeTab === 'about' ? 'active' : ''}`}
-          onClick={goToAbout}
-        >
-          <Info size={20} />
-          <span>Tentang Kami</span>
-        </button>
-        <button 
-          className={`nav-item ${activeTab === 'articles' ? 'active' : ''}`}
-          onClick={goToArticles}
-        >
-          <FileText size={20} />
-          <span>Artikel</span>
-        </button>
-        {token && (
+      {!(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && (
+        <nav className="bottom-nav">
           <button 
-            className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
-            onClick={() => setActiveTab('admin')}
+            className={`nav-item ${activeTab === 'catalog' ? 'active' : ''}`}
+            onClick={goToCatalog}
           >
-            <Settings size={20} />
-            <span>Admin</span>
+            <BookOpen size={20} />
+            <span>Katalog</span>
           </button>
-        )}
-      </nav>
+          <button 
+            className={`nav-item ${activeTab === 'about' ? 'active' : ''}`}
+            onClick={goToAbout}
+          >
+            <Info size={20} />
+            <span>Tentang Kami</span>
+          </button>
+          {settings.articles_enabled !== '0' && (
+            <button 
+              className={`nav-item ${activeTab === 'articles' ? 'active' : ''}`}
+              onClick={goToArticles}
+            >
+              <FileText size={20} />
+              <span>Artikel</span>
+            </button>
+          )}
+          {token && (
+            <button 
+              className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
+              onClick={() => setActiveTab('admin')}
+            >
+              <Settings size={20} />
+              <span>Admin</span>
+            </button>
+          )}
+        </nav>
+      )}
         </>
       )}
 
@@ -3061,6 +5541,317 @@ function App() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* SINGLE IMAGE LIGHTBOX OVERLAY WITH ZOOM & PAN */}
+      {activeLightboxImage && (
+        <div 
+          className="modal-overlay" 
+          style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.97)', zIndex: 3000, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', userSelect: 'none' }}
+          onClick={() => setActiveLightboxImage(null)}
+        >
+          {/* Close Button */}
+          <button 
+            className="modal-close-btn" 
+            style={{ position: 'absolute', top: '1rem', right: '1rem', color: '#fff', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '0.5rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', zIndex: 3200 }} 
+            onClick={() => setActiveLightboxImage(null)}
+          >
+            <X size={18} />
+          </button>
+
+          {/* Main Visual Container */}
+          <div 
+            style={{ width: '95vw', height: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Touch Zoomable/Pannable Image Container */}
+            <div 
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomScale})`,
+                transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+              }}
+              onTouchStart={(e) => {
+                if (zoomScale > 1 && e.touches.length === 1) {
+                  setIsDragging(true)
+                  const touch = e.touches[0]
+                  setDragStart({ x: touch.clientX - panPosition.x, y: touch.clientY - panPosition.y })
+                }
+              }}
+              onTouchMove={(e) => {
+                if (isDragging && zoomScale > 1 && e.touches.length === 1) {
+                  const touch = e.touches[0]
+                  setPanPosition({
+                    x: touch.clientX - dragStart.x,
+                    y: touch.clientY - dragStart.y
+                  })
+                }
+              }}
+              onTouchEnd={() => setIsDragging(false)}
+              onDoubleClick={() => {
+                if (zoomScale > 1) {
+                  setZoomScale(1)
+                  setPanPosition({ x: 0, y: 0 })
+                } else {
+                  setZoomScale(2.5)
+                }
+              }}
+            >
+              <img
+                src={activeLightboxImage}
+                alt="Detail Gambar"
+                style={{
+                  maxHeight: '100%',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                  pointerEvents: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Bottom Control Bar */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              gap: '1.25rem', 
+              background: 'rgba(0,0,0,0.6)', 
+              padding: '0.4rem 1rem', 
+              borderRadius: '2rem', 
+              marginTop: '1rem',
+              zIndex: 3100,
+              backdropFilter: 'blur(5px)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              type="button"
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem' }}
+              onClick={() => {
+                setZoomScale(prev => Math.min(prev + 0.5, 4))
+              }}
+            >
+              <ZoomIn size={16} /> Perbesar
+            </button>
+            <span style={{ color: 'rgba(255,255,255,0.4)' }}>|</span>
+            <button 
+              type="button"
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem' }}
+              onClick={() => {
+                setZoomScale(prev => {
+                  const next = Math.max(prev - 0.5, 1)
+                  if (next === 1) setPanPosition({ x: 0, y: 0 })
+                  return next
+                })
+              }}
+            >
+              <ZoomOut size={16} /> Perkecil
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* IMAGE SETTINGS DIALOG MODAL */}
+      {showImageSettingsModal && selectedEditorImage && (
+        <div className="modal-overlay" style={{ zIndex: 4000 }}>
+          <div className="glass-panel" style={{ width: '90%', maxWidth: '400px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative' }}>
+            <button 
+              type="button" 
+              className="modal-close-btn" 
+              onClick={() => setShowImageSettingsModal(false)}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-secondary)' }}
+            >
+              <X size={18} />
+            </button>
+
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Edit Gambar</h3>
+
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label className="form-label" style={{ fontSize: '0.8rem' }}>Teks Alternatif (Alt Text - SEO) *</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={imageAltText} 
+                onChange={(e) => setImageAltText(e.target.value)} 
+                placeholder="Deskripsi gambar untuk pencarian Google..." 
+                style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label className="form-label" style={{ fontSize: '0.8rem' }}>Teks Judul / Keterangan (Title/Caption)</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={imageCaptionText} 
+                onChange={(e) => setImageCaptionText(e.target.value)} 
+                placeholder="Judul atau caption melayang..." 
+                style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label className="form-label" style={{ fontSize: '0.8rem' }}>Ukuran Gambar</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input type="radio" name="img-size" checked={imageSizeSelection === 'kecil'} onChange={() => setImageSizeSelection('kecil')} />
+                  Kecil (150px)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input type="radio" name="img-size" checked={imageSizeSelection === 'sedang'} onChange={() => setImageSizeSelection('sedang')} />
+                  Sedang (300px)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input type="radio" name="img-size" checked={imageSizeSelection === 'besar'} onChange={() => setImageSizeSelection('besar')} />
+                  Besar (500px)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input type="radio" name="img-size" checked={imageSizeSelection === 'ekstrabesar'} onChange={() => setImageSizeSelection('ekstrabesar')} />
+                  Ekstra Besar (800px)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input type="radio" name="img-size" checked={imageSizeSelection === 'asli'} onChange={() => setImageSizeSelection('asli')} />
+                  Ukuran Asli (100%)
+                </label>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setShowImageSettingsModal(false)}
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+              >
+                Batal
+              </button>
+              <button 
+                type="button" 
+                className="btn-primary" 
+                onClick={() => {
+                  if (selectedEditorImage) {
+                    selectedEditorImage.setAttribute('alt', imageAltText);
+                    
+                    if (imageSizeSelection === 'kecil') {
+                      selectedEditorImage.style.width = '150px';
+                      selectedEditorImage.style.maxWidth = '30%';
+                    } else if (imageSizeSelection === 'sedang') {
+                      selectedEditorImage.style.width = '300px';
+                      selectedEditorImage.style.maxWidth = '60%';
+                    } else if (imageSizeSelection === 'besar') {
+                      selectedEditorImage.style.width = '500px';
+                      selectedEditorImage.style.maxWidth = '80%';
+                    } else if (imageSizeSelection === 'ekstrabesar') {
+                      selectedEditorImage.style.width = '800px';
+                      selectedEditorImage.style.maxWidth = '95%';
+                    } else if (imageSizeSelection === 'asli') {
+                      selectedEditorImage.style.width = '100%';
+                      selectedEditorImage.style.maxWidth = '100%';
+                    }
+                    selectedEditorImage.style.height = 'auto';
+
+                    const parent = selectedEditorImage.parentElement;
+                    const isWrapped = parent && parent.classList.contains('img-caption-wrapper');
+
+                    if (imageCaptionText.trim()) {
+                      if (isWrapped) {
+                        const capDiv = parent.querySelector('.img-caption-text') as HTMLElement;
+                        if (capDiv) {
+                          capDiv.innerText = imageCaptionText;
+                        }
+                        parent.style.width = selectedEditorImage.style.width;
+                        parent.style.maxWidth = selectedEditorImage.style.maxWidth;
+                      } else {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'img-caption-wrapper';
+                        
+                        wrapper.style.display = selectedEditorImage.style.display || 'block';
+                        wrapper.style.float = selectedEditorImage.style.float || 'none';
+                        wrapper.style.margin = selectedEditorImage.style.margin || '1rem auto';
+                        wrapper.style.clear = selectedEditorImage.style.clear || 'both';
+                        wrapper.style.width = selectedEditorImage.style.width;
+                        wrapper.style.maxWidth = selectedEditorImage.style.maxWidth;
+                        
+                        selectedEditorImage.style.display = 'block';
+                        selectedEditorImage.style.float = 'none';
+                        selectedEditorImage.style.margin = '0 auto';
+                        selectedEditorImage.style.clear = 'none';
+                        
+                        const capDiv = document.createElement('div');
+                        capDiv.className = 'img-caption-text';
+                        capDiv.innerText = imageCaptionText;
+                        
+                        selectedEditorImage.parentNode?.insertBefore(wrapper, selectedEditorImage);
+                        wrapper.appendChild(selectedEditorImage);
+                        wrapper.appendChild(capDiv);
+                      }
+                    } else {
+                      if (isWrapped) {
+                        const grandParent = parent.parentElement;
+                        if (grandParent) {
+                          selectedEditorImage.style.display = parent.style.display;
+                          selectedEditorImage.style.float = parent.style.float;
+                          selectedEditorImage.style.margin = parent.style.margin;
+                          selectedEditorImage.style.clear = parent.style.clear;
+                          
+                          grandParent.insertBefore(selectedEditorImage, parent);
+                          parent.remove();
+                        }
+                      }
+                    }
+
+                    handleVisualInput();
+                    setShowImageSettingsModal(false);
+                  }
+                }}
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+              >
+                Perbarui
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          left: '50%',
+          zIndex: 9999,
+          padding: '0.75rem 1.25rem',
+          borderRadius: '2rem',
+          backgroundColor: toast.type === 'success' ? 'rgba(10, 18, 14, 0.93)' : 'rgba(22, 12, 12, 0.93)',
+          color: '#f3f4f6',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          boxShadow: toast.type === 'success' 
+            ? '0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(16, 185, 129, 0.2)' 
+            : '0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(239, 68, 68, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.65rem',
+          backdropFilter: 'blur(16px)',
+          border: toast.type === 'success' 
+            ? '1px solid rgba(16, 185, 129, 0.35)' 
+            : '1px solid rgba(239, 68, 68, 0.35)',
+          maxWidth: '90%',
+          minWidth: '280px',
+          justifyContent: 'center',
+          animation: 'toast-slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          boxSizing: 'border-box'
+        }}>
+          {toast.type === 'success' 
+            ? <ShieldCheck size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} /> 
+            : <AlertTriangle size={18} style={{ color: '#ef4444', flexShrink: 0 }} />
+          }
+          <span style={{ letterSpacing: '0.01em', lineHeight: 1.3 }}>{toast.message}</span>
         </div>
       )}
     </>

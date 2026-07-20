@@ -37,6 +37,8 @@ class ArticleSeeder extends Seeder
         ];
 
         foreach ($articles as $article) {
+            $article['slug'] = \Illuminate\Support\Str::slug($article['title']);
+            $article['meta_description'] = substr(strip_tags($article['content']), 0, 150) . '...';
             Article::create($article);
         }
     }

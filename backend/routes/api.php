@@ -7,6 +7,7 @@ use App\Http\Controllers\SightingController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CommentController;
 
 // Public Endpoints
 Route::get('/fauna', [FaunaController::class, 'index']);
@@ -14,6 +15,8 @@ Route::get('/fauna/{id}', [FaunaController::class, 'show']);
 Route::get('/settings', [SettingController::class, 'index']);
 Route::get('/articles', [ArticleController::class, 'index']);
 Route::get('/articles/{id}', [ArticleController::class, 'show']);
+Route::get('/articles/{id}/comments', [CommentController::class, 'getArticleComments']);
+Route::post('/articles/{id}/comments', [CommentController::class, 'storeComment']);
 Route::post('/sightings', [SightingController::class, 'store']); // kept for compatibility
 
 // Authentication Endpoint
@@ -39,4 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/articles', [ArticleController::class, 'store']);
     Route::put('/articles/{id}', [ArticleController::class, 'update']);
     Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);
+
+    // Comment admin moderation
+    Route::get('/admin/comments', [CommentController::class, 'getAdminComments']);
+    Route::put('/admin/comments/{id}/approve', [CommentController::class, 'approveComment']);
+    Route::delete('/admin/comments/{id}', [CommentController::class, 'destroyComment']);
 });

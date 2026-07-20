@@ -16,7 +16,18 @@ class SettingController extends Controller
             'master_classes' => json_encode(['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil']),
             'master_habitats' => json_encode(['Air Tawar', 'Air Laut', 'Darat']),
             'master_statuses' => json_encode(['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)']),
-            'master_shipping_coverages' => json_encode(['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)'])
+            'master_shipping_coverages' => json_encode(['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']),
+            'about_title' => 'Tentang DFauna',
+            'about_slogan' => 'Premium Quality Pet & Aquatic Gallery',
+            'about_description' => 'DFauna adalah galeri satwa hias premium terpercaya yang berkomitmen menyediakan satwa hias berkualitas tinggi, mulai dari ikan hias eksotis, reptil unik, hingga mamalia kecil yang lucu. Kami berdedikasi menjaga kesehatan prima setiap satwa demi kepuasan dan kebahagiaan para pecinta satwa di Indonesia.',
+            'about_location' => 'Bandung, Jawa Barat, Indonesia',
+            'about_hours' => '08:00 - 21:00 WIB (Setiap Hari)',
+            'about_disclaimer' => 'DFauna berkomitmen penuh terhadap pelestarian lingkungan dan kepatuhan hukum. Kami tidak pernah dan tidak akan melayani transaksi jual-beli untuk jenis satwa liar atau hewan langka yang dilindungi oleh undang-undang.',
+            'about_cards' => json_encode([
+                ['title' => 'Garansi Kesehatan', 'content' => 'Setiap satwa melewati proses karantina ketat dan pemeriksaan kesehatan berkala sebelum dipasarkan.', 'icon' => 'shield'],
+                ['title' => 'Transaksi Aman & Terpercaya', 'content' => 'Kami mendukung sistem pembayaran aman secara langsung maupun menggunakan jasa Rekber Syariah.', 'icon' => 'lock'],
+                ['title' => 'Konsultasi Purna Jual', 'content' => 'Tim ahli kami siap membantu Anda berkonsultasi seputar pakan, akuarium, dan perawatan jangka panjang.', 'icon' => 'message']
+            ])
         ];
 
         foreach ($defaults as $key => $defaultValue) {

@@ -71,7 +71,6 @@ button, input, textarea, select {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-bottom: 70px; /* Leave space for bottom tab bar */
 }
 
 /* Mobile responsive containers */
