@@ -27,6 +27,10 @@ class SettingController extends Controller
                 ['title' => 'Garansi Kesehatan', 'content' => 'Setiap satwa melewati proses karantina ketat dan pemeriksaan kesehatan berkala sebelum dipasarkan.', 'icon' => 'shield'],
                 ['title' => 'Transaksi Aman & Terpercaya', 'content' => 'Kami mendukung sistem pembayaran aman secara langsung maupun menggunakan jasa Rekber Syariah.', 'icon' => 'lock'],
                 ['title' => 'Konsultasi Purna Jual', 'content' => 'Tim ahli kami siap membantu Anda berkonsultasi seputar pakan, akuarium, dan perawatan jangka panjang.', 'icon' => 'message']
+            ]),
+            'social_links' => json_encode([
+                ['platform' => 'Instagram', 'url' => 'https://instagram.com/dfauna'],
+                ['platform' => 'Facebook', 'url' => 'https://facebook.com/dfauna']
             ])
         ];
 
