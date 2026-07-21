@@ -1193,17 +1193,14 @@ function App() {
 
   // Navigation helpers
   const goToCatalog = () => {
-    window.history.pushState({}, '', '/')
     setActiveTab('catalog')
   }
 
   const goToAbout = () => {
-    window.history.pushState({}, '', '/')
     setActiveTab('about')
   }
 
   const goToArticles = () => {
-    window.history.pushState({}, '', '/')
     setActiveTab('articles')
   }
 

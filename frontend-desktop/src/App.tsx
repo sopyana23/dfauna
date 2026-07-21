@@ -977,7 +977,6 @@ function App() {
 
   // Navigation helpers
   const goToCatalog = () => {
-    window.history.pushState({}, '', '/')
     setView('catalog')
   }
 
