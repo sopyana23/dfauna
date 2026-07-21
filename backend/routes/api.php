@@ -8,6 +8,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\StoreController;
 
 // Public Endpoints
 Route::get('/fauna', [FaunaController::class, 'index']);
@@ -19,8 +20,14 @@ Route::get('/articles/{id}/comments', [CommentController::class, 'getArticleComm
 Route::post('/articles/{id}/comments', [CommentController::class, 'storeComment']);
 Route::post('/sightings', [SightingController::class, 'store']); // kept for compatibility
 
-// Authentication Endpoint
+// Multi-Tenant public store endpoints
+Route::get('/stores/featured', [StoreController::class, 'featuredStores']);
+Route::get('/u/{slug}', [StoreController::class, 'show']);
+Route::get('/u/{slug}/fauna', [StoreController::class, 'indexFauna']);
+
+// Authentication Endpoints
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
 // Guarded Admin Endpoints (Require Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {
@@ -29,13 +36,16 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // CRUD postings
     Route::post('/upload-image', [FaunaController::class, 'uploadImage']);
-    Route::post('/fauna/delete-master-option', [FaunaController::class, 'deleteMasterOption']);
-    Route::post('/fauna/add-master-option', [FaunaController::class, 'addMasterOption']);
     Route::post('/fauna', [FaunaController::class, 'store']);
     Route::put('/fauna/{id}', [FaunaController::class, 'update']);
     Route::delete('/fauna/{id}', [FaunaController::class, 'destroy']);
     
-    // Manage Settings
+    // Multi-tenant store profile details & master data options
+    Route::post('/stores/update', [StoreController::class, 'update']);
+    Route::post('/stores/add-master-option', [StoreController::class, 'addMasterOption']);
+    Route::post('/stores/delete-master-option', [StoreController::class, 'deleteMasterOption']);
+    
+    // Legacy global settings write (kept for safety)
     Route::post('/settings', [SettingController::class, 'store']);
 
     // Article CRUD

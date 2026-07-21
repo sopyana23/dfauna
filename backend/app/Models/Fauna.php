@@ -18,7 +18,8 @@ class Fauna extends Model
         'detailed_info',
         'price',
         'video_url',
-        'is_shipping_available'
+        'is_shipping_available',
+        'store_id'
     ];
 
     protected $casts = [
@@ -26,6 +27,11 @@ class Fauna extends Model
         'price' => 'integer',
         'is_shipping_available' => 'boolean'
     ];
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
 
     public function sightings()
     {

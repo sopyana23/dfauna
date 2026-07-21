@@ -49,4 +49,9 @@ class User extends Authenticatable
             'is_password_changed' => 'boolean',
         ];
     }
+
+    public function store()
+    {
+        return $this->hasOne(Store::class);
+    }
 }

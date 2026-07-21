@@ -312,6 +312,27 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
 }
 
 function App() {
+
+  // Parse path for store slug: /u/{slug}
+  const getStoreSlug = () => {
+    const match = window.location.pathname.match(/^\/u\/([a-zA-Z0-9\-]+)/);
+    return match ? match[1] : null;
+  };
+  const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
+  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home');
+  const [featuredStores, setFeaturedStores] = useState<any[]>([]);
+  
+  // Registration form state
+  const [registerForm, setRegisterForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    store_name: '',
+    store_slug: ''
+  });
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
@@ -555,10 +576,12 @@ function App() {
 
   // Detect URL path on mount
   useEffect(() => {
-    if (window.location.pathname.startsWith('/admin')) {
-      setActiveTab('admin')
+    const slug = getStoreSlug();
+    setStoreSlug(slug);
+    if (window.location.pathname.endsWith('/admin')) {
+      setActiveTab('admin');
     } else {
-      setActiveTab('catalog')
+      setActiveTab('catalog');
     }
 
     // STRICT FLOW: If the user visits the admin page on mount but they haven't completed changing their password,
@@ -588,15 +611,17 @@ function App() {
   // Listen to popstate
   useEffect(() => {
     const handlePopState = () => {
-      if (window.location.pathname.startsWith('/admin')) {
-        setActiveTab('admin')
+      const slug = getStoreSlug();
+      setStoreSlug(slug);
+      if (window.location.pathname.endsWith('/admin')) {
+        setActiveTab('admin');
       } else {
-        setActiveTab('catalog')
+        setActiveTab('catalog');
       }
-    }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Get headers helper
   const getAuthHeaders = () => {
@@ -609,64 +634,78 @@ function App() {
 
   // Load Data
   const loadData = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
+    const slug = getStoreSlug();
+    
     try {
-      // Fetch settings
-      const settingsRes = await fetch(`${API_BASE}/settings`)
-      const settingsData = await settingsRes.json()
-      if (settingsData.success && settingsData.data) {
-        const fetchedSettings = {
-          whatsapp_number: settingsData.data.whatsapp_number || '628123456789',
-          store_slogan: settingsData.data.store_slogan || 'Galeri Satwa Hias Premium',
-          promo_banner: settingsData.data.promo_banner || '',
-          articles_enabled: settingsData.data.articles_enabled !== undefined ? settingsData.data.articles_enabled : '1',
-          about_title: settingsData.data.about_title || '',
-          about_slogan: settingsData.data.about_slogan || '',
-          about_description: settingsData.data.about_description || '',
-          about_cards: settingsData.data.about_cards || '',
-          about_location: settingsData.data.about_location || '',
-          about_hours: settingsData.data.about_hours || '',
-          about_disclaimer: settingsData.data.about_disclaimer || '',
-          social_links: settingsData.data.social_links || '',
-          store_title: settingsData.data.store_title || 'DFauna',
-          store_logo_url: settingsData.data.store_logo_url || '',
-          default_is_comments_enabled: settingsData.data.default_is_comments_enabled !== undefined ? settingsData.data.default_is_comments_enabled : '1',
-          default_require_comment_approval: settingsData.data.default_require_comment_approval !== undefined ? settingsData.data.default_require_comment_approval : '0',
-          default_require_comment_email: settingsData.data.default_require_comment_email !== undefined ? settingsData.data.default_require_comment_email : '0',
-          default_verify_comment_email_domain: settingsData.data.default_verify_comment_email_domain !== undefined ? settingsData.data.default_verify_comment_email_domain : '0'
+      if (slug) {
+        // Fetch store-specific profile
+        const settingsRes = await fetch(`${API_BASE}/u/${slug}`);
+        const settingsData = await settingsRes.json();
+        
+        if (settingsData.success && settingsData.data) {
+          const store = settingsData.data;
+          const fetchedSettings = {
+            whatsapp_number: store.whatsapp_number || '628123456789',
+            store_slogan: store.store_slogan || 'Galeri Satwa Hias Premium',
+            promo_banner: store.promo_banner || '',
+            articles_enabled: '0', // force articles module hidden
+            about_title: store.about_title || '',
+            about_slogan: store.about_slogan || '',
+            about_description: store.about_description || '',
+            about_cards: store.about_cards ? JSON.stringify(store.about_cards) : '',
+            about_location: store.about_location || '',
+            about_hours: store.about_hours || '',
+            about_disclaimer: store.about_disclaimer || '',
+            social_links: store.social_links ? JSON.stringify(store.social_links) : '',
+            store_title: store.store_title || 'DFauna',
+            store_logo_url: store.store_logo_url || '',
+            default_is_comments_enabled: '0',
+            default_require_comment_approval: '0',
+            default_require_comment_email: '0',
+            default_verify_comment_email_domain: '0'
+          };
+          
+          setSettings(fetchedSettings);
+          setSettingsForm(fetchedSettings);
+          
+          if (store.master_classes) setMasterClasses(store.master_classes);
+          if (store.master_habitats) setMasterHabitats(store.master_habitats);
+          if (store.master_statuses) setMasterStatuses(store.master_statuses);
+          if (store.master_shipping_coverages) setMasterShippingCoverages(store.master_shipping_coverages);
+        } else {
+          setError('Toko tidak ditemukan.');
         }
-        setSettings(fetchedSettings)
-        setSettingsForm(fetchedSettings)
-        if (settingsData.data.master_classes) setMasterClasses(JSON.parse(settingsData.data.master_classes))
-        if (settingsData.data.master_habitats) setMasterHabitats(JSON.parse(settingsData.data.master_habitats))
-        if (settingsData.data.master_statuses) setMasterStatuses(JSON.parse(settingsData.data.master_statuses))
-        if (settingsData.data.master_shipping_coverages) setMasterShippingCoverages(JSON.parse(settingsData.data.master_shipping_coverages))
-      }
 
-      // Fetch faunas
-      const params = new URLSearchParams()
-      if (search) params.append('search', search)
-      if (classFilter !== 'all') params.append('class', classFilter)
-      if (habitatFilter !== 'all') params.append('habitat', habitatFilter)
+        // Fetch store-scoped fauna catalog
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (classFilter !== 'all') params.append('class', classFilter);
+        if (habitatFilter !== 'all') params.append('habitat', habitatFilter);
 
-      const faunaRes = await fetch(`${API_BASE}/fauna?${params.toString()}`)
-      const faunaData = await faunaRes.json()
-      if (faunaData.success) {
-        setFaunas(faunaData.data)
+        const faunaRes = await fetch(`${API_BASE}/u/${slug}/fauna?${params.toString()}`);
+        const faunaData = await faunaRes.json();
+        if (faunaData.success) {
+          setFaunas(faunaData.data);
+        } else {
+          setError('Gagal memuat produk.');
+        }
       } else {
-        setError('Gagal memuat produk.')
+        // Portal mode: Fetch featured stores
+        const featuredRes = await fetch(`${API_BASE}/stores/featured`);
+        const featuredData = await featuredRes.json();
+        if (featuredData.success) {
+          setFeaturedStores(featuredData.data);
+        }
       }
-
-      // Fetch articles
-      await fetchArticles()
     } catch (err) {
-      console.error(err)
-      setError('Koneksi terputus. Pastikan server backend Laravel aktif.')
+      console.error(err);
+      setError('Koneksi terputus. Pastikan server backend Laravel aktif.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchArticles = async () => {
     setArticlesLoading(true)
@@ -971,6 +1010,53 @@ function App() {
   }
 
   // Handle Login Submit
+  
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterLoading(true);
+    setRegisterError(null);
+
+    try {
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(registerForm)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('dfauna_token', data.token);
+        localStorage.setItem('dfauna_user', JSON.stringify(data.user));
+        localStorage.setItem('dfauna_password_changed', 'true');
+        
+        setToken(data.token);
+        setAdminUser(data.user);
+        setIsPasswordChanged(true);
+        setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
+        
+        // Redirect to store admin
+        window.history.pushState({}, '', `/u/${data.user.store_slug}`);
+        setStoreSlug(data.user.store_slug);
+        setActiveTab('admin');
+      } else {
+        if (data.errors) {
+          const firstErr = Object.values(data.errors)[0] as string[];
+          setRegisterError(firstErr[0] || 'Gagal mendaftar.');
+        } else {
+          setRegisterError(data.message || 'Registrasi gagal.');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setRegisterError('Koneksi terputus. Pastikan server backend Laravel aktif.');
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginLoading(true)
@@ -996,6 +1082,16 @@ function App() {
         setAdminUser(data.user)
         setIsPasswordChanged(data.is_password_changed)
         setLoginForm({ email: '', password: '' })
+        
+        // If login succeeded on landing portal, redirect context to user's store
+        const currentSlug = getStoreSlug();
+        if (!currentSlug && data.user.store_slug) {
+          window.history.pushState({}, '', `/u/${data.user.store_slug}`);
+          setStoreSlug(data.user.store_slug);
+          setActiveTab('admin');
+        } else {
+          setActiveTab('admin');
+        }
       } else {
         setLoginError(data.message || 'Email atau password salah.')
       }
@@ -1156,28 +1252,36 @@ function App() {
     setSettingsLoading(true)
     setSettingsSuccess(null)
     try {
-      const res = await fetch(`${API_BASE}/settings`, {
+      // Decode arrays from JSON string for backend validation
+      const payload = {
+        ...settingsForm,
+        about_cards: settingsForm.about_cards ? JSON.parse(settingsForm.about_cards) : [],
+        social_links: settingsForm.social_links ? JSON.parse(settingsForm.social_links) : []
+      };
+      
+      const res = await fetch(`${API_BASE}/stores/update`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ settings: settingsForm })
+        body: JSON.stringify(payload)
       })
       const data = await res.json()
       if (res.ok && data.success) {
+        const store = data.data;
         const updated = {
-          whatsapp_number: data.data.whatsapp_number || '',
-          store_slogan: data.data.store_slogan || '',
-          promo_banner: data.data.promo_banner || '',
-          articles_enabled: data.data.articles_enabled !== undefined ? data.data.articles_enabled : '1',
-          about_title: data.data.about_title || '',
-          about_slogan: data.data.about_slogan || '',
-          about_description: data.data.about_description || '',
-          about_cards: data.data.about_cards || '',
-          about_location: data.data.about_location || '',
-          about_hours: data.data.about_hours || '',
-          about_disclaimer: data.data.about_disclaimer || '',
-          social_links: data.data.social_links || '',
-          store_title: data.data.store_title || 'DFauna',
-          store_logo_url: data.data.store_logo_url || ''
+          whatsapp_number: store.whatsapp_number || '',
+          store_slogan: store.store_slogan || '',
+          promo_banner: store.promo_banner || '',
+          articles_enabled: '0',
+          about_title: store.about_title || '',
+          about_slogan: store.about_slogan || '',
+          about_description: store.about_description || '',
+          about_cards: store.about_cards ? JSON.stringify(store.about_cards) : '',
+          about_location: store.about_location || '',
+          about_hours: store.about_hours || '',
+          about_disclaimer: store.about_disclaimer || '',
+          social_links: store.social_links ? JSON.stringify(store.social_links) : '',
+          store_title: store.store_title || 'DFauna',
+          store_logo_url: store.store_logo_url || ''
         }
         setSettings(updated)
         setSettingsForm(updated)
@@ -1715,7 +1819,7 @@ function App() {
 
     try {
       setCrudLoading(true)
-      const res = await fetch(`${API_BASE}/fauna/add-master-option`, {
+      const res = await fetch(`${API_BASE}/stores/add-master-option`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ field, value: trimmed })
@@ -1787,6 +1891,265 @@ function App() {
     const combined = [...sameClass, ...differentClass]
     return combined.slice(0, 4)
   }
+
+  // Render Landing Portal Page (Mobile Responsive Layout)
+  if (!storeSlug) {
+    return (
+      <div className="portal-container" style={{ minHeight: '100vh', backgroundColor: '#090e0c', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}>
+        {/* Header */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
+            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              🦎 DFauna <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {token ? (
+              <button className="btn-primary btn-small" onClick={() => {
+                const user = JSON.parse(localStorage.getItem('dfauna_user') || '{}');
+                if (user.store_slug) {
+                  window.history.pushState({}, '', `/u/${user.store_slug}`);
+                  setStoreSlug(user.store_slug);
+                  setActiveTab('admin');
+                }
+              }}>
+                Dashboard
+              </button>
+            ) : (
+              <>
+                <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Masuk</button>
+                <button className="btn-primary btn-small" onClick={() => setPortalTab('register')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Daftar</button>
+              </>
+            )}
+          </div>
+        </header>
+
+        {portalTab === 'home' && (
+          <main style={{ padding: '2rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            {/* Hero Section */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.8rem', borderRadius: '30px', backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
+                <Sparkles size={12} style={{ color: 'var(--primary)' }} />
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Kustomisasi Galeri Fauna</span>
+              </div>
+              <h1 style={{ fontSize: '2.25rem', fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.03em', marginBottom: '1rem' }}>
+                Linktree Premium untuk Galeri Fauna & Aqua Hias
+              </h1>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.5 }}>
+                Tampilkan katalog satwa, deskripsi habitat, lokasi, kontak WhatsApp, dan profil lengkap galeri Anda dalam satu tautan bio modern.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <button className="btn-primary btn-full" style={{ padding: '0.85rem' }} onClick={() => setPortalTab('register')}>
+                  Mulai Sekarang - Gratis
+                </button>
+                <button className="btn-secondary btn-full" style={{ padding: '0.85rem' }} onClick={() => {
+                  const el = document.getElementById('featured-section-mobile');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  Lihat Contoh Galeri
+                </button>
+              </div>
+            </div>
+
+            {/* Features Row */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.5rem' }}>🛍️</span>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Katalog Satwa Interaktif</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                  Tampilkan gambar, deskripsi habitat, harga, dan tombol chat terhubung WhatsApp untuk transaksi mudah.
+                </p>
+              </div>
+
+              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.5rem' }}>🎨</span>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Desain Premium Dinamis</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                  Panel admin responsif untuk mengubah slogan toko, logo, lokasi, jam buka, dan info promo secara instan.
+                </p>
+              </div>
+            </div>
+
+            {/* Featured Stores Section */}
+            <div id="featured-section-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2.5rem' }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, textAlign: 'center', marginBottom: '1.5rem' }}>
+                Galeri Terdaftar
+              </h2>
+              {featuredStores.length === 0 ? (
+                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Belum ada galeri terdaftar.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {featuredStores.map((st) => (
+                    <div 
+                      key={st.slug} 
+                      className="glass-panel" 
+                      onClick={() => {
+                        window.history.pushState({}, '', `/u/${st.slug}`);
+                        setStoreSlug(st.slug);
+                        setActiveTab('catalog');
+                        loadData();
+                      }}
+                      style={{ padding: '1rem', display: 'flex', gap: '1rem', cursor: 'pointer', alignItems: 'center' }}
+                    >
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--primary)', flexShrink: 0 }}>
+                        {st.store_logo_url ? (
+                          <img src={st.store_logo_url} alt={st.store_title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <span style={{ fontSize: '1.2rem' }}>🏪</span>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_title}</h4>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--primary)', margin: '0.1rem 0' }}>dfauna.com/u/{st.slug}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_slogan}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </main>
+        )}
+
+        {portalTab === 'login' && (
+          <div style={{ padding: '3rem 1.25rem' }}>
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <Lock size={28} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 900 }}>Masuk Admin</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Kelola katalog & halaman kustom Anda</p>
+              </div>
+              
+              {loginError && (
+                <div className="alert-message alert-danger" style={{ marginBottom: '1rem' }}>
+                  {loginError}
+                </div>
+              )}
+
+              <form onSubmit={handleLoginSubmit}>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label">Email</label>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    placeholder="nama@email.com" 
+                    required 
+                    value={loginForm.email} 
+                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label className="form-label">Kata Sandi</label>
+                  <input 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="Ketik password..." 
+                    required 
+                    value={loginForm.password} 
+                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  />
+                </div>
+                <button type="submit" className="btn-primary btn-full" disabled={loginLoading}>
+                  {loginLoading ? 'Memproses...' : 'Masuk Dashboard'}
+                </button>
+              </form>
+              <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Belum punya akun? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => setPortalTab('register')}>Daftar Baru</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {portalTab === 'register' && (
+          <div style={{ padding: '2.5rem 1.25rem' }}>
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <Sparkles size={28} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 900 }}>Daftar Galeri Baru</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Buat halaman katalog kustom dalam hitungan menit</p>
+              </div>
+
+              {registerError && (
+                <div className="alert-message alert-danger" style={{ marginBottom: '1rem' }}>
+                  {registerError}
+                </div>
+              )}
+
+              <form onSubmit={handleRegisterSubmit}>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label">Nama Pemilik</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Nama lengkap Anda..." 
+                    required 
+                    value={registerForm.name} 
+                    onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label">Email</label>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    placeholder="nama@email.com" 
+                    required 
+                    value={registerForm.email} 
+                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label">Kata Sandi</label>
+                  <input 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="Min 6 karakter..." 
+                    required 
+                    value={registerForm.password} 
+                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label">Nama Galeri / Toko</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Contoh: Reptile Center" 
+                    required 
+                    value={registerForm.store_name} 
+                    onChange={(e) => setRegisterForm({ ...registerForm, store_name: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label className="form-label">Username Toko (Link Tautan)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>dfauna.com/u/</span>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="reptile-center" 
+                      required 
+                      value={registerForm.store_slug} 
+                      onChange={(e) => setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') })}
+                      style={{ flex: 1, padding: '0.4rem' }}
+                    />
+                  </div>
+                  <small style={{ color: 'var(--text-secondary)', fontSize: '0.65rem', marginTop: '0.25rem', display: 'block' }}>Hanya huruf kecil, angka, dan tanda hubung (-)</small>
+                </div>
+                <button type="submit" className="btn-primary btn-full" disabled={registerLoading}>
+                  {registerLoading ? 'Memproses...' : 'Daftar & Buat Halaman'}
+                </button>
+              </form>
+              <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Sudah punya akun? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => setPortalTab('login')}>Login</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Hidden File Input for WYSIWYG Editor Image Upload */}
@@ -5384,7 +5747,7 @@ function App() {
                   
                   try {
                     setCrudLoading(true)
-                    const res = await fetch(`${API_BASE}/fauna/delete-master-option`, {
+                    const res = await fetch(`${API_BASE}/stores/delete-master-option`, {
                       method: 'POST',
                       headers: getAuthHeaders(),
                       body: JSON.stringify({ field, value, replacement: selectedReplacement })
