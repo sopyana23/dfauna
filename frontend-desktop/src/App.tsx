@@ -342,7 +342,7 @@ function App() {
     title: '',
     content: '',
     image_url: '',
-    author: 'Admin DFauna',
+    author: 'Admin Catavor',
     read_time: '5 mnt baca',
     slug: '',
     meta_description: '',
@@ -1511,7 +1511,7 @@ function App() {
       title: '',
       content: '',
       image_url: '',
-      author: 'Admin DFauna',
+      author: 'Admin Catavor',
       read_time: '5 mnt baca',
       slug: '',
       meta_description: '',
@@ -1529,7 +1529,7 @@ function App() {
       title: article.title,
       content: article.content,
       image_url: article.image_url || '',
-      author: article.author || 'Admin DFauna',
+      author: article.author || 'Admin Catavor',
       read_time: article.read_time || '5 mnt baca',
       slug: article.slug || '',
       meta_description: article.meta_description || '',
@@ -2891,7 +2891,7 @@ function App() {
                     <input 
                       type="text" 
                       className="form-input" 
-                      placeholder="Contoh: DFauna"
+                      placeholder="Contoh: Catavor Store"
                       required
                       value={settingsForm.store_title || ''}
                       onChange={(e) => setSettingsForm({ ...settingsForm, store_title: e.target.value })}
@@ -3089,7 +3089,7 @@ function App() {
                       <input 
                         type="text" 
                         className="form-input" 
-                        placeholder="Contoh: Tentang DFauna"
+                        placeholder="Contoh: Tentang Catavor Store"
                         value={settingsForm.about_title || ''}
                         onChange={(e) => setSettingsForm({ ...settingsForm, about_title: e.target.value })}
                       />

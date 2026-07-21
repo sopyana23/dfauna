@@ -2038,6 +2038,37 @@ function App() {
               </div>
             </div>
 
+            {/* How It Works Mobile */}
+            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Cara Kerja</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#fff' }}>3 Langkah Mudah</h2>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Buat akun & dapatkan link unik (catavor.com/toko-anda).</p>
+                  </div>
+                </div>
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Upload Produk & Barang</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Masukkan foto, harga, dan tautan marketplace toko.</p>
+                  </div>
+                </div>
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>3</div>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Sebarkan Link Katalog</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Pasang link toko di bio Instagram, TikTok, & WA.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Pricing Section Mobile */}
             <div id="pricing-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ textAlign: 'center' }}>
@@ -4305,13 +4336,13 @@ function App() {
                   <Info size={20} />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{settings.about_title || 'Tentang DFauna'}</h2>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{settings.about_title || 'Tentang Catavor'}</h2>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>{settings.about_slogan || 'Premium Quality Pet & Aquatic Gallery'}</p>
                 </div>
               </div>
 
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', margin: 0 }}>
-                {settings.about_description || 'DFauna adalah galeri satwa hias premium terpercaya...'}
+                {settings.about_description || 'Catavor adalah platform katalog produk & informasi bisnis terpercaya.'}
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -5037,7 +5068,7 @@ function App() {
                                 <input 
                                   type="text" 
                                   className="form-input" 
-                                  placeholder="Contoh: DFauna"
+                                  placeholder="Contoh: Catavor Store"
                                   required
                                   value={settingsForm.store_title || ''}
                                   onChange={(e) => setSettingsForm({ ...settingsForm, store_title: e.target.value })}
@@ -5233,7 +5264,7 @@ function App() {
                                 <input 
                                   type="text" 
                                   className="form-input" 
-                                  placeholder="Contoh: Tentang DFauna"
+                                  placeholder="Contoh: Tentang Catavor Store"
                                   value={settingsForm.about_title || ''}
                                   onChange={(e) => setSettingsForm({ ...settingsForm, about_title: e.target.value })}
                                 />
