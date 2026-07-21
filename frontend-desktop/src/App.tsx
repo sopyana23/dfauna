@@ -43,7 +43,8 @@ import {
   Sparkles,
   Star,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from 'lucide-react'
 import './App.css'
 
@@ -643,6 +644,43 @@ function App() {
       setArticlesLoading(false)
     }
   }
+  // Share store link
+  const handleShareStore = () => {
+    const storeUrl = `${window.location.origin}/u/${storeSlug}`;
+    navigator.clipboard.writeText(storeUrl).then(() => {
+      showToast('Tautan toko berhasil disalin ke papan klip!');
+    }).catch(err => {
+      console.error('Failed to copy store link: ', err);
+      showToast('Gagal menyalin tautan.', 'error');
+    });
+  };
+
+  // Share specific fauna item link
+  const handleShareItem = (item: any) => {
+    const itemUrl = `${window.location.origin}/u/${storeSlug}?item=${item.id}`;
+    navigator.clipboard.writeText(itemUrl).then(() => {
+      showToast('Tautan produk berhasil disalin ke papan klip!');
+    }).catch(err => {
+      console.error('Failed to copy product link: ', err);
+      showToast('Gagal menyalin tautan.', 'error');
+    });
+  };
+
+  // Auto-open product detail from query params on load
+  useEffect(() => {
+    if (faunas.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const itemId = params.get('item');
+      if (itemId) {
+        const item = faunas.find(f => f.id === parseInt(itemId));
+        if (item) {
+          setSelectedFauna(item);
+          setIsDetailActive(true);
+        }
+      }
+    }
+  }, [faunas]);
+
 
   const fetchAdminComments = async () => {
     setLoadingComments(true)
@@ -2255,6 +2293,25 @@ function App() {
                   >
                     <ShoppingCart size={16} /> Beli Sekarang / Pilih Pembelian
                   </button>
+                  <button 
+                    type="button"
+                    onClick={() => handleShareItem(selectedFauna)}
+                    className="btn-secondary"
+                    style={{
+                      height: '45px',
+                      padding: '0 1.5rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      borderRadius: '0.35rem',
+                      gap: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Share2 size={16} /> Bagikan
+                  </button>
                 </>
               )}
             </div>
@@ -2267,8 +2324,29 @@ function App() {
         <div className="container header-content">
           <div className="logo-area">
             {renderStoreLogo(settings.store_logo_url, 'logo-icon', 28)}
-            <div>
-              <h1 className="logo-text">{settings.store_title || 'DFauna'}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h1 className="logo-text" style={{ margin: 0 }}>{settings.store_title || 'DFauna'}</h1>
+              <button
+                type="button"
+                onClick={handleShareStore}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '0.25rem',
+                  borderRadius: '4px',
+                  transition: 'all 0.2s',
+                  lineHeight: 1
+                }}
+                title="Bagikan Link Toko"
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+              >
+                <Share2 size={16} />
+              </button>
             </div>
           </div>
           <div className="nav-actions">
@@ -2421,7 +2499,7 @@ function App() {
                           onClick={() => fetchDetails(fauna.id)}
                           style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                         >
-                          <div className="card-image-container" style={{ height: '240px' }}>
+                          <div className="card-image-container" style={{ height: '240px', position: 'relative' }}>
                             <img 
                               src={fauna.image_url} 
                               alt={fauna.name} 
@@ -2430,6 +2508,36 @@ function App() {
                                 e.currentTarget.src = 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
                               }}
                             />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShareItem(fauna);
+                              }}
+                              style={{
+                                position: 'absolute',
+                                top: '0.75rem',
+                                right: '0.75rem',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                backgroundColor: 'rgba(9, 14, 12, 0.6)',
+                                border: '1px solid var(--border-light)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                backdropFilter: 'blur(4px)',
+                                zIndex: 10
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--primary)'; e.currentTarget.style.color = '#000'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(9, 14, 12, 0.6)'; e.currentTarget.style.color = '#fff'; }}
+                              title="Bagikan produk"
+                            >
+                              <Share2 size={14} />
+                            </button>
 
                           </div>
                           <div className="card-body" style={{ padding: '1.25rem 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1 }}>

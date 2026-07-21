@@ -42,7 +42,8 @@ import {
   Link as LinkIcon,
   Image,
   Clock,
-  Heading
+  Heading,
+  Share2
 } from 'lucide-react'
 import './App.css'
 
@@ -721,6 +722,43 @@ function App() {
       setArticlesLoading(false)
     }
   }
+  // Share store link
+  const handleShareStore = () => {
+    const storeUrl = `${window.location.origin}/u/${storeSlug}`;
+    navigator.clipboard.writeText(storeUrl).then(() => {
+      showToast('Tautan toko berhasil disalin ke papan klip!');
+    }).catch(err => {
+      console.error('Failed to copy store link: ', err);
+      showToast('Gagal menyalin tautan.', 'error');
+    });
+  };
+
+  // Share specific fauna item link
+  const handleShareItem = (item: any) => {
+    const itemUrl = `${window.location.origin}/u/${storeSlug}?item=${item.id}`;
+    navigator.clipboard.writeText(itemUrl).then(() => {
+      showToast('Tautan produk berhasil disalin ke papan klip!');
+    }).catch(err => {
+      console.error('Failed to copy product link: ', err);
+      showToast('Gagal menyalin tautan.', 'error');
+    });
+  };
+
+  // Auto-open product detail from query params on load
+  useEffect(() => {
+    if (faunas.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const itemId = params.get('item');
+      if (itemId) {
+        const item = faunas.find(f => f.id === parseInt(itemId));
+        if (item) {
+          setSelectedFauna(item);
+          setIsDetailActive(true);
+        }
+      }
+    }
+  }, [faunas]);
+
 
   const fetchAdminComments = async () => {
     setLoadingComments(true)
@@ -2175,28 +2213,47 @@ function App() {
             padding: '0.85rem 1rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '1rem',
+            justifyContent: 'space-between',
             zIndex: 100
           }}>
-            <button 
-              onClick={() => {
-                setIsDetailActive(false);
-                setSelectedFauna(null);
-              }}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button 
+                onClick={() => {
+                  setIsDetailActive(false);
+                  setSelectedFauna(null);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.25rem'
+                }}
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>Detail Produk</span>
+            </div>
+            
+            <button
+              onClick={() => handleShareItem(selectedFauna)}
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'var(--text-primary)',
+                color: 'var(--primary)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '0.25rem'
               }}
+              title="Bagikan Produk"
             >
-              <ArrowLeft size={20} />
+              <Share2 size={20} />
             </button>
-            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>Detail Produk</span>
           </div>
 
           {/* Scrollable Content */}
@@ -3896,9 +3953,26 @@ function App() {
       {/* Mobile Top Header */}
       <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
         <div className="container">
-          <div className="logo-container">
+          <div className="logo-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
             <Compass className="logo-icon" />
-            <h1 className="logo-title">DFauna</h1>
+            <h1 className="logo-title">{settings.store_title || 'DFauna'}</h1>
+            <button
+              type="button"
+              onClick={handleShareStore}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.25rem',
+                cursor: 'pointer'
+              }}
+              title="Bagikan Link Toko"
+            >
+              <Share2 size={16} style={{ color: 'var(--primary)' }} />
+            </button>
           </div>
         </div>
       </header>
@@ -4040,6 +4114,32 @@ function App() {
                               e.currentTarget.style.display = 'none';
                             }}
                           />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShareItem(item);
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: '0.5rem',
+                              right: '0.5rem',
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(9, 14, 12, 0.6)',
+                              border: '1px solid var(--border-light)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              cursor: 'pointer',
+                              zIndex: 10,
+                              backdropFilter: 'blur(4px)'
+                            }}
+                          >
+                            <Share2 size={12} />
+                          </button>
                         </div>
                         <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                           <div>
@@ -4262,6 +4362,29 @@ function App() {
                       </div>
                     );
                   })()}
+                  
+                  {/* Share Store Card */}
+                  <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
+                    <button
+                      type="button"
+                      onClick={handleShareStore}
+                      className="btn-secondary btn-full"
+                      style={{
+                        padding: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        width: '100%',
+                        cursor: 'pointer',
+                        borderRadius: '0.5rem'
+                      }}
+                    >
+                      <Share2 size={16} /> Bagikan Toko Ini
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
