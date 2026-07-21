@@ -995,7 +995,29 @@ function App() {
       loadData()
     }, 200)
     return () => clearTimeout(delayDebounceFn)
-  }, [search, classFilter, habitatFilter])
+  }, [search, classFilter, habitatFilter, storeSlug])
+  // Sync activeTab state to browser URL pathname
+  useEffect(() => {
+    if (!storeSlug) {
+      if (window.location.pathname !== '/') {
+        window.history.pushState({}, '', '/');
+      }
+      return;
+    }
+
+    const currentPath = window.location.pathname;
+    let targetPath = `/u/${storeSlug}`;
+    if (activeTab === 'admin') {
+      targetPath = `/u/${storeSlug}/admin`;
+    } else if (activeTab === 'about') {
+      targetPath = `/u/${storeSlug}/about`;
+    }
+
+    if (currentPath !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+    }
+  }, [activeTab, storeSlug]);
+
 
   // Reset displayLimit on search or filter change
   useEffect(() => {
