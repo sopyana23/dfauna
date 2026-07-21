@@ -73,13 +73,21 @@ class FaunaController extends Controller
             ], 404);
         }
 
+        // Check plan limits (Free plan max 20 items)
+        if (($store->plan ?? 'free') === 'free' && $store->faunas()->count() >= 20) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Batas postingan Plan Gratis telah tercapai (Maksimal 20 item). Silakan upgrade ke Plan Pro untuk posting tanpa batas!'
+            ], 422);
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'scientific_name' => 'required|string|max:255',
+            'scientific_name' => 'nullable|string|max:255',
             'class' => 'required|string|max:255',
-            'habitat' => 'required|string|max:255',
-            'diet' => 'required|string|max:255',
-            'conservation_status' => 'required|string|max:255',
+            'habitat' => 'nullable|string|max:255',
+            'diet' => 'nullable|string|max:255',
+            'conservation_status' => 'nullable|string|max:255',
             'price' => 'required|integer|min:0',
             'video_url' => 'nullable|string|url',
             'is_shipping_available' => 'required|boolean',
@@ -97,6 +105,10 @@ class FaunaController extends Controller
 
         $data = $validator->validated();
         $data['store_id'] = $store->id;
+        $data['scientific_name'] = $data['scientific_name'] ?? 'N/A';
+        $data['habitat'] = $data['habitat'] ?? 'General';
+        $data['diet'] = $data['diet'] ?? 'N/A';
+        $data['conservation_status'] = $data['conservation_status'] ?? 'Tersedia';
 
         $fauna = Fauna::create($data);
 

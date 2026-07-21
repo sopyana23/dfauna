@@ -181,6 +181,9 @@ export const renderStoreLogo = (logoUrl: string | undefined, className = '', siz
 };
 
 interface ShopSettings {
+  plan?: string
+  enable_wa_direct?: boolean
+  enable_wa_rekber?: boolean
   whatsapp_number: string
   store_slogan: string
   promo_banner?: string
@@ -300,10 +303,10 @@ function App() {
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
-    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia',
+    store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
     promo_banner: '',
     articles_enabled: '1',
-    store_title: 'DFauna',
+    store_title: 'Catavor',
     store_logo_url: '',
     default_is_comments_enabled: '1',
     default_require_comment_approval: '0',
@@ -403,7 +406,7 @@ function App() {
   // First-time Password Change Form State
   const [firstPasswordForm, setFirstPasswordForm] = useState({
     name: 'Administrator',
-    email: 'admin@dfauna.com',
+    email: 'admin@catavor.com',
     password: '',
     confirm_password: ''
   })
@@ -484,7 +487,7 @@ function App() {
   // Admin Profile Update State
   const [profileForm, setProfileForm] = useState({
     name: adminUser?.name || 'Administrator',
-    email: adminUser?.email || 'admin@dfauna.com',
+    email: adminUser?.email || 'admin@catavor.com',
     password: ''
   })
   const [profileLoading, setProfileLoading] = useState(false)
@@ -577,7 +580,7 @@ function App() {
           const store = settingsData.data;
           const fetchedSettings = {
             whatsapp_number: store.whatsapp_number || '628123456789',
-            store_slogan: store.store_slogan || 'Galeri Satwa Hias Premium',
+            store_slogan: store.store_slogan || 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             promo_banner: store.promo_banner || '',
             articles_enabled: '0', // force articles module hidden
             about_title: store.about_title || '',
@@ -588,7 +591,7 @@ function App() {
             about_hours: store.about_hours || '',
             about_disclaimer: store.about_disclaimer || '',
             social_links: store.social_links ? JSON.stringify(store.social_links) : '',
-            store_title: store.store_title || 'DFauna',
+            store_title: store.store_title || 'Catavor',
             store_logo_url: store.store_logo_url || '',
             default_is_comments_enabled: '0',
             default_require_comment_approval: '0',
@@ -1101,7 +1104,7 @@ function App() {
           about_hours: store.about_hours || '',
           about_disclaimer: store.about_disclaimer || '',
           social_links: store.social_links ? JSON.stringify(store.social_links) : '',
-          store_title: store.store_title || 'DFauna',
+          store_title: store.store_title || 'Catavor',
           store_logo_url: store.store_logo_url || ''
         }
         setSettings(updated)
@@ -1801,7 +1804,7 @@ function App() {
                 </div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Username Unik</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                  Miliki tautan kustom layaknya akun sosial media (misal: dfauna.com/toko-ikan-hias) untuk dipasang di bio Instagram/TikTok.
+                  Miliki tautan kustom layaknya akun sosial media (misal: catavor.com/toko-ikan-hias) untuk dipasang di bio Instagram/TikTok.
                 </p>
               </div>
             </div>
@@ -1836,7 +1839,7 @@ function App() {
                       </div>
                       <div>
                         <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#fff' }}>{st.store_title}</h4>
-                        <p style={{ fontSize: '0.7rem', color: 'var(--primary)', margin: '0.15rem 0' }}>dfauna.com/{st.slug}</p>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--primary)', margin: '0.15rem 0' }}>catavor.com/{st.slug}</p>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.35rem 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{st.store_slogan}</p>
                       </div>
                     </div>
@@ -1959,7 +1962,7 @@ function App() {
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label className="form-label">Link Username Toko (Insta Handle)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>dfauna.com/</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>catavor.com/</span>
                     <input 
                       type="text" 
                       className="form-input" 
@@ -2296,7 +2299,11 @@ function App() {
                   <button 
                     type="button"
                     onClick={() => {
-                      setShowMarketplacesSubMenu(false);
+                      if (!settings.enable_wa_direct && !settings.enable_wa_rekber) {
+                        setShowMarketplacesSubMenu(true);
+                      } else {
+                        setShowMarketplacesSubMenu(false);
+                      }
                       setShowPurchaseOptions(true);
                     }}
                     className="btn-primary"
@@ -2350,7 +2357,7 @@ function App() {
           <div className="logo-area">
             {renderStoreLogo(settings.store_logo_url, 'logo-icon', 28)}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <h1 className="logo-text" style={{ margin: 0 }}>{settings.store_title || 'DFauna'}</h1>
+              <h1 className="logo-text" style={{ margin: 0 }}>{settings.store_title || 'Catavor'}</h1>
               <button
                 type="button"
                 onClick={handleShareStore}
@@ -2642,7 +2649,7 @@ function App() {
                   <input 
                     type="email" 
                     className="form-input" 
-                    placeholder="admin@dfauna.com"
+                    placeholder="admin@catavor.com"
                     required
                     value={loginForm.email}
                     onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
@@ -4533,7 +4540,7 @@ function App() {
       {/* Footer */}
       <footer className="app-footer" style={{ padding: '2rem 0', borderTop: '1px solid var(--border-light)' }}>
         <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', textAlign: 'center' }}>
-          <p style={{ margin: 0, fontSize: '0.85rem' }}>&copy; {new Date().getFullYear()} {settings.store_title || 'DFauna'} - Galeri Hewan Hias Premium. Dibuat dengan React & Laravel.</p>
+          <p style={{ margin: 0, fontSize: '0.85rem' }}>&copy; {new Date().getFullYear()} {settings.store_title || 'Catavor'} - Galeri Hewan Hias Premium. Dibuat dengan React & Laravel.</p>
           {settings.about_disclaimer && (
             <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)', maxWidth: '650px', lineHeight: '1.4' }}>
               <strong>Disclaimer:</strong> {settings.about_disclaimer}

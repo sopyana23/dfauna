@@ -9,10 +9,13 @@ class Store extends Model
     protected $fillable = [
         'user_id',
         'slug',
+        'plan',
         'store_title',
         'store_slogan',
         'store_logo_url',
         'whatsapp_number',
+        'enable_wa_direct',
+        'enable_wa_rekber',
         'promo_banner',
         'about_title',
         'about_slogan',
@@ -29,6 +32,8 @@ class Store extends Model
     ];
 
     protected $casts = [
+        'enable_wa_direct' => 'boolean',
+        'enable_wa_rekber' => 'boolean',
         'about_cards' => 'array',
         'social_links' => 'array',
         'master_classes' => 'array',

@@ -104,6 +104,9 @@ class StoreController extends Controller
             'store_slogan' => 'nullable|string|max:255',
             'store_logo_url' => 'nullable|string|max:1000',
             'whatsapp_number' => 'nullable|string|max:50',
+            'enable_wa_direct' => 'nullable|boolean',
+            'enable_wa_rekber' => 'nullable|boolean',
+            'plan' => 'nullable|string|in:free,pro',
             'promo_banner' => 'nullable|string|max:1000',
             
             // About Us details
@@ -135,6 +138,28 @@ class StoreController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pengaturan toko berhasil diperbarui!',
+            'data' => $store
+        ]);
+    }
+
+    /**
+     * Upgrade / Toggle store plan (Free <-> Pro)
+     */
+    public function upgradePlan(Request $request)
+    {
+        $user = $request->user();
+        $store = $user->store;
+
+        if (!$store) {
+            return response()->json(['success' => false, 'message' => 'Toko tidak ditemukan.'], 404);
+        }
+
+        $targetPlan = $request->input('plan', 'pro');
+        $store->update(['plan' => $targetPlan]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Plan toko berhasil diperbarui ke ' . strtoupper($targetPlan) . '!',
             'data' => $store
         ]);
     }

@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Multi-tenant store profile details & master data options
     Route::post('/stores/update', [StoreController::class, 'update']);
+    Route::post('/stores/upgrade-plan', [StoreController::class, 'upgradePlan']);
     Route::post('/stores/add-master-option', [StoreController::class, 'addMasterOption']);
     Route::post('/stores/delete-master-option', [StoreController::class, 'deleteMasterOption']);
     

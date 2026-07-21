@@ -158,6 +158,9 @@ export const renderSocialIcon = (platform: string, size = 18, color = 'currentCo
 };
 
 interface ShopSettings {
+  plan?: string
+  enable_wa_direct?: boolean
+  enable_wa_rekber?: boolean
   whatsapp_number: string
   store_slogan: string
   promo_banner?: string
@@ -343,10 +346,10 @@ function App() {
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
-    store_slogan: 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia',
+    store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
     promo_banner: '',
     articles_enabled: '1',
-    store_title: 'DFauna',
+    store_title: 'Catavor',
     store_logo_url: '',
     default_is_comments_enabled: '1',
     default_require_comment_approval: '0',
@@ -487,7 +490,7 @@ function App() {
   // First-time Password Change Form State
   const [firstPasswordForm, setFirstPasswordForm] = useState({
     name: 'Administrator',
-    email: 'admin@dfauna.com',
+    email: 'admin@catavor.com',
     password: '',
     confirm_password: ''
   })
@@ -571,7 +574,7 @@ function App() {
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
     name: adminUser?.name || 'Administrator',
-    email: adminUser?.email || 'admin@dfauna.com',
+    email: adminUser?.email || 'admin@catavor.com',
     password: ''
   })
   const [profileLoading, setProfileLoading] = useState(false)
@@ -657,7 +660,7 @@ function App() {
           const store = settingsData.data;
           const fetchedSettings = {
             whatsapp_number: store.whatsapp_number || '628123456789',
-            store_slogan: store.store_slogan || 'Galeri Satwa Hias Premium',
+            store_slogan: store.store_slogan || 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             promo_banner: store.promo_banner || '',
             articles_enabled: '0', // force articles module hidden
             about_title: store.about_title || '',
@@ -668,7 +671,7 @@ function App() {
             about_hours: store.about_hours || '',
             about_disclaimer: store.about_disclaimer || '',
             social_links: store.social_links ? JSON.stringify(store.social_links) : '',
-            store_title: store.store_title || 'DFauna',
+            store_title: store.store_title || 'Catavor',
             store_logo_url: store.store_logo_url || '',
             default_is_comments_enabled: '0',
             default_require_comment_approval: '0',
@@ -906,7 +909,7 @@ function App() {
     if (selectedArticle) {
       // 1. Update Title tag
       const originalTitle = document.title
-      document.title = `${selectedArticle.title} - ${settings.store_title || 'DFauna'} Edukasi`
+      document.title = `${selectedArticle.title} - ${settings.store_title || 'Catavor'} Edukasi`
 
       // 2. Meta tags update/injection
       let metaDesc = document.querySelector('meta[name="description"]')
@@ -956,7 +959,7 @@ function App() {
           "@type": "Person",
           "name": selectedArticle.author || 'Admin DFauna',
           "jobTitle": "Editor",
-          "url": "https://dfauna.com"
+          "url": "https://catavor.com"
         }],
         "publisher": {
           "@type": "Organization",
@@ -979,7 +982,7 @@ function App() {
       return () => {
         document.title = originalTitle
         if (metaDesc) {
-          metaDesc.setAttribute('content', oldDesc || 'Galeri Satwa Hias Premium')
+          metaDesc.setAttribute('content', oldDesc || 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.')
         }
         const titleEl = document.getElementById('seo-og-title')
         if (titleEl) titleEl.remove()
@@ -1345,7 +1348,7 @@ function App() {
           about_hours: store.about_hours || '',
           about_disclaimer: store.about_disclaimer || '',
           social_links: store.social_links ? JSON.stringify(store.social_links) : '',
-          store_title: store.store_title || 'DFauna',
+          store_title: store.store_title || 'Catavor',
           store_logo_url: store.store_logo_url || ''
         }
         setSettings(updated)
@@ -1995,43 +1998,85 @@ function App() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.8rem', borderRadius: '30px', backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
                 <Sparkles size={12} style={{ color: 'var(--primary)' }} />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Kustomisasi Galeri Fauna</span>
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Katalog & Biolink Bisnis Modern</span>
               </div>
-              <h1 style={{ fontSize: '2.25rem', fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.03em', marginBottom: '1rem' }}>
-                Linktree Premium untuk Galeri Fauna & Aqua Hias
+              <h1 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.03em', marginBottom: '1rem' }}>
+                Catavor: Memudahkan Pelanggan Menjelajahi Produk & Informasi Bisnis
               </h1>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.5 }}>
-                Tampilkan katalog satwa, deskripsi habitat, lokasi, kontak WhatsApp, dan profil lengkap galeri Anda dalam satu tautan bio modern.
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                Tampilkan katalog barang & satwa hias interaktif ala OLX, lokasi toko, kontak WhatsApp, dan biolink Anda dalam satu tautan modern.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button className="btn-primary btn-full" style={{ padding: '0.85rem' }} onClick={() => setPortalTab('register')}>
-                  Mulai Sekarang - Gratis
+                  Mulai Buat Toko - Gratis
                 </button>
                 <button className="btn-secondary btn-full" style={{ padding: '0.85rem' }} onClick={() => {
-                  const el = document.getElementById('featured-section-mobile');
+                  const el = document.getElementById('pricing-mobile');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}>
-                  Lihat Contoh Galeri
+                  Lihat Paket & Harga
                 </button>
               </div>
             </div>
 
             {/* Features Row */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <span style={{ fontSize: '1.5rem' }}>🛍️</span>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Katalog Satwa Interaktif</h3>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0 }}>Katalog Interaktif Ala OLX</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
-                  Tampilkan gambar, deskripsi habitat, harga, dan tombol chat terhubung WhatsApp untuk transaksi mudah.
+                  Tampilkan gambar, kategori, spesifikasi produk, dan tombol chat terhubung WhatsApp untuk transaksi mudah.
                 </p>
               </div>
 
-              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.5rem' }}>🎨</span>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Desain Premium Dinamis</h3>
+              <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.5rem' }}>🔗</span>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0 }}>Integrasi Biolink & Marketplace</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
-                  Panel admin responsif untuk mengubah slogan toko, logo, lokasi, jam buka, dan info promo secara instan.
+                  Hubungkan Shopee, Tokopedia, Lazada, Instagram, TikTok, & WhatsApp dalam satu link kustom bersih.
                 </p>
+              </div>
+            </div>
+
+            {/* Pricing Section Mobile */}
+            <div id="pricing-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Pilihan Paket Bisnis</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#fff' }}>Pilih Paket Toko Anda</h2>
+              </div>
+
+              {/* Free Card */}
+              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-light)' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Plan Gratis</span>
+                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0' }}>Rp 0 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ selamanya</span></div>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
+                  <li>✅ Maksimal 20 Postingan Produk</li>
+                  <li>✅ Display Katalog Interaktif</li>
+                  <li>✅ Link WA & Marketplace</li>
+                  <li style={{ color: 'var(--text-muted)' }}>❌ Halaman "Tentang Kami"</li>
+                </ul>
+                <button className="btn-secondary btn-full" style={{ padding: '0.75rem' }} onClick={() => setPortalTab('register')}>
+                  Daftar Plan Gratis
+                </button>
+              </div>
+
+              {/* Pro Card */}
+              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(16,185,129,0.03)' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Plan Pro / Premium</span>
+                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0' }}>Rp 49rb <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ bulan</span></div>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
+                  <li>✨ Postingan Produk Tanpa Batas</li>
+                  <li>✨ Fitur Halaman "Tentang Kami"</li>
+                  <li>✨ Sakelar Tombol Chat WA & Rekber</li>
+                  <li>✨ Prioritas Tampil di Landing Page</li>
+                </ul>
+                <button className="btn-primary btn-full" style={{ padding: '0.75rem' }} onClick={() => setPortalTab('register')}>
+                  Daftar Plan Pro
+                </button>
               </div>
             </div>
 
@@ -2065,7 +2110,7 @@ function App() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_title}</h4>
-                        <p style={{ fontSize: '0.65rem', color: 'var(--primary)', margin: '0.1rem 0' }}>dfauna.com/{st.slug}</p>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--primary)', margin: '0.1rem 0' }}>catavor.com/{st.slug}</p>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_slogan}</p>
                       </div>
                     </div>
@@ -2188,7 +2233,7 @@ function App() {
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label className="form-label">Username Toko (Link Tautan)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>dfauna.com/</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>catavor.com/</span>
                     <input 
                       type="text" 
                       className="form-input" 
@@ -2706,7 +2751,7 @@ function App() {
 
                         {/* Rekber Option */}
                         <a 
-                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'DFauna')}%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
+                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'Catavor')}%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
@@ -2721,7 +2766,7 @@ function App() {
 
                         {/* WA Direct Option */}
                         <a 
-                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'DFauna')}%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
+                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'Catavor')}%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
@@ -2805,7 +2850,7 @@ function App() {
               textAlign: 'center',
               margin: '0 0.75rem'
             }}>
-              Edukasi {settings.store_title || 'DFauna'}
+              Edukasi {settings.store_title || 'Catavor'}
             </span>
             <div style={{ width: '48px' }} /> {/* To balance the back button */}
           </div>
@@ -3982,7 +4027,7 @@ function App() {
         <div className="container">
           <div className="logo-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
             <Compass className="logo-icon" />
-            <h1 className="logo-title">{settings.store_title || 'DFauna'}</h1>
+            <h1 className="logo-title">{settings.store_title || 'Catavor'}</h1>
             <button
               type="button"
               onClick={handleShareStore}
@@ -4501,7 +4546,7 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '2rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={32} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
-                <h2 style={{ fontSize: '1.15rem' }}>Login Admin {settings.store_title || 'DFauna'}</h2>
+                <h2 style={{ fontSize: '1.15rem' }}>Login Admin {settings.store_title || 'Catavor'}</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                   Autentikasi login diperlukan untuk masuk.
                 </p>
@@ -4519,7 +4564,7 @@ function App() {
                   <input 
                     type="email" 
                     className="form-input" 
-                    placeholder="admin@dfauna.com"
+                    placeholder="admin@catavor.com"
                     required
                     value={loginForm.email}
                     onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
@@ -6321,13 +6366,15 @@ function App() {
             <BookOpen size={20} />
             <span>Katalog</span>
           </button>
-          <button 
-            className={`nav-item ${activeTab === 'about' ? 'active' : ''}`}
-            onClick={goToAbout}
-          >
-            <Info size={20} />
-            <span>Tentang Kami</span>
-          </button>
+          {settings.plan !== 'free' && (
+            <button 
+              className={`nav-item ${activeTab === 'about' ? 'active' : ''}`}
+              onClick={goToAbout}
+            >
+              <Info size={20} />
+              <span>Tentang Kami</span>
+            </button>
+          )}
           {false && settings.articles_enabled !== '0' && (
             <button 
               className={`nav-item ${activeTab === 'articles' ? 'active' : ''}`}
