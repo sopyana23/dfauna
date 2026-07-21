@@ -22,22 +22,22 @@ class DatabaseSeeder extends Seeder
         // 1. Seed default admin user
         $user = User::create([
             'name' => 'Administrator',
-            'email' => 'admin@catavor.com',
+            'email' => 'admin@cataphor.com',
             'password' => Hash::make('password123'),
             'is_password_changed' => true
         ]);
 
-        // 2. Create matching default Store profile for admin (Catavor Pro Plan)
+        // 2. Create matching default Store profile for admin (Cataphor Pro Plan)
         $store = Store::create([
             'user_id' => $user->id,
-            'slug' => 'catavor',
+            'slug' => 'cataphor',
             'plan' => 'pro',
-            'store_title' => 'Catavor',
+            'store_title' => 'Cataphor',
             'store_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             'whatsapp_number' => '628123456789',
             'enable_wa_direct' => true,
             'enable_wa_rekber' => true,
-            'about_title' => 'Tentang Catavor Store',
+            'about_title' => 'Tentang Cataphor Store',
             'about_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             'about_description' => 'Kami berkomitmen menyediakan produk dan barang berkualitas tinggi. Setiap barang melewati pemeriksaan kualitas sebelum dikirim.',
             'about_location' => 'Bandung, Jawa Barat, Indonesia',
@@ -49,8 +49,8 @@ class DatabaseSeeder extends Seeder
                 ['title' => 'Layanan Pelanggan', 'content' => 'Tim kami siap membantu konsultasi produk dan pemesanan dengan cepat.', 'icon' => 'message']
             ],
             'social_links' => [
-                ['platform' => 'Instagram', 'url' => 'https://instagram.com/catavor'],
-                ['platform' => 'Facebook', 'url' => 'https://facebook.com/catavor']
+                ['platform' => 'Instagram', 'url' => 'https://instagram.com/cataphor'],
+                ['platform' => 'Facebook', 'url' => 'https://facebook.com/cataphor']
             ],
             'master_classes' => ['Elektronik', 'Pakaian & Aksesoris', 'Satwa Hias', 'Pakan & Perlengkapan', 'Produk General'],
             'master_habitats' => ['Baru (New)', 'Bekas (Used)', 'General'],

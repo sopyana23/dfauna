@@ -349,7 +349,7 @@ function App() {
     store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
     promo_banner: '',
     articles_enabled: '1',
-    store_title: 'Catavor',
+    store_title: 'Cataphor',
     store_logo_url: '',
     default_is_comments_enabled: '1',
     default_require_comment_approval: '0',
@@ -424,7 +424,7 @@ function App() {
     title: '',
     content: '',
     image_url: '',
-    author: 'Admin DFauna',
+    author: 'Admin Cataphor',
     read_time: '5 mnt baca',
     slug: '',
     meta_description: '',
@@ -456,12 +456,12 @@ function App() {
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
 
   // Authentication State
-  const [token, setToken] = useState<string | null>(localStorage.getItem('dfauna_token'))
+  const [token, setToken] = useState<string | null>(localStorage.getItem('cataphor_token'))
   const [adminUser, setAdminUser] = useState<{name: string, email: string} | null>(
-    localStorage.getItem('dfauna_user') ? JSON.parse(localStorage.getItem('dfauna_user')!) : null
+    localStorage.getItem('cataphor_user') ? JSON.parse(localStorage.getItem('cataphor_user')!) : null
   )
   const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(
-    localStorage.getItem('dfauna_password_changed') === 'true'
+    localStorage.getItem('cataphor_password_changed') === 'true'
   )
 
   const [masterClasses, setMasterClasses] = useState<string[]>(['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil'])
@@ -490,7 +490,7 @@ function App() {
   // First-time Password Change Form State
   const [firstPasswordForm, setFirstPasswordForm] = useState({
     name: 'Administrator',
-    email: 'admin@catavor.com',
+    email: 'admin@cataphor.com',
     password: '',
     confirm_password: ''
   })
@@ -574,7 +574,7 @@ function App() {
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
     name: adminUser?.name || 'Administrator',
-    email: adminUser?.email || 'admin@catavor.com',
+    email: adminUser?.email || 'admin@cataphor.com',
     password: ''
   })
   const [profileLoading, setProfileLoading] = useState(false)
@@ -596,10 +596,10 @@ function App() {
 
     // STRICT FLOW: If the user visits the admin page on mount but they haven't completed changing their password,
     // force them to log in again with the default password.
-    if (localStorage.getItem('dfauna_password_changed') !== 'true') {
-      localStorage.removeItem('dfauna_token')
-      localStorage.removeItem('dfauna_user')
-      localStorage.removeItem('dfauna_password_changed')
+    if (localStorage.getItem('cataphor_password_changed') !== 'true') {
+      localStorage.removeItem('cataphor_token')
+      localStorage.removeItem('cataphor_user')
+      localStorage.removeItem('cataphor_password_changed')
       setToken(null)
       setAdminUser(null)
       setIsPasswordChanged(false)
@@ -671,7 +671,7 @@ function App() {
             about_hours: store.about_hours || '',
             about_disclaimer: store.about_disclaimer || '',
             social_links: store.social_links ? JSON.stringify(store.social_links) : '',
-            store_title: store.store_title || 'Catavor',
+            store_title: store.store_title || 'Cataphor',
             store_logo_url: store.store_logo_url || '',
             default_is_comments_enabled: '0',
             default_require_comment_approval: '0',
@@ -909,7 +909,7 @@ function App() {
     if (selectedArticle) {
       // 1. Update Title tag
       const originalTitle = document.title
-      document.title = `${selectedArticle.title} - ${settings.store_title || 'Catavor'} Edukasi`
+      document.title = `${selectedArticle.title} - ${settings.store_title || 'Cataphor'} Edukasi`
 
       // 2. Meta tags update/injection
       let metaDesc = document.querySelector('meta[name="description"]')
@@ -957,13 +957,13 @@ function App() {
         "dateModified": selectedArticle.updated_at || selectedArticle.created_at,
         "author": [{
           "@type": "Person",
-          "name": selectedArticle.author || 'Admin DFauna',
+          "name": selectedArticle.author || 'Admin Cataphor',
           "jobTitle": "Editor",
-          "url": "https://catavor.com"
+          "url": "https://cataphor.com"
         }],
         "publisher": {
           "@type": "Organization",
-          "name": "DFauna Premium",
+          "name": "Cataphor Premium",
           "logo": {
             "@type": "ImageObject",
             "url": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=150&h=150"
@@ -1071,9 +1071,9 @@ function App() {
 
   // Reset Auth
   const handleUnauthorized = () => {
-    localStorage.removeItem('dfauna_token')
-    localStorage.removeItem('dfauna_user')
-    localStorage.removeItem('dfauna_password_changed')
+    localStorage.removeItem('cataphor_token')
+    localStorage.removeItem('cataphor_user')
+    localStorage.removeItem('cataphor_password_changed')
     setToken(null)
     setAdminUser(null)
     setIsPasswordChanged(false)
@@ -1099,9 +1099,9 @@ function App() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        localStorage.setItem('dfauna_token', data.token);
-        localStorage.setItem('dfauna_user', JSON.stringify(data.user));
-        localStorage.setItem('dfauna_password_changed', 'true');
+        localStorage.setItem('cataphor_token', data.token);
+        localStorage.setItem('cataphor_user', JSON.stringify(data.user));
+        localStorage.setItem('cataphor_password_changed', 'true');
         
         setToken(data.token);
         setAdminUser(data.user);
@@ -1145,9 +1145,9 @@ function App() {
 
       const data = await res.json()
       if (res.ok && data.success) {
-        localStorage.setItem('dfauna_token', data.token)
-        localStorage.setItem('dfauna_user', JSON.stringify(data.user))
-        localStorage.setItem('dfauna_password_changed', data.is_password_changed ? 'true' : 'false')
+        localStorage.setItem('cataphor_token', data.token)
+        localStorage.setItem('cataphor_user', JSON.stringify(data.user))
+        localStorage.setItem('cataphor_password_changed', data.is_password_changed ? 'true' : 'false')
         
         setToken(data.token)
         setAdminUser(data.user)
@@ -1207,8 +1207,8 @@ function App() {
 
       const data = await res.json()
       if (res.ok && data.success) {
-        localStorage.setItem('dfauna_user', JSON.stringify(data.user))
-        localStorage.setItem('dfauna_password_changed', 'true')
+        localStorage.setItem('cataphor_user', JSON.stringify(data.user))
+        localStorage.setItem('cataphor_password_changed', 'true')
         setAdminUser(data.user)
         setIsPasswordChanged(true)
       } else {
@@ -1266,8 +1266,8 @@ function App() {
 
       const data = await res.json()
       if (res.ok && data.success) {
-        localStorage.setItem('dfauna_user', JSON.stringify(data.user))
-        localStorage.setItem('dfauna_password_changed', 'true')
+        localStorage.setItem('cataphor_user', JSON.stringify(data.user))
+        localStorage.setItem('cataphor_password_changed', 'true')
         setAdminUser(data.user)
         setIsPasswordChanged(true)
         setProfileForm(prev => ({ ...prev, password: '' }))
@@ -1348,7 +1348,7 @@ function App() {
           about_hours: store.about_hours || '',
           about_disclaimer: store.about_disclaimer || '',
           social_links: store.social_links ? JSON.stringify(store.social_links) : '',
-          store_title: store.store_title || 'Catavor',
+          store_title: store.store_title || 'Cataphor',
           store_logo_url: store.store_logo_url || ''
         }
         setSettings(updated)
@@ -1758,7 +1758,7 @@ function App() {
       title: '',
       content: '',
       image_url: '',
-      author: 'Admin DFauna',
+      author: 'Admin Cataphor',
       read_time: '5 mnt baca',
       slug: '',
       meta_description: '',
@@ -1776,7 +1776,7 @@ function App() {
       title: article.title,
       content: article.content,
       image_url: article.image_url || '',
-      author: article.author || 'Admin DFauna',
+      author: article.author || 'Admin Cataphor',
       read_time: article.read_time || '5 mnt baca',
       slug: article.slug || '',
       meta_description: article.meta_description || '',
@@ -1968,13 +1968,13 @@ function App() {
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
             <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              🦎 DFauna <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
+              🦎 Cataphor <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {token ? (
               <button className="btn-primary btn-small" onClick={() => {
-                const user = JSON.parse(localStorage.getItem('dfauna_user') || '{}');
+                const user = JSON.parse(localStorage.getItem('cataphor_user') || '{}');
                 if (user.store_slug) {
                   
                   setStoreSlug(user.store_slug);
@@ -2001,7 +2001,7 @@ function App() {
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Katalog & Biolink Bisnis Modern</span>
               </div>
               <h1 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.03em', marginBottom: '1rem' }}>
-                Catavor: Memudahkan Pelanggan Menjelajahi Produk & Informasi Bisnis
+                Cataphor: Memudahkan Pelanggan Menjelajahi Produk & Informasi Bisnis
               </h1>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
                 Tampilkan katalog barang & satwa hias interaktif ala OLX, lokasi toko, kontak WhatsApp, dan biolink Anda dalam satu tautan modern.
@@ -2049,7 +2049,7 @@ function App() {
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
                   <div>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Buat akun & dapatkan link unik (catavor.com/toko-anda).</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Buat akun & dapatkan link unik (cataphor.com/toko-anda).</p>
                   </div>
                 </div>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -2111,43 +2111,44 @@ function App() {
               </div>
             </div>
 
-            {/* Featured Stores Section */}
-            <div id="featured-section-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2.5rem' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, textAlign: 'center', marginBottom: '1.5rem' }}>
-                Galeri Terdaftar
-              </h2>
-              {featuredStores.length === 0 ? (
-                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Belum ada galeri terdaftar.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {featuredStores.map((st) => (
-                    <div 
-                      key={st.slug} 
-                      className="glass-panel" 
-                      onClick={() => {
-                        window.history.pushState({}, '', `/${st.slug}`);
-                        setStoreSlug(st.slug);
-                        setActiveTab('catalog');
-                        loadData();
-                      }}
-                      style={{ padding: '1rem', display: 'flex', gap: '1rem', cursor: 'pointer', alignItems: 'center' }}
-                    >
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--primary)', flexShrink: 0 }}>
-                        {st.store_logo_url ? (
-                          <img src={st.store_logo_url} alt={st.store_title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <span style={{ fontSize: '1.2rem' }}>🏪</span>
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_title}</h4>
-                        <p style={{ fontSize: '0.65rem', color: 'var(--primary)', margin: '0.1rem 0' }}>catavor.com/{st.slug}</p>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_slogan}</p>
-                      </div>
-                    </div>
-                  ))}
+            {/* Concept Section Mobile */}
+            <div id="concept-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Bagaimana Ini Bekerja?</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#fff' }}>Konsep Cataphor</h2>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>1</div>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                      Daftar dan klaim link unik Anda seperti <strong>cataphor.com/toko-anda</strong>.
+                    </p>
+                  </div>
                 </div>
-              )}
+
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>2</div>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Kelola Katalog & Profil</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                      Masukkan barang/satwa hias beserta harga, jam buka, lokasi, dan tautan marketplace.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>3</div>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem 0' }}>Bagikan & Hubungkan WA</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                      Pasang link di bio Anda. Pengunjung langsung melihat produk dan chat WhatsApp dalam sekali ketuk.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </main>
         )}
@@ -2264,7 +2265,7 @@ function App() {
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label className="form-label">Username Toko (Link Tautan)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>catavor.com/</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>cataphor.com/</span>
                     <input 
                       type="text" 
                       className="form-input" 
@@ -2782,7 +2783,7 @@ function App() {
 
                         {/* Rekber Option */}
                         <a 
-                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'Catavor')}%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
+                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'Cataphor')}%2C%20saya%20ingin%20membeli%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20menggunakan%20layanan%20Rekber%20Syariah%20(rekbersyariah.com).%20Mohon%20info%20prosedurnya.`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
@@ -2797,7 +2798,7 @@ function App() {
 
                         {/* WA Direct Option */}
                         <a 
-                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'Catavor')}%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
+                          href={`https://wa.me/${settings.whatsapp_number}?text=Halo%20${encodeURIComponent(settings.store_title || 'Cataphor')}%2C%20saya%20tertarik%20untuk%20membeli%20langsung%20hewan%20${encodeURIComponent(selectedFauna.name)}%20yang%20dijual%20dengan%20harga%20${encodeURIComponent(formatRupiah(selectedFauna.price))}%20tanpa%20melalui%20rekber.`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-light)', backgroundColor: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', textDecoration: 'none', transition: 'var(--transition-smooth)' }}
@@ -2881,7 +2882,7 @@ function App() {
               textAlign: 'center',
               margin: '0 0.75rem'
             }}>
-              Edukasi {settings.store_title || 'Catavor'}
+              Edukasi {settings.store_title || 'Cataphor'}
             </span>
             <div style={{ width: '48px' }} /> {/* To balance the back button */}
           </div>
@@ -4058,7 +4059,7 @@ function App() {
         <div className="container">
           <div className="logo-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
             <Compass className="logo-icon" />
-            <h1 className="logo-title">{settings.store_title || 'Catavor'}</h1>
+            <h1 className="logo-title">{settings.store_title || 'Cataphor'}</h1>
             <button
               type="button"
               onClick={handleShareStore}
@@ -4336,13 +4337,13 @@ function App() {
                   <Info size={20} />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{settings.about_title || 'Tentang Catavor'}</h2>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{settings.about_title || 'Tentang Cataphor'}</h2>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>{settings.about_slogan || 'Premium Quality Pet & Aquatic Gallery'}</p>
                 </div>
               </div>
 
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', margin: 0 }}>
-                {settings.about_description || 'Catavor adalah platform katalog produk & informasi bisnis terpercaya.'}
+                {settings.about_description || 'Cataphor adalah platform katalog produk & informasi bisnis terpercaya.'}
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -4577,7 +4578,7 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '2rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={32} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
-                <h2 style={{ fontSize: '1.15rem' }}>Login Admin {settings.store_title || 'Catavor'}</h2>
+                <h2 style={{ fontSize: '1.15rem' }}>Login Admin {settings.store_title || 'Cataphor'}</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                   Autentikasi login diperlukan untuk masuk.
                 </p>
@@ -4595,7 +4596,7 @@ function App() {
                   <input 
                     type="email" 
                     className="form-input" 
-                    placeholder="admin@catavor.com"
+                    placeholder="admin@cataphor.com"
                     required
                     value={loginForm.email}
                     onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
@@ -5068,7 +5069,7 @@ function App() {
                                 <input 
                                   type="text" 
                                   className="form-input" 
-                                  placeholder="Contoh: Catavor Store"
+                                  placeholder="Contoh: Cataphor Store"
                                   required
                                   value={settingsForm.store_title || ''}
                                   onChange={(e) => setSettingsForm({ ...settingsForm, store_title: e.target.value })}
@@ -5264,7 +5265,7 @@ function App() {
                                 <input 
                                   type="text" 
                                   className="form-input" 
-                                  placeholder="Contoh: Tentang Catavor Store"
+                                  placeholder="Contoh: Tentang Cataphor Store"
                                   value={settingsForm.about_title || ''}
                                   onChange={(e) => setSettingsForm({ ...settingsForm, about_title: e.target.value })}
                                 />
