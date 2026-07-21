@@ -2273,7 +2273,7 @@ function App() {
                 >
                   Profil & Password Admin
                 </button>
-                {settings.articles_enabled !== '0' && (
+                {false && settings.articles_enabled !== '0' && (
                   <button 
                     className={`admin-tab ${adminTab === 'articles' ? 'active' : ''}`}
                     onClick={() => { setAdminTab('articles'); setArticleTabState('hub'); }}
@@ -2468,7 +2468,9 @@ function App() {
                     />
                   </div>
 
-                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)', marginBottom: '1.5rem' }}>
+                  {false && (
+                    <>
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)', marginBottom: '1.5rem' }}>
                     <div>
                       <label className="form-label" style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.9rem' }}>Fitur Artikel (Edukasi)</label>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.25rem' }}>Aktifkan menu penulisan blog dan tips edukasi satwa</span>
@@ -2556,6 +2558,8 @@ function App() {
                       </div>
                     </div>
                   )}
+                </>
+              )}
 
                   {/* Halaman Tentang Kami (Dynamic) */}
                   <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>

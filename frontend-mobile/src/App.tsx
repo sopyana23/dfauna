@@ -3908,7 +3908,7 @@ function App() {
         {/* ==========================================================
            TAB 3: ARTIKEL & PANDUAN
            ========================================================== */}
-        {activeTab === 'articles' && (
+        {false && activeTab === 'articles' && (
           /* ARTICLES LIST VIEW */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
             <div className="glass-panel" style={{ padding: '1.25rem' }}>
@@ -4140,7 +4140,7 @@ function App() {
                     </div>
 
                     {/* Item 2: Artikel */}
-                    {settings.articles_enabled !== '0' && (
+                    {false && settings.articles_enabled !== '0' && (
                       <div 
                         className="glass-panel" 
                         onClick={() => { setAdminSubTab('articles'); setArticleTabState('hub'); }}
@@ -4386,6 +4386,7 @@ function App() {
                         <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
                       </div>
 
+                      {false && (
                       <div 
                         className="glass-panel"
                         onClick={() => setMobileSettingsTab('features')}
@@ -4400,6 +4401,7 @@ function App() {
                         </div>
                         <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
                       </div>
+                      )}
 
                       <div 
                         className="glass-panel"
@@ -4574,7 +4576,7 @@ function App() {
                             </div>
                           )}
 
-                          {mobileSettingsTab === 'features' && (
+                          {false && mobileSettingsTab === 'features' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                               <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border-light)', marginBottom: '0.5rem' }}>
                                 <div>
@@ -5813,7 +5815,7 @@ function App() {
             <Info size={20} />
             <span>Tentang Kami</span>
           </button>
-          {settings.articles_enabled !== '0' && (
+          {false && settings.articles_enabled !== '0' && (
             <button 
               className={`nav-item ${activeTab === 'articles' ? 'active' : ''}`}
               onClick={goToArticles}
