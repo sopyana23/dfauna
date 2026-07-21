@@ -759,7 +759,7 @@ function App() {
       loadData()
     }, 200)
     return () => clearTimeout(delayDebounceFn)
-  }, [search, classFilter, habitatFilter])
+  }, [search, classFilter, habitatFilter, storeSlug])
 
   // Reset displayLimit on search or filter change
   useEffect(() => {
