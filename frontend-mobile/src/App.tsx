@@ -316,8 +316,14 @@ function App() {
 
   // Parse path for store slug: /u/{slug}
   const getStoreSlug = () => {
-    const match = window.location.pathname.match(/^\/u\/([a-zA-Z0-9\-]+)/);
-    return match ? match[1] : null;
+    const path = window.location.pathname;
+    if (path === '/' || path === '') return null;
+    const match = path.match(/^\/([a-zA-Z0-9\-]+)/);
+    const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets'];
+    if (match && !reserved.includes(match[1])) {
+      return match[1];
+    }
+    return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
   const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home');
@@ -726,7 +732,7 @@ function App() {
   }
   // Share store link
   const handleShareStore = () => {
-    const storeUrl = `${window.location.origin}/u/${storeSlug}`;
+    const storeUrl = `${window.location.origin}/${storeSlug}`;
     navigator.clipboard.writeText(storeUrl).then(() => {
       showToast('Tautan toko berhasil disalin ke papan klip!');
     }).catch(err => {
@@ -737,7 +743,7 @@ function App() {
 
   // Share specific fauna item link
   const handleShareItem = (item: any) => {
-    const itemUrl = `${window.location.origin}/u/${storeSlug}?item=${item.id}`;
+    const itemUrl = `${window.location.origin}/${storeSlug}?item=${item.id}`;
     navigator.clipboard.writeText(itemUrl).then(() => {
       showToast('Tautan produk berhasil disalin ke papan klip!');
     }).catch(err => {
@@ -1006,11 +1012,11 @@ function App() {
     }
 
     const currentPath = window.location.pathname;
-    let targetPath = `/u/${storeSlug}`;
+    let targetPath = `/${storeSlug}`;
     if (activeTab === 'admin') {
-      targetPath = `/u/${storeSlug}/admin`;
+      targetPath = `/${storeSlug}/admin`;
     } else if (activeTab === 'about') {
-      targetPath = `/u/${storeSlug}/about`;
+      targetPath = `/${storeSlug}/about`;
     }
 
     if (currentPath !== targetPath) {
@@ -2043,7 +2049,7 @@ function App() {
                       key={st.slug} 
                       className="glass-panel" 
                       onClick={() => {
-                        window.history.pushState({}, '', `/u/${st.slug}`);
+                        window.history.pushState({}, '', `/${st.slug}`);
                         setStoreSlug(st.slug);
                         setActiveTab('catalog');
                         loadData();
@@ -2059,7 +2065,7 @@ function App() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_title}</h4>
-                        <p style={{ fontSize: '0.65rem', color: 'var(--primary)', margin: '0.1rem 0' }}>dfauna.com/u/{st.slug}</p>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--primary)', margin: '0.1rem 0' }}>dfauna.com/{st.slug}</p>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{st.store_slogan}</p>
                       </div>
                     </div>
@@ -2182,7 +2188,7 @@ function App() {
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label className="form-label">Username Toko (Link Tautan)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>dfauna.com/u/</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>dfauna.com/</span>
                     <input 
                       type="text" 
                       className="form-input" 

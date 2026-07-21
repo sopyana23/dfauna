@@ -249,8 +249,14 @@ function App() {
 
   // Parse path for store slug: /u/{slug}
   const getStoreSlug = () => {
-    const match = window.location.pathname.match(/^\/u\/([a-zA-Z0-9\-]+)/);
-    return match ? match[1] : null;
+    const path = window.location.pathname;
+    if (path === '/' || path === '') return null;
+    const match = path.match(/^\/([a-zA-Z0-9\-]+)/);
+    const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets'];
+    if (match && !reserved.includes(match[1])) {
+      return match[1];
+    }
+    return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
   const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home');
@@ -646,7 +652,7 @@ function App() {
   }
   // Share store link
   const handleShareStore = () => {
-    const storeUrl = `${window.location.origin}/u/${storeSlug}`;
+    const storeUrl = `${window.location.origin}/${storeSlug}`;
     navigator.clipboard.writeText(storeUrl).then(() => {
       showToast('Tautan toko berhasil disalin ke papan klip!');
     }).catch(err => {
@@ -657,7 +663,7 @@ function App() {
 
   // Share specific fauna item link
   const handleShareItem = (item: any) => {
-    const itemUrl = `${window.location.origin}/u/${storeSlug}?item=${item.id}`;
+    const itemUrl = `${window.location.origin}/${storeSlug}?item=${item.id}`;
     navigator.clipboard.writeText(itemUrl).then(() => {
       showToast('Tautan produk berhasil disalin ke papan klip!');
     }).catch(err => {
@@ -770,9 +776,9 @@ function App() {
     }
 
     const currentPath = window.location.pathname;
-    let targetPath = `/u/${storeSlug}`;
+    let targetPath = `/${storeSlug}`;
     if (view === 'admin') {
-      targetPath = `/u/${storeSlug}/admin`;
+      targetPath = `/${storeSlug}/admin`;
     }
 
     if (currentPath !== targetPath) {
@@ -1795,7 +1801,7 @@ function App() {
                 </div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Username Unik</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                  Miliki tautan kustom layaknya akun sosial media (misal: dfauna.com/u/toko-ikan-hias) untuk dipasang di bio Instagram/TikTok.
+                  Miliki tautan kustom layaknya akun sosial media (misal: dfauna.com/toko-ikan-hias) untuk dipasang di bio Instagram/TikTok.
                 </p>
               </div>
             </div>
@@ -1814,7 +1820,7 @@ function App() {
                       key={st.slug} 
                       className="glass-panel" 
                       onClick={() => {
-                        window.history.pushState({}, '', `/u/${st.slug}`);
+                        window.history.pushState({}, '', `/${st.slug}`);
                         setStoreSlug(st.slug);
                         setView('catalog');
                         loadData();
@@ -1830,7 +1836,7 @@ function App() {
                       </div>
                       <div>
                         <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#fff' }}>{st.store_title}</h4>
-                        <p style={{ fontSize: '0.7rem', color: 'var(--primary)', margin: '0.15rem 0' }}>dfauna.com/u/{st.slug}</p>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--primary)', margin: '0.15rem 0' }}>dfauna.com/{st.slug}</p>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.35rem 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{st.store_slogan}</p>
                       </div>
                     </div>
@@ -1953,7 +1959,7 @@ function App() {
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label className="form-label">Link Username Toko (Insta Handle)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>dfauna.com/u/</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>dfauna.com/</span>
                     <input 
                       type="text" 
                       className="form-input" 
