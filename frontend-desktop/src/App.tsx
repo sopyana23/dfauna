@@ -760,6 +760,26 @@ function App() {
     }, 200)
     return () => clearTimeout(delayDebounceFn)
   }, [search, classFilter, habitatFilter, storeSlug])
+  // Sync view state to browser URL pathname
+  useEffect(() => {
+    if (!storeSlug) {
+      if (window.location.pathname !== '/') {
+        window.history.pushState({}, '', '/');
+      }
+      return;
+    }
+
+    const currentPath = window.location.pathname;
+    let targetPath = `/u/${storeSlug}`;
+    if (view === 'admin') {
+      targetPath = `/u/${storeSlug}/admin`;
+    }
+
+    if (currentPath !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+    }
+  }, [view, storeSlug]);
+
 
   // Reset displayLimit on search or filter change
   useEffect(() => {
@@ -842,7 +862,7 @@ function App() {
         setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
         
         // Redirect to store admin
-        window.history.pushState({}, '', `/u/${data.user.store_slug}`);
+        
         setStoreSlug(data.user.store_slug);
         setView('admin');
       } else {
@@ -890,7 +910,7 @@ function App() {
         // If login succeeded on landing portal, redirect context to user's store
         const currentSlug = getStoreSlug();
         if (!currentSlug && data.user.store_slug) {
-          window.history.pushState({}, '', `/u/${data.user.store_slug}`);
+          
           setStoreSlug(data.user.store_slug);
           setView('admin');
         } else {
@@ -1705,7 +1725,7 @@ function App() {
               <button className="btn-primary" onClick={() => {
                 const user = JSON.parse(localStorage.getItem('dfauna_user') || '{}');
                 if (user.store_slug) {
-                  window.history.pushState({}, '', `/u/${user.store_slug}`);
+                  
                   setStoreSlug(user.store_slug);
                   setView('admin');
                 }

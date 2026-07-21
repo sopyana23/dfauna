@@ -616,6 +616,8 @@ function App() {
       setStoreSlug(slug);
       if (window.location.pathname.endsWith('/admin')) {
         setActiveTab('admin');
+      } else if (window.location.pathname.endsWith('/about')) {
+        setActiveTab('about');
       } else {
         setActiveTab('catalog');
       }
@@ -1076,7 +1078,7 @@ function App() {
         setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
         
         // Redirect to store admin
-        window.history.pushState({}, '', `/u/${data.user.store_slug}`);
+        
         setStoreSlug(data.user.store_slug);
         setActiveTab('admin');
       } else {
@@ -1124,7 +1126,7 @@ function App() {
         // If login succeeded on landing portal, redirect context to user's store
         const currentSlug = getStoreSlug();
         if (!currentSlug && data.user.store_slug) {
-          window.history.pushState({}, '', `/u/${data.user.store_slug}`);
+          
           setStoreSlug(data.user.store_slug);
           setActiveTab('admin');
         } else {
@@ -1946,7 +1948,7 @@ function App() {
               <button className="btn-primary btn-small" onClick={() => {
                 const user = JSON.parse(localStorage.getItem('dfauna_user') || '{}');
                 if (user.store_slug) {
-                  window.history.pushState({}, '', `/u/${user.store_slug}`);
+                  
                   setStoreSlug(user.store_slug);
                   setActiveTab('admin');
                 }
