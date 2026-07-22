@@ -342,7 +342,9 @@ function App() {
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
   const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home')
-  const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>('free');
+  const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>('free')
+  const [registerStep, setRegisterStep] = useState<1 | 2>(1)
+  const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
   
   // Registration form state
