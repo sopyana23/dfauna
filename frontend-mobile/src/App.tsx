@@ -2427,12 +2427,10 @@ function App() {
               <span className="genre-tag-pill"><PawPrint size={13} style={{ color: '#10b981' }} /> Hewan</span>
               <span className="genre-tag-pill"><Scissors size={13} style={{ color: '#f59e0b' }} /> Jasa</span>
             </div>
-
-            {/* Hero Section Mobile */}
             <div style={{ textAlign: 'center' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.85rem', borderRadius: '9999px', background: 'rgba(15, 81, 50, 0.08)', border: '1px solid rgba(15, 81, 50, 0.2)', marginBottom: '1.25rem', backdropFilter: 'blur(8px)' }}>
-                <Sparkles size={13} style={{ color: '#0F5132' }} />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#0F5132', letterSpacing: '0.03em', textTransform: 'uppercase' }}>KATALOG &amp; BIOLINK BISNIS MULTI-GENRE</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.85rem', borderRadius: '9999px', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1.25rem', backdropFilter: 'blur(8px)' }}>
+                <Sparkles size={13} style={{ color: '#10b981' }} />
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#34d399', letterSpacing: '0.03em', textTransform: 'uppercase' }}>KATALOG &amp; BIOLINK BISNIS MULTI-GENRE</span>
               </div>
               <h1 style={{ fontSize: '2.1rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.03em', marginBottom: '1rem' }} className="gradient-text-hero">
                 Satu Link Katalog Interaktif untuk <span className="gradient-text-emerald">Segala Jenis Usaha Anda</span>
@@ -2460,37 +2458,37 @@ function App() {
                 <div className="icon-badge-box" style={{ background: 'rgba(249, 115, 22, 0.12)', border: '1px solid rgba(249, 115, 22, 0.25)', color: '#f97316' }}>
                   <Utensils size={18} />
                 </div>
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#1C2A24' }}>Kuliner</h3>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Kuliner</h3>
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
                   Buku menu digital interaktif &amp; pesan via WA.
                 </p>
               </div>
 
               <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div className="icon-badge-box" style={{ background: 'rgba(2, 132, 199, 0.12)', border: '1px solid rgba(2, 132, 199, 0.25)', color: '#0284c7' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)', color: '#38bdf8' }}>
                   <ShoppingBag size={18} />
                 </div>
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#1C2A24' }}>Barang</h3>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Barang</h3>
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
                   Fashion, gadget, barang &amp; alat-alat harian.
                 </p>
               </div>
 
               <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div className="icon-badge-box" style={{ background: 'rgba(15, 81, 50, 0.12)', border: '1px solid rgba(15, 81, 50, 0.25)', color: '#0F5132' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10b981' }}>
                   <PawPrint size={18} />
                 </div>
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#1C2A24' }}>Hewan</h3>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Hewan</h3>
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
                   Galeri satwa &amp; hewan hias interaktif.
                 </p>
               </div>
 
               <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div className="icon-badge-box" style={{ background: 'rgba(217, 119, 6, 0.12)', border: '1px solid rgba(217, 119, 6, 0.25)', color: '#d97706' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.25)', color: '#f59e0b' }}>
                   <Scissors size={18} />
                 </div>
-                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#1C2A24' }}>Jasa</h3>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Jasa</h3>
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
                   Portofolio layanan &amp; tarif terhubung WA.
                 </p>
@@ -2501,27 +2499,27 @@ function App() {
             <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Cara Kerja</span>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#1C2A24' }}>3 Langkah Mudah</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#ffffff' }}>3 Langkah Mudah</h2>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1C2A24', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Buat akun & dapatkan link unik (catavor.com/toko-anda).</p>
                   </div>
                 </div>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1C2A24', margin: '0 0 0.25rem 0' }}>Upload Produk & Barang</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Upload Produk & Barang</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Masukkan foto, harga, dan tautan marketplace toko.</p>
                   </div>
                 </div>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>3</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>3</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1C2A24', margin: '0 0 0.25rem 0' }}>Sebarkan Link Katalog</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Sebarkan Link Katalog</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Pasang link toko di bio Instagram, TikTok, & WA.</p>
                   </div>
                 </div>
@@ -2532,14 +2530,14 @@ function App() {
             <div id="pricing-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Pilihan Paket Bisnis</span>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#1C2A24' }}>Pilih Paket Toko Anda</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#ffffff' }}>Pilih Paket Toko Anda</h2>
               </div>
 
               {/* Free Card */}
               <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-light)' }}>
                 <div>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Plan Gratis</span>
-                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#1C2A24', margin: '0.35rem 0' }}>Rp 0 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ selamanya</span></div>
+                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#ffffff', margin: '0.35rem 0' }}>Rp 0 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ selamanya</span></div>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
                   <li>✅ Maksimal 10 postingan produk</li>
@@ -2552,12 +2550,12 @@ function App() {
               </div>
 
               {/* Pro Card */}
-              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(15,81,50,0.04)' }}>
+              <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(16,185,129,0.04)' }}>
                 <div>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Plan Pro / Premium</span>
-                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#1C2A24', margin: '0.35rem 0', display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#ffffff', margin: '0.35rem 0', display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
                     <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', textDecoration: 'line-through', fontWeight: 600 }}>Rp 50rb</span>
-                    <span style={{ color: '#d97706' }}>Rp 30rb</span>
+                    <span style={{ color: '#f59e0b' }}>Rp 30rb</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ bulan</span>
                   </div>
                 </div>
@@ -2577,14 +2575,14 @@ function App() {
             <div id="concept-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Bagaimana Ini Bekerja?</span>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#1C2A24' }}>Konsep Catavor</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#ffffff' }}>Konsep Catavor</h2>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>1</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>1</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1C2A24', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
                       Daftar dan klaim link unik Anda seperti <strong>catavor.com/toko-anda</strong>.
                     </p>
@@ -2592,9 +2590,9 @@ function App() {
                 </div>
 
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>2</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>2</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1C2A24', margin: '0 0 0.25rem 0' }}>Kelola Katalog & Profil</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Kelola Katalog & Profil</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
                       Masukkan barang/satwa hias beserta harga, jam buka, lokasi, dan tautan marketplace.
                     </p>
@@ -2602,9 +2600,9 @@ function App() {
                 </div>
 
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>3</div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>3</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1C2A24', margin: '0 0 0.25rem 0' }}>Bagikan & Hubungkan WA</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Bagikan & Hubungkan WA</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
                       Pasang link di bio Anda. Pengunjung langsung melihat produk dan chat WhatsApp dalam sekali ketuk.
                     </p>
@@ -2620,7 +2618,7 @@ function App() {
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={28} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1C2A24' }}>Masuk Admin</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffffff' }}>Masuk Admin</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Kelola katalog & halaman kustom Anda</p>
               </div>
               
@@ -2638,9 +2636,9 @@ function App() {
                   width: '100%', 
                   padding: '0.65rem', 
                   borderRadius: '0.5rem', 
-                  backgroundColor: '#FFFFFF', 
-                  border: '1px solid rgba(15,81,50,0.2)', 
-                  color: '#1C2A24', 
+                  backgroundColor: 'rgba(255,255,255,0.06)', 
+                  border: '1px solid rgba(255,255,255,0.15)', 
+                  color: '#ffffff', 
                   fontSize: '0.8rem', 
                   fontWeight: 700, 
                   display: 'flex', 
@@ -2649,7 +2647,6 @@ function App() {
                   gap: '0.5rem', 
                   marginBottom: '1rem',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(15,81,50,0.05)',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -2670,7 +2667,7 @@ function App() {
 
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label">Email</label>
+                  <label className="form-label">Email Admin</label>
                   <input 
                     type="email" 
                     className="form-input" 
@@ -2704,7 +2701,7 @@ function App() {
 
         {portalTab === 'register' && (
           <div style={{ padding: '1.5rem 1rem' }}>
-            <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem 1.25rem', borderRadius: '1.15rem', border: '1px solid rgba(15, 81, 50, 0.15)', background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 247, 242, 0.96) 100%)', boxShadow: '0 16px 40px rgba(15, 81, 50, 0.1)' }}>
+            <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem 1.25rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding Mobile */}
               <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
                 <div style={{ 
@@ -2712,20 +2709,20 @@ function App() {
                   height: '54px', 
                   borderRadius: '16px', 
                   background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                  border: '1px solid rgba(15, 81, 50, 0.2)', 
+                  border: '1px solid rgba(255, 255, 255, 0.95)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   margin: '0 auto 0.65rem auto', 
-                  boxShadow: '0 4px 16px rgba(15, 81, 50, 0.15)', 
+                  boxShadow: '0 0 16px rgba(255, 255, 255, 0.4), 0 6px 20px rgba(16, 185, 129, 0.3)', 
                   padding: '6px'
                 }}>
                   <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1C2A24', letterSpacing: '-0.02em', margin: '0 0 0.25rem 0' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.25rem 0' }}>
                   Daftar Toko Catavor
                 </h2>
-                <p style={{ color: '#4A5D54', fontSize: '0.75rem', margin: 0, lineHeight: 1.3 }}>
+                <p style={{ color: '#9ca3af', fontSize: '0.75rem', margin: 0, lineHeight: 1.3 }}>
                   Katalog Online Modern &amp; Storefront Link 1 Klik
                 </p>
               </div>

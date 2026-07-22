@@ -2426,7 +2426,7 @@ function App() {
 
         {portalTab === 'register' && (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem 1.5rem' }}>
-            <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '480px', padding: '2rem 1.75rem', borderRadius: '1.25rem', border: '1px solid rgba(15, 81, 50, 0.15)', background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 247, 242, 0.96) 100%)', boxShadow: '0 20px 50px rgba(15, 81, 50, 0.1)' }}>
+            <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '480px', padding: '2rem 1.75rem', borderRadius: '1.25rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding */}
               <div style={{ textAlign: 'center', marginBottom: '1.5rem', position: 'relative' }}>
                 <div style={{ 
@@ -2434,20 +2434,20 @@ function App() {
                   height: '62px', 
                   borderRadius: '18px', 
                   background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                  border: '1px solid rgba(15, 81, 50, 0.2)', 
+                  border: '1px solid rgba(255, 255, 255, 0.95)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   margin: '0 auto 0.85rem auto', 
-                  boxShadow: '0 4px 20px rgba(15, 81, 50, 0.15)', 
+                  boxShadow: '0 0 20px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(16, 185, 129, 0.3)', 
                   padding: '7px'
                 }}>
                   <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1C2A24', letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
                   Daftar Toko Catavor
                 </h2>
-                <p style={{ color: '#4A5D54', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>
+                <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>
                   Buat katalog produk &amp; storefront online profesional Anda
                 </p>
               </div>
