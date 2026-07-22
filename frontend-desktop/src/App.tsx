@@ -1932,30 +1932,49 @@ function App() {
   if (!storeSlug) {
     return (
       <div className="portal-container" style={{ minHeight: '100vh', backgroundColor: '#090e0c', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}>
-        {/* Header (Hidden during registration for clean focus) */}
+        {/* Floating Ultra-Premium Glassmorphic Header */}
         {portalTab !== 'register' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                🦎 Catavor <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
+          <header style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            padding: '0.9rem 2.25rem', 
+            backgroundColor: 'rgba(9, 13, 22, 0.8)', 
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)', 
+            backdropFilter: 'blur(20px)', 
+            position: 'sticky', 
+            top: 0, 
+            zIndex: 100,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.35)' }}>
+                <span style={{ fontSize: '1.25rem' }}>⚡</span>
+              </div>
+              <span style={{ fontSize: '1.5rem', fontWeight: 900, background: 'linear-gradient(135deg, #ffffff 40%, #10b981 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                Catavor <span style={{ fontSize: '0.68rem', fontWeight: 800, padding: '0.2rem 0.55rem', background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(99,102,241,0.15) 100%)', color: '#34d399', borderRadius: '20px', border: '1px solid rgba(16,185,129,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PRO LINK</span>
               </span>
             </div>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {token ? (
                 <button className="btn-primary" onClick={() => {
                   const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
                   if (user.store_slug) {
-                    
                     setStoreSlug(user.store_slug);
                     setView('admin');
                   }
-                }}>
+                }} style={{ borderRadius: '30px', padding: '0.55rem 1.35rem', fontSize: '0.85rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', cursor: 'pointer' }}>
                   Masuk Dashboard
                 </button>
               ) : (
                 <>
-                  <button className="btn-secondary" onClick={() => setPortalTab('login')} style={{ height: '38px', padding: '0 1.25rem', fontSize: '0.85rem' }}>Masuk</button>
-                  <button className="btn-primary" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '38px', padding: '0 1.25rem', fontSize: '0.85rem' }}>Buat Link Toko</button>
+                  <button className="btn-secondary" onClick={() => setPortalTab('login')} style={{ height: '38px', padding: '0 1.25rem', fontSize: '0.85rem', borderRadius: '30px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#e2e8f0', transition: 'all 0.2s ease', cursor: 'pointer' }}>
+                    Masuk
+                  </button>
+                  <button className="btn-primary" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '38px', padding: '0 1.35rem', fontSize: '0.85rem', borderRadius: '30px', background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%)', border: 'none', color: '#ffffff', fontWeight: 800, boxShadow: '0 4px 20px rgba(16, 185, 129, 0.35)', cursor: 'pointer', transition: 'all 0.2s ease' }}>
+                    Daftar Toko Gratis
+                  </button>
                 </>
               )}
             </div>
@@ -1965,26 +1984,45 @@ function App() {
         {portalTab === 'home' && (
           <main style={{ padding: '4rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
             {/* Hero Section */}
-            <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '30px', backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid var(--border-light)', marginBottom: '1.5rem' }}>
-                <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Platform Kustomisasi Galeri Hewan Hias</span>
+            <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.55rem', padding: '0.45rem 1.15rem', borderRadius: '30px', background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(99,102,241,0.1) 100%)', border: '1px solid rgba(16,185,129,0.25)', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                <Sparkles size={16} style={{ color: '#34d399' }} />
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#34d399', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Katalog &amp; Biolink Bisnis Modern</span>
               </div>
-              <h1 style={{ fontSize: '3.5rem', fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.03em', maxWidth: '900px', margin: '0 auto 1.5rem auto' }}>
-                Linktree Premium untuk Toko & Galeri Fauna Anda
+              
+              <h1 style={{ fontSize: '3.5rem', fontWeight: 900, lineHeight: 1.12, color: '#ffffff', letterSpacing: '-0.03em', maxWidth: '920px', margin: '0 auto 1.5rem auto' }}>
+                Catavor: Memudahkan Pelanggan Menjelajahi Produk &amp; Informasi Bisnis
               </h1>
-              <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '650px', margin: '0 auto 2.5rem auto', lineHeight: 1.6 }}>
-                Tampilkan katalog satwa, deskripsi habitat, nomor kontak, lokasi Google Maps, dan profil lengkap galeri Anda dalam satu link kustom modern.
+              
+              <p style={{ fontSize: '1.15rem', color: '#94a3b8', maxWidth: '680px', margin: '0 auto 2rem auto', lineHeight: 1.6 }}>
+                Tampilkan katalog barang &amp; satwa hias interaktif ala OLX, lokasi toko, kontak WhatsApp, dan biolink Anda dalam satu tautan modern.
               </p>
+
+              {/* Universal Niche Badges (Food, Fashion, Goods, Pets) */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, padding: '0.4rem 0.9rem', borderRadius: '20px', backgroundColor: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  🍔 Makanan &amp; Kuliner
+                </span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, padding: '0.4rem 0.9rem', borderRadius: '20px', backgroundColor: 'rgba(236,72,153,0.12)', border: '1px solid rgba(236,72,153,0.3)', color: '#f472b6', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  👗 Fashion &amp; Pakaian
+                </span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, padding: '0.4rem 0.9rem', borderRadius: '20px', backgroundColor: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  📦 Toko Barang &amp; Retail
+                </span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, padding: '0.4rem 0.9rem', borderRadius: '20px', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  🐾 Satwa Hias &amp; Hobi
+                </span>
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-                <button className="btn-primary" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
-                  Mulai Sekarang - Gratis
+                <button className="btn-primary" style={{ padding: '0.9rem 2.25rem', fontSize: '0.98rem', borderRadius: '30px', background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%)', border: 'none', fontWeight: 800, boxShadow: '0 6px 25px rgba(16, 185, 129, 0.4)', cursor: 'pointer' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
+                  Mulai Buat Toko - Gratis 🚀
                 </button>
-                <button className="btn-secondary" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }} onClick={() => {
-                  const el = document.getElementById('featured-section');
+                <button className="btn-secondary" style={{ padding: '0.9rem 2.25rem', fontSize: '0.98rem', borderRadius: '30px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' }} onClick={() => {
+                  const el = document.getElementById('pricing-desktop');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}>
-                  Lihat Contoh Toko
+                  Lihat Paket &amp; Harga
                 </button>
               </div>
             </div>

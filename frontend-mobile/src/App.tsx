@@ -2170,30 +2170,45 @@ function App() {
   if (!storeSlug) {
     return (
       <div className="portal-container" style={{ minHeight: '100vh', backgroundColor: '#090e0c', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}>
-        {/* Header (Hidden during registration for clean focus) */}
+        {/* Floating Ultra-Premium Glassmorphic Header Mobile */}
         {portalTab !== 'register' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
+          <header style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            padding: '0.75rem 1rem', 
+            backgroundColor: 'rgba(9, 13, 22, 0.85)', 
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)', 
+            backdropFilter: 'blur(20px)', 
+            position: 'sticky', 
+            top: 0, 
+            zIndex: 100,
+            boxShadow: '0 8px 25px rgba(0,0,0,0.4)'
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                🦎 Catavor <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
+              <div style={{ width: '30px', height: '30px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}>
+                <span style={{ fontSize: '1rem' }}>⚡</span>
+              </div>
+              <span style={{ fontSize: '1.2rem', fontWeight: 900, background: 'linear-gradient(135deg, #ffffff 40%, #10b981 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                Catavor <span style={{ fontSize: '0.58rem', fontWeight: 800, padding: '0.15rem 0.45rem', background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(99,102,241,0.15) 100%)', color: '#34d399', borderRadius: '15px', border: '1px solid rgba(16,185,129,0.3)', textTransform: 'uppercase' }}>PRO</span>
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               {token ? (
                 <button className="btn-primary btn-small" onClick={() => {
                   const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
                   if (user.store_slug) {
-                    
                     setStoreSlug(user.store_slug);
                     setActiveTab('admin');
                   }
-                }}>
+                }} style={{ borderRadius: '25px', padding: '0.4rem 0.85rem', fontSize: '0.75rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none' }}>
                   Dashboard
                 </button>
               ) : (
                 <>
-                  <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Masuk</button>
-                  <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Daftar</button>
+                  <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem', borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#e2e8f0' }}>Masuk</button>
+                  <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '30px', padding: '0 0.85rem', fontSize: '0.75rem', borderRadius: '25px', background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%)', border: 'none', color: '#ffffff', fontWeight: 800, boxShadow: '0 4px 15px rgba(16, 185, 129, 0.35)' }}>Daftar</button>
                 </>
               )}
             </div>
@@ -2202,27 +2217,46 @@ function App() {
 
         {portalTab === 'home' && (
           <main style={{ padding: '2rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-            {/* Hero Section */}
+            {/* Hero Section Mobile */}
             <div style={{ textAlign: 'center' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.8rem', borderRadius: '30px', backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
-                <Sparkles size={12} style={{ color: 'var(--primary)' }} />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Katalog & Biolink Bisnis Modern</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem', borderRadius: '25px', background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(99,102,241,0.1) 100%)', border: '1px solid rgba(16,185,129,0.25)', marginBottom: '1.15rem' }}>
+                <Sparkles size={13} style={{ color: '#34d399' }} />
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#34d399', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Katalog &amp; Biolink Bisnis Modern</span>
               </div>
-              <h1 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.03em', marginBottom: '1rem' }}>
-                Catavor: Memudahkan Pelanggan Menjelajahi Produk & Informasi Bisnis
+
+              <h1 style={{ fontSize: '1.95rem', fontWeight: 900, lineHeight: 1.15, color: '#ffffff', letterSpacing: '-0.03em', marginBottom: '0.85rem' }}>
+                Catavor: Memudahkan Pelanggan Menjelajahi Produk &amp; Informasi Bisnis
               </h1>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                Tampilkan katalog barang & satwa hias interaktif ala OLX, lokasi toko, kontak WhatsApp, dan biolink Anda dalam satu tautan modern.
+
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1.35rem', lineHeight: 1.5 }}>
+                Tampilkan katalog barang &amp; satwa hias interaktif ala OLX, lokasi toko, kontak WhatsApp, dan biolink Anda dalam satu tautan modern.
               </p>
+
+              {/* Universal Niche Badges Mobile (Food, Fashion, Goods, Pets) */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.3rem 0.65rem', borderRadius: '15px', backgroundColor: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  🍔 Makanan
+                </span>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.3rem 0.65rem', borderRadius: '15px', backgroundColor: 'rgba(236,72,153,0.12)', border: '1px solid rgba(236,72,153,0.3)', color: '#f472b6', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  👗 Fashion
+                </span>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.3rem 0.65rem', borderRadius: '15px', backgroundColor: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  📦 Barang
+                </span>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '0.3rem 0.65rem', borderRadius: '15px', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  🐾 Satwa Hias
+                </span>
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button className="btn-primary btn-full" style={{ padding: '0.85rem' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
-                  Mulai Buat Toko - Gratis
+                <button className="btn-primary btn-full" style={{ padding: '0.85rem', borderRadius: '25px', background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%)', border: 'none', fontWeight: 800, fontSize: '0.9rem', boxShadow: '0 4px 18px rgba(16, 185, 129, 0.4)' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
+                  Mulai Buat Toko - Gratis 🚀
                 </button>
-                <button className="btn-secondary btn-full" style={{ padding: '0.85rem' }} onClick={() => {
+                <button className="btn-secondary btn-full" style={{ padding: '0.85rem', borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#e2e8f0', fontWeight: 700, fontSize: '0.85rem' }} onClick={() => {
                   const el = document.getElementById('pricing-mobile');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}>
-                  Lihat Paket & Harga
+                  Lihat Paket &amp; Harga
                 </button>
               </div>
             </div>
