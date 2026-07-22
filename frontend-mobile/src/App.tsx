@@ -2170,33 +2170,35 @@ function App() {
   if (!storeSlug) {
     return (
       <div className="portal-container" style={{ minHeight: '100vh', backgroundColor: '#090e0c', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}>
-        {/* Header */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              🦎 Catavor <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {token ? (
-              <button className="btn-primary btn-small" onClick={() => {
-                const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
-                if (user.store_slug) {
-                  
-                  setStoreSlug(user.store_slug);
-                  setActiveTab('admin');
-                }
-              }}>
-                Dashboard
-              </button>
-            ) : (
-              <>
-                <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Masuk</button>
-                <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Daftar</button>
-              </>
-            )}
-          </div>
-        </header>
+        {/* Header (Hidden during registration for clean focus) */}
+        {portalTab !== 'register' && (
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
+              <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                🦎 Catavor <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', border: '1px solid var(--border-light)' }}>Link</span>
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {token ? (
+                <button className="btn-primary btn-small" onClick={() => {
+                  const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
+                  if (user.store_slug) {
+                    
+                    setStoreSlug(user.store_slug);
+                    setActiveTab('admin');
+                  }
+                }}>
+                  Dashboard
+                </button>
+              ) : (
+                <>
+                  <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Masuk</button>
+                  <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Daftar</button>
+                </>
+              )}
+            </div>
+          </header>
+        )}
 
         {portalTab === 'home' && (
           <main style={{ padding: '2rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
