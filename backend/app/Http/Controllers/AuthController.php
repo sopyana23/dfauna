@@ -49,28 +49,31 @@ class AuthController extends Controller
         $store = Store::create([
             'user_id' => $user->id,
             'slug' => Str::slug($request->store_slug),
+            'plan' => 'free',
             'store_title' => $request->store_name,
-            'store_slogan' => 'Galeri Satwa Hias Premium & Pengiriman Seluruh Indonesia',
+            'store_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             'whatsapp_number' => '628123456789',
+            'enable_wa_direct' => true,
+            'enable_wa_rekber' => true,
             'about_title' => 'Tentang ' . $request->store_name,
-            'about_slogan' => 'Premium Quality Pet & Aquatic Gallery',
-            'about_description' => 'Kami berkomitmen menyediakan satwa hias berkualitas tinggi. Setiap satwa melewati proses karantina ketat sebelum dipasarkan.',
+            'about_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
+            'about_description' => 'Kami berkomitmen menyediakan produk dan barang berkualitas tinggi. Setiap barang melewati pemeriksaan kualitas sebelum dikirim.',
             'about_location' => 'Bandung, Jawa Barat, Indonesia',
             'about_hours' => '08:00 - 21:00 WIB (Setiap Hari)',
-            'about_disclaimer' => 'Komitmen pelestarian lingkungan: Kami tidak pernah dan tidak akan melayani transaksi jual-beli untuk jenis satwa liar atau hewan langka yang dilindungi undang-undang.',
+            'about_disclaimer' => 'Komitmen jaminan bisnis: Kami mengutamakan kepuasan pelanggan dan keamanan transaksi.',
             'about_cards' => [
-                ['title' => 'Garansi Kesehatan', 'content' => 'Setiap satwa melewati proses karantina ketat dan pemeriksaan kesehatan berkala.', 'icon' => 'shield'],
-                ['title' => 'Transaksi Aman', 'content' => 'Mendukung sistem pembayaran aman secara langsung maupun transfer terpercaya.', 'icon' => 'lock'],
-                ['title' => 'Konsultasi Care', 'content' => 'Tim ahli kami siap membantu konsultasi pakan, wadah, dan perawatan jangka panjang.', 'icon' => 'message']
+                ['title' => 'Garansi Kualitas', 'content' => 'Setiap produk melewati pemeriksaan kualitas ketat sebelum dipasarkan.', 'icon' => 'shield'],
+                ['title' => 'Transaksi Aman', 'content' => 'Mendukung sistem pembayaran aman secara langsung maupun marketplace terpercaya.', 'icon' => 'lock'],
+                ['title' => 'Layanan Pelanggan', 'content' => 'Tim kami siap membantu konsultasi produk dan pemesanan dengan cepat.', 'icon' => 'message']
             ],
             'social_links' => [
                 ['platform' => 'Instagram', 'url' => 'https://instagram.com/' . $request->store_slug],
                 ['platform' => 'Facebook', 'url' => 'https://facebook.com/' . $request->store_slug]
             ],
-            'master_classes' => ['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil'],
-            'master_habitats' => ['Air Tawar', 'Air Laut', 'Darat'],
-            'master_statuses' => ['Tersedia (For Sale)', 'Habis Terjual (Sold Out)', 'Terbatas (Limited)'],
-            'master_shipping_coverages' => ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (No Shipping)']
+            'master_classes' => ['Elektronik', 'Pakaian & Aksesoris', 'Satwa Hias', 'Pakan & Perlengkapan', 'Produk General'],
+            'master_habitats' => ['Baru (New)', 'Bekas (Used)', 'General'],
+            'master_statuses' => ['Tersedia (Ready Stock)', 'Habis Terjual (Out of Stock)', 'Pre-Order'],
+            'master_shipping_coverages' => ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (Pickup)']
         ]);
 
         $token = $user->createToken('admin-token')->plainTextToken;
@@ -84,7 +87,8 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'store_slug' => $store->slug,
-                'store_title' => $store->store_title
+                'store_title' => $store->store_title,
+                'store_plan' => $store->plan
             ]
         ]);
     }
@@ -124,7 +128,8 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'store_slug' => $store ? $store->slug : null,
-                'store_title' => $store ? $store->store_title : null
+                'store_title' => $store ? $store->store_title : null,
+                'store_plan' => $store ? ($store->plan ?? 'free') : 'free'
             ]
         ]);
     }

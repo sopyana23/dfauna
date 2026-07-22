@@ -1006,6 +1006,26 @@ function App() {
     }
   }
 
+  // Handle Upgrade Plan to Pro
+  const handleUpgradeToPro = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/stores/upgrade-plan`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ plan: 'pro' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('Selamat! Toko Anda telah berhasil di-upgrade ke Plan Pro (Unlimited)!', 'success')
+        loadData()
+      } else {
+        showToast(data.message || 'Gagal upgrade plan', 'error')
+      }
+    } catch (err) {
+      showToast('Terjadi kesalahan saat upgrade plan', 'error')
+    }
+  }
+
   // Handle Admin Profile Update
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1162,6 +1182,10 @@ function App() {
 
   // Open CRUD modal for create
   const openCreateModal = () => {
+    if (settings.plan === 'free' && faunas.length >= 10) {
+      showToast('Batas postingan Plan Gratis (Maksimal 10 produk) telah tercapai. Silakan upgrade ke Plan Pro!', 'error')
+      return
+    }
     setCrudMode('create')
     setEditId(null)
     setCrudForm({

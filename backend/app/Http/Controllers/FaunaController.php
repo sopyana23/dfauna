@@ -73,11 +73,11 @@ class FaunaController extends Controller
             ], 404);
         }
 
-        // Check plan limits (Free plan max 20 items)
-        if (($store->plan ?? 'free') === 'free' && $store->faunas()->count() >= 20) {
+        // Check plan limits (Free plan max 10 items)
+        if (($store->plan ?? 'free') === 'free' && $store->faunas()->count() >= 10) {
             return response()->json([
                 'success' => false,
-                'message' => 'Batas postingan Plan Gratis telah tercapai (Maksimal 20 item). Silakan upgrade ke Plan Pro untuk posting tanpa batas!'
+                'message' => 'Batas postingan Plan Gratis telah tercapai (Maksimal 10 item). Silakan upgrade ke Plan Pro untuk posting tanpa batas!'
             ], 422);
         }
 

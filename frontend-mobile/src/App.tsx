@@ -1404,6 +1404,10 @@ function App() {
 
   // Open Add Form
   const openCreateSheet = () => {
+    if (settings.plan === 'free' && faunas.length >= 10) {
+      showToast('Batas postingan Plan Gratis (Maksimal 10 produk) telah tercapai. Silakan upgrade ke Plan Pro!', 'error')
+      return
+    }
     setCrudMode('create')
     setEditId(null)
     setCrudForm({
@@ -2083,7 +2087,7 @@ function App() {
                   <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0' }}>Rp 0 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ selamanya</span></div>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
-                  <li>✅ Maksimal 20 Postingan Produk</li>
+                  <li>✅ Maksimal 10 Postingan Produk</li>
                   <li>✅ Display Katalog Interaktif</li>
                   <li>✅ Link WA & Marketplace</li>
                   <li style={{ color: 'var(--text-muted)' }}>❌ Halaman "Tentang Kami"</li>
