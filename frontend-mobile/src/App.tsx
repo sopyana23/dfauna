@@ -4601,20 +4601,53 @@ function App() {
                       {titleText}
                     </h1>
                     {settings.plan === 'free' && (
-                      <span className="free-badge" style={{ fontSize: scale.badgeFontSize }}>
-                        Free by Catavor
+                      <span 
+                        className="free-badge" 
+                        style={{ fontSize: scale.badgeFontSize, cursor: 'pointer' }}
+                        onClick={() => {
+                          setStoreSlug(null);
+                          setPortalTab('register');
+                          setRegisterStep(1);
+                        }}
+                        title="Klik untuk membuat toko Catavor gratis"
+                      >
+                        Free by Catavor ⚡
                       </span>
                     )}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="header-share-btn"
-                  onClick={handleShareStore}
-                  title="Bagikan Link Toko"
-                >
-                  <Share2 size={16} style={{ color: 'var(--primary)' }} />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  {!token && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStoreSlug(null);
+                        setPortalTab('register');
+                        setRegisterStep(1);
+                      }}
+                      style={{
+                        padding: '0.25rem 0.55rem',
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        borderRadius: '20px',
+                        backgroundColor: 'rgba(16,185,129,0.15)',
+                        border: '1px solid rgba(16,185,129,0.3)',
+                        color: '#10b981',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      + Buat Toko
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="header-share-btn"
+                    onClick={handleShareStore}
+                    title="Bagikan Link Toko"
+                  >
+                    <Share2 size={16} style={{ color: 'var(--primary)' }} />
+                  </button>
+                </div>
               </div>
             );
           })()}
