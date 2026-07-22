@@ -2028,7 +2028,7 @@ function App() {
             ) : (
               <>
                 <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Masuk</button>
-                <button className="btn-primary btn-small" onClick={() => setPortalTab('register')} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Daftar</button>
+                <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '30px', padding: '0 0.75rem', fontSize: '0.75rem' }}>Daftar</button>
               </>
             )}
           </div>
@@ -2049,7 +2049,7 @@ function App() {
                 Tampilkan katalog barang & satwa hias interaktif ala OLX, lokasi toko, kontak WhatsApp, dan biolink Anda dalam satu tautan modern.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button className="btn-primary btn-full" style={{ padding: '0.85rem' }} onClick={() => setPortalTab('register')}>
+                <button className="btn-primary btn-full" style={{ padding: '0.85rem' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
                   Mulai Buat Toko - Gratis
                 </button>
                 <button className="btn-secondary btn-full" style={{ padding: '0.85rem' }} onClick={() => {
@@ -2130,7 +2130,7 @@ function App() {
                   <li>✅ Link WA & Marketplace</li>
                   <li style={{ color: 'var(--text-muted)' }}>❌ Halaman "Tentang Kami"</li>
                 </ul>
-                <button className="btn-secondary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterPlan('free'); setPortalTab('register'); }}>
+                <button className="btn-secondary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterStep(1); setRegisterPlan('free'); setPortalTab('register'); }}>
                   Daftar Plan Gratis
                 </button>
               </div>
@@ -2147,7 +2147,7 @@ function App() {
                   <li>✨ Sakelar Tombol Chat WA & Rekber</li>
                   <li>✨ Prioritas Tampil di Landing Page</li>
                 </ul>
-                <button className="btn-primary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterPlan('pro'); setPortalTab('register'); }}>
+                <button className="btn-primary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterStep(1); setRegisterPlan('pro'); setPortalTab('register'); }}>
                   Daftar Plan Pro
                 </button>
               </div>
@@ -2238,7 +2238,7 @@ function App() {
                 </button>
               </form>
               <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Belum punya akun? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => setPortalTab('register')}>Daftar Baru</span>
+                Belum punya akun? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>Daftar Baru</span>
               </div>
             </div>
           </div>

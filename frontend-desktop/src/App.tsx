@@ -1785,7 +1785,7 @@ function App() {
             ) : (
               <>
                 <button className="btn-secondary" onClick={() => setPortalTab('login')} style={{ height: '38px', padding: '0 1.25rem', fontSize: '0.85rem' }}>Masuk</button>
-                <button className="btn-primary" onClick={() => setPortalTab('register')} style={{ height: '38px', padding: '0 1.25rem', fontSize: '0.85rem' }}>Buat Link Toko</button>
+                <button className="btn-primary" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '38px', padding: '0 1.25rem', fontSize: '0.85rem' }}>Buat Link Toko</button>
               </>
             )}
           </div>
@@ -1806,7 +1806,7 @@ function App() {
                 Tampilkan katalog satwa, deskripsi habitat, nomor kontak, lokasi Google Maps, dan profil lengkap galeri Anda dalam satu link kustom modern.
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-                <button className="btn-primary" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }} onClick={() => setPortalTab('register')}>
+                <button className="btn-primary" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
                   Mulai Sekarang - Gratis
                 </button>
                 <button className="btn-secondary" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }} onClick={() => {
@@ -1931,7 +1931,7 @@ function App() {
                 </button>
               </form>
               <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Belum punya akun toko? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => setPortalTab('register')}>Daftar Baru</span>
+                Belum punya akun toko? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>Daftar Baru</span>
               </div>
             </div>
           </div>
