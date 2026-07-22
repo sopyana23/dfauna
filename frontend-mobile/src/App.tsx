@@ -329,7 +329,8 @@ function App() {
     return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
-  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home');
+  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home')
+  const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>('free');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
   
   // Registration form state
@@ -2092,7 +2093,7 @@ function App() {
                   <li>✅ Link WA & Marketplace</li>
                   <li style={{ color: 'var(--text-muted)' }}>❌ Halaman "Tentang Kami"</li>
                 </ul>
-                <button className="btn-secondary btn-full" style={{ padding: '0.75rem' }} onClick={() => setPortalTab('register')}>
+                <button className="btn-secondary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterPlan('free'); setPortalTab('register'); }}>
                   Daftar Plan Gratis
                 </button>
               </div>
@@ -2109,7 +2110,7 @@ function App() {
                   <li>✨ Sakelar Tombol Chat WA & Rekber</li>
                   <li>✨ Prioritas Tampil di Landing Page</li>
                 </ul>
-                <button className="btn-primary btn-full" style={{ padding: '0.75rem' }} onClick={() => setPortalTab('register')}>
+                <button className="btn-primary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterPlan('pro'); setPortalTab('register'); }}>
                   Daftar Plan Pro
                 </button>
               </div>

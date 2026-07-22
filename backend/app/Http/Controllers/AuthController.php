@@ -45,11 +45,16 @@ class AuthController extends Controller
             'is_password_changed' => true
         ]);
 
+        $plan = $request->input('plan', 'free');
+        if (!in_array($plan, ['free', 'pro'])) {
+            $plan = 'free';
+        }
+
         // Create Store with default configuration parameters
         $store = Store::create([
             'user_id' => $user->id,
             'slug' => Str::slug($request->store_slug),
-            'plan' => 'free',
+            'plan' => $plan,
             'store_title' => $request->store_name,
             'store_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             'whatsapp_number' => '628123456789',
