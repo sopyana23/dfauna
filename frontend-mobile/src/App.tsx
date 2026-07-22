@@ -28,7 +28,6 @@ import {
   MessageCircle,
   Heart,
   Truck,
-  Sparkles,
   Star,
   Compass,
   ShoppingCart,
@@ -45,7 +44,18 @@ import {
   Image,
   Clock,
   Heading,
-  Share2
+  Share2,
+  Sparkles,
+  ArrowRight,
+  Utensils,
+  Shirt,
+  Smartphone,
+  PawPrint,
+  Scissors,
+  Zap,
+  Store,
+  Layers,
+  Globe
 } from 'lucide-react'
 import './App.css'
 
@@ -2172,13 +2182,13 @@ function App() {
       <div className="portal-container ambient-glow-bg" style={{ minHeight: '100vh', color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}>
         {/* Header (Hidden during registration for clean focus) */}
         {portalTab !== 'register' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'rgba(11, 15, 23, 0.8)', position: 'sticky', top: 0, zIndex: 100 }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'rgba(8, 12, 20, 0.85)', position: 'sticky', top: 0, zIndex: 100 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16,185,129,0.3)', color: '#fff', fontSize: '1rem', fontWeight: 900 }}>
-                ⚡
+              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.4) 100%)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16,185,129,0.2)', color: '#34d399' }}>
+                <Zap size={18} />
               </div>
-              <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                Catavor <span style={{ fontSize: '0.58rem', fontWeight: 700, padding: '0.12rem 0.4rem', background: 'linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(56,189,248,0.2) 100%)', color: '#38bdf8', borderRadius: '15px', border: '1px solid rgba(56,189,248,0.3)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>PRO</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                Catavor <span style={{ fontSize: '0.58rem', fontWeight: 700, padding: '0.12rem 0.45rem', background: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', borderRadius: '15px', border: '1px solid rgba(56,189,248,0.25)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>PRO</span>
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -2190,7 +2200,8 @@ function App() {
                     setActiveTab('admin');
                   }
                 }} style={{ padding: '0.4rem 0.85rem', fontSize: '0.75rem' }}>
-                  Dashboard 🚀
+                  <span>Dashboard</span>
+                  <ArrowRight size={14} />
                 </button>
               ) : (
                 <>
@@ -2206,11 +2217,11 @@ function App() {
           <main style={{ padding: '2.5rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
             {/* Multi-Genre Niche Badges Showcase Mobile */}
             <div style={{ display: 'flex', overflowX: 'auto', gap: '0.45rem', paddingBottom: '0.25rem', scrollbarWidth: 'none' }}>
-              <span className="genre-tag-pill">🍔 Kuliner</span>
-              <span className="genre-tag-pill">👗 Fashion</span>
-              <span className="genre-tag-pill">📱 Barang</span>
-              <span className="genre-tag-pill">🐾 Fauna</span>
-              <span className="genre-tag-pill">✂️ Jasa</span>
+              <span className="genre-tag-pill"><Utensils size={13} style={{ color: '#f97316' }} /> Kuliner</span>
+              <span className="genre-tag-pill"><Shirt size={13} style={{ color: '#a855f7' }} /> Fashion</span>
+              <span className="genre-tag-pill"><Smartphone size={13} style={{ color: '#38bdf8' }} /> Barang</span>
+              <span className="genre-tag-pill"><PawPrint size={13} style={{ color: '#10b981' }} /> Fauna</span>
+              <span className="genre-tag-pill"><Scissors size={13} style={{ color: '#f59e0b' }} /> Jasa</span>
             </div>
 
             {/* Hero Section Mobile */}
@@ -2219,53 +2230,62 @@ function App() {
                 <Sparkles size={13} style={{ color: '#10b981' }} />
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#34d399', letterSpacing: '0.03em', textTransform: 'uppercase' }}>KATALOG &amp; BIOLINK BISNIS MULTI-GENRE</span>
               </div>
-              <h1 style={{ fontSize: '2.1rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
-                Satu Link Katalog Interaktif untuk <span className="gradient-text-fun">Segala Jenis Usaha Anda</span>
+              <h1 style={{ fontSize: '2.1rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.03em', marginBottom: '1rem' }} className="gradient-text-hero">
+                Satu Link Katalog Interaktif untuk <span className="gradient-text-emerald">Segala Jenis Usaha Anda</span>
               </h1>
               <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1.75rem', lineHeight: 1.55 }}>
                 Tampilkan katalog barang, menu makanan, satwa hias, lokasi toko, dan tombol WhatsApp langsung dalam satu biolink kustom modern.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button className="btn-primary btn-full" style={{ padding: '0.85rem', fontSize: '0.9rem' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
-                  Mulai Buat Toko - Gratis 🚀
+                  <span>Mulai Buat Toko - Gratis</span>
+                  <ArrowRight size={16} />
                 </button>
                 <button className="btn-secondary btn-full" style={{ padding: '0.85rem', fontSize: '0.88rem' }} onClick={() => {
                   const el = document.getElementById('pricing-mobile');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}>
-                  Lihat Paket &amp; Harga 🏷️
+                  <span>Lihat Paket &amp; Harga</span>
                 </button>
               </div>
             </div>
 
             {/* Multi-Genre Feature Showcase Row Mobile */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>🍔</span>
+              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(249, 115, 22, 0.12)', border: '1px solid rgba(249, 115, 22, 0.25)', color: '#f97316' }}>
+                  <Utensils size={18} />
+                </div>
                 <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0 }}>Kuliner &amp; Cafe</h3>
                 <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0, lineHeight: 1.35 }}>
                   Buku menu digital interaktif &amp; pesan via WA.
                 </p>
               </div>
 
-              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>👗</span>
+              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(168, 85, 247, 0.12)', border: '1px solid rgba(168, 85, 247, 0.25)', color: '#a855f7' }}>
+                  <Shirt size={18} />
+                </div>
                 <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0 }}>Fashion &amp; Retail</h3>
                 <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0, lineHeight: 1.35 }}>
                   Katalog baju &amp; varian ukuran jernih.
                 </p>
               </div>
 
-              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>📱</span>
+              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)', color: '#38bdf8' }}>
+                  <Smartphone size={18} />
+                </div>
                 <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0 }}>Gadget &amp; Barang</h3>
                 <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0, lineHeight: 1.35 }}>
                   Toko online serba ada ala marketplace.
                 </p>
               </div>
 
-              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>🐾</span>
+              <div className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10b981' }}>
+                  <PawPrint size={18} />
+                </div>
                 <h3 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0 }}>Fauna &amp; Pet Shop</h3>
                 <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0, lineHeight: 1.35 }}>
                   Galeri satwa hias &amp; spesifikasi habitat.

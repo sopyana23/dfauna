@@ -4,25 +4,22 @@
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Colors - Fun, Premium & Universal Multi-Genre Dark Slate Palette */
-  --bg-deep: #0b0f17;
-  --bg-card: #131b2e;
-  --bg-card-hover: #1c2742;
+  /* Colors - Ultra-Premium, Elegant & Professional Dark Slate Palette */
+  --bg-deep: #080c14;
+  --bg-card: #0f172a;
+  --bg-card-hover: #1e293b;
   --border-light: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.18);
   
-  --primary: #10b981; /* Emerald Teal */
-  --primary-glow: rgba(16, 185, 129, 0.25);
-  --primary-hover: #34d399;
+  --primary: #10b981; /* Emerald Precision */
+  --primary-glow: rgba(16, 185, 129, 0.2);
+  --primary-hover: #059669;
   
-  --accent-purple: #a855f7;
-  --accent-pink: #ec4899;
-  --accent-orange: #f97316;
   --secondary: #f59e0b; /* Amber/Gold */
+  --accent-blue: #38bdf8;
+  --accent-purple: #8b5cf6;
   
   --danger: #ef4444;
-  --danger-bg: #2d1616;
-  --danger-border: #562727;
 
   --text-primary: #ffffff;
   --text-secondary: #94a3b8;
@@ -54,20 +51,21 @@ body::-webkit-scrollbar {
   display: none !important;
 }
 
-/* Custom Ambient Mesh Glow Background */
+/* Custom Ambient Mesh Glow Background - Sleek Executive Backdrop */
 .ambient-glow-bg {
   position: relative;
-  background-color: #0b0f17;
+  background-color: #080c14;
   background-image: 
-    radial-gradient(circle at 20% 15%, rgba(16, 185, 129, 0.14) 0%, transparent 45%),
-    radial-gradient(circle at 80% 25%, rgba(168, 85, 247, 0.14) 0%, transparent 45%),
-    radial-gradient(circle at 50% 85%, rgba(249, 115, 22, 0.10) 0%, transparent 50%);
+    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 10% 45%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 70%, rgba(139, 92, 246, 0.07) 0%, transparent 45%);
 }
 
 h1, h2, h3, h4 {
   font-family: var(--font-heading);
   font-weight: 700;
   color: #ffffff;
+  letter-spacing: -0.025em;
 }
 
 a {
@@ -81,17 +79,23 @@ button, input, textarea, select {
 
 /* Glassmorphism Panel */
 .glass-panel {
-  background: rgba(19, 27, 46, 0.65);
+  background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   transition: var(--transition-smooth);
 }
 
-/* Gradient Text Effect */
-.gradient-text-fun {
-  background: linear-gradient(135deg, #ffffff 0%, #38bdf8 50%, #a855f7 100%);
+/* Metallic & Sleek Typography Gradients */
+.gradient-text-hero {
+  background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-emerald {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 60%, #059669 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -105,7 +109,7 @@ button, input, textarea, select {
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-smooth);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -113,9 +117,9 @@ button, input, textarea, select {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
   font-weight: 600;
   cursor: pointer;
@@ -130,20 +134,31 @@ button, input, textarea, select {
   width: 100%;
 }
 
-/* Multi-genre pill tags */
+/* Premium Multi-Genre Vector Tag Pills */
 .genre-tag-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
+  gap: 0.4rem;
+  padding: 0.38rem 0.8rem;
   border-radius: 9999px;
   font-size: 0.72rem;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
-  backdrop-filter: blur(6px);
+  font-weight: 600;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  backdrop-filter: blur(8px);
   white-space: nowrap;
+}
+
+/* Icon Box Badge Container */
+.icon-badge-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 #root {
