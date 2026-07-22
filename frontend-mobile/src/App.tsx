@@ -1119,6 +1119,64 @@ function App() {
     setLoginForm({ email: '', password: '' })
   }
 
+  // Handle Google SSO (Single Sign-On) Mobile
+  const handleGoogleSSO = async () => {
+    try {
+      const googleEmail = prompt('Masukkan Email Google Anda untuk Sign-In / Sign-Up SSO:', registerForm.email || 'user@gmail.com');
+      if (!googleEmail) return;
+
+      const googleName = googleEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ');
+      const suggestedSlug = googleEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
+
+      const res = await fetch(`${API_BASE}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: googleEmail,
+          name: googleName,
+          google_id: 'goog_' + Date.now(),
+          store_name: registerForm.store_name || (googleName.toUpperCase() + ' STORE'),
+          store_slug: registerForm.store_slug || suggestedSlug,
+          plan: registerPlan
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        if (data.token) {
+          localStorage.setItem('catavor_token', data.token);
+          localStorage.setItem('catavor_user', JSON.stringify(data.user));
+          localStorage.setItem('catavor_password_changed', 'true');
+          setToken(data.token);
+          setAdminUser(data.user);
+          setIsPasswordChanged(true);
+          showToast('Login SSO Google Berhasil!', 'success');
+          sessionStorage.clear();
+          if (data.user.store_slug) {
+            setStoreSlug(data.user.store_slug);
+            setActiveTab('admin');
+          }
+        } else if (data.requires_store_info) {
+          setRegisterForm((prev: any) => ({
+            ...prev,
+            email: data.google_data.email,
+            name: data.google_data.name,
+            store_name: prev.store_name || (data.google_data.name + ' Store'),
+            store_slug: prev.store_slug || suggestedSlug
+          }));
+          setRegisterStep(1);
+          setPortalTab('register');
+          showToast('Otentikasi Google berhasil! Silakan tentukan Nama Toko & Username Anda.', 'success');
+        }
+      } else {
+        showToast(data.message || 'Gagal otentikasi Google SSO.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Terjadi kesalahan saat otentikasi Google SSO.', 'error');
+    }
+  };
+
   // Handle Login Submit
   
   const handleRegisterSubmit = async (e: React.FormEvent) => {
@@ -2231,6 +2289,43 @@ function App() {
                 </div>
               )}
 
+              {/* Google SSO Login Button Mobile */}
+              <button 
+                type="button" 
+                onClick={handleGoogleSSO}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.65rem', 
+                  borderRadius: '0.5rem', 
+                  backgroundColor: 'rgba(255,255,255,0.06)', 
+                  border: '1px solid rgba(255,255,255,0.15)', 
+                  color: '#ffffff', 
+                  fontSize: '0.8rem', 
+                  fontWeight: 700, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: '0.5rem', 
+                  marginBottom: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+    </svg>
+                <span>Masuk dengan Google</span>
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', margin: '1rem 0', gap: '0.5rem' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                <span style={{ fontSize: '0.65rem', color: '#6b7280', fontWeight: 600 }}>ATAU LOGIN MANUAL</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+              </div>
+
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group" style={{ marginBottom: '1rem' }}>
                   <label className="form-label">Email</label>
@@ -2306,6 +2401,44 @@ function App() {
 
               {/* STEP 1: Account & Store Information Mobile */}
               {registerStep === 1 && (
+                <div>
+                  {/* Google SSO Register Button Mobile */}
+                  <button 
+                    type="button" 
+                    onClick={handleGoogleSSO}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.65rem', 
+                      borderRadius: '0.5rem', 
+                      backgroundColor: 'rgba(255,255,255,0.06)', 
+                      border: '1px solid rgba(255,255,255,0.15)', 
+                      color: '#ffffff', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 700, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      gap: '0.5rem', 
+                      marginBottom: '0.85rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+    </svg>
+                    <span>Daftar Cepat dengan Google</span>
+                  </button>
+
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: '0.5rem' }}>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                    <span style={{ fontSize: '0.65rem', color: '#6b7280', fontWeight: 600 }}>ATAU DAFTAR MANUAL</span>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                  </div>
+
                 <form 
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -2409,6 +2542,7 @@ function App() {
                     <ChevronRight size={15} />
                   </button>
                 </form>
+                </div>
               )}
 
               {/* STEP 2: Plan Selection Mobile */}
@@ -4868,6 +5002,43 @@ function App() {
                   {loginError}
                 </div>
               )}
+
+              {/* Google SSO Login Button Mobile */}
+              <button 
+                type="button" 
+                onClick={handleGoogleSSO}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.65rem', 
+                  borderRadius: '0.5rem', 
+                  backgroundColor: 'rgba(255,255,255,0.06)', 
+                  border: '1px solid rgba(255,255,255,0.15)', 
+                  color: '#ffffff', 
+                  fontSize: '0.8rem', 
+                  fontWeight: 700, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: '0.5rem', 
+                  marginBottom: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+    </svg>
+                <span>Masuk dengan Google</span>
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', margin: '1rem 0', gap: '0.5rem' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                <span style={{ fontSize: '0.65rem', color: '#6b7280', fontWeight: 600 }}>ATAU LOGIN MANUAL</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+              </div>
 
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group">

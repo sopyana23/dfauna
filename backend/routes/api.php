@@ -28,6 +28,7 @@ Route::get('/u/{slug}/fauna', [StoreController::class, 'indexFauna']);
 // Authentication Endpoints
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/auth/google', [AuthController::class, 'googleAuth']);
 
 // Guarded Admin Endpoints (Require Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {

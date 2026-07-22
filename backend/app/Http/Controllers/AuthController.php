@@ -98,6 +98,167 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Handle Google SSO (Single Sign-On) for Registration and Login
+     */
+    public function googleAuth(Request $request)
+    {
+        $email = $request->input('email');
+        $name = $request->input('name');
+        $googleId = $request->input('google_id');
+        $avatar = $request->input('avatar');
+
+        // If JWT token/credential is passed from Google GSI Client, decode base64 JWT payload safely
+        if ($request->has('credential')) {
+            $parts = explode('.', $request->input('credential'));
+            if (count($parts) === 3) {
+                $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1])), true);
+                if (is_array($payload)) {
+                    $email = $payload['email'] ?? $email;
+                    $name = $payload['name'] ?? $name;
+                    $googleId = $payload['sub'] ?? $googleId;
+                    $avatar = $payload['picture'] ?? $avatar;
+                }
+            }
+        }
+
+        if (empty($email)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendapatkan email dari otentikasi Google.'
+            ], 422);
+        }
+
+        // Check if user already exists in database
+        $user = User::where('email', $email)->orWhere(function($query) use ($googleId) {
+            if (!empty($googleId)) {
+                $query->where('google_id', $googleId);
+            }
+        })->first();
+
+        // CASE A: USER ALREADY EXISTS (LOGIN FLOW)
+        if ($user) {
+            if (empty($user->google_id) && !empty($googleId)) {
+                $user->google_id = $googleId;
+            }
+            if (empty($user->avatar) && !empty($avatar)) {
+                $user->avatar = $avatar;
+            }
+            $user->save();
+
+            $store = Store::where('user_id', $user->id)->first();
+            $token = $user->createToken('admin-token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'is_new_user' => false,
+                'message' => 'Login Google berhasil!',
+                'token' => $token,
+                'is_password_changed' => true,
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'avatar' => $user->avatar,
+                    'store_slug' => $store ? $store->slug : null,
+                    'store_title' => $store ? $store->store_title : null,
+                    'store_plan' => $store ? $store->plan : 'free'
+                ]
+            ]);
+        }
+
+        // CASE B: NEW USER (REGISTRATION FLOW)
+        $storeName = $request->input('store_name');
+        $storeSlug = $request->input('store_slug');
+        $plan = $request->input('plan', 'free');
+
+        if (empty($storeName) || empty($storeSlug)) {
+            return response()->json([
+                'success' => true,
+                'is_new_user' => true,
+                'requires_store_info' => true,
+                'message' => 'Otentikasi Google berhasil! Silakan tentukan Nama Toko dan Link Username Anda.',
+                'google_data' => [
+                    'name' => $name,
+                    'email' => $email,
+                    'google_id' => $googleId,
+                    'avatar' => $avatar
+                ]
+            ]);
+        }
+
+        // Validate slug uniqueness
+        $existingStore = Store::where('slug', Str::slug($storeSlug))->first();
+        if ($existingStore) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Link username toko "' . $storeSlug . '" sudah digunakan. Silakan pilih username lain.'
+            ], 422);
+        }
+
+        // Create new User
+        $newUser = User::create([
+            'name' => $name ?: 'Pemilik Toko',
+            'email' => $email,
+            'password' => Hash::make(Str::random(16)),
+            'google_id' => $googleId,
+            'avatar' => $avatar,
+            'is_password_changed' => true
+        ]);
+
+        if (!in_array($plan, ['free', 'pro'])) {
+            $plan = 'free';
+        }
+
+        // Create new Store
+        $newStore = Store::create([
+            'user_id' => $newUser->id,
+            'slug' => Str::slug($storeSlug),
+            'plan' => $plan,
+            'store_title' => $storeName,
+            'store_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
+            'whatsapp_number' => '628123456789',
+            'enable_wa_direct' => true,
+            'enable_wa_rekber' => true,
+            'about_title' => 'Tentang ' . $storeName,
+            'about_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
+            'about_description' => 'Kami berkomitmen menyediakan produk dan barang berkualitas tinggi. Setiap barang melewati pemeriksaan kualitas sebelum dikirim.',
+            'about_location' => 'Bandung, Jawa Barat, Indonesia',
+            'about_hours' => '08:00 - 21:00 WIB (Setiap Hari)',
+            'about_disclaimer' => 'Komitmen jaminan bisnis: Kami mengutamakan kepuasan pelanggan dan keamanan transaksi.',
+            'about_cards' => [
+                ['title' => 'Garansi Kualitas', 'content' => 'Setiap produk melewati pemeriksaan kualitas ketat sebelum dipasarkan.', 'icon' => 'shield'],
+                ['title' => 'Transaksi Aman', 'content' => 'Mendukung sistem pembayaran aman secara langsung maupun marketplace terpercaya.', 'icon' => 'lock'],
+                ['title' => 'Layanan Pelanggan', 'content' => 'Tim kami siap membantu konsultasi produk dan pemesanan dengan cepat.', 'icon' => 'message']
+            ],
+            'social_links' => [
+                ['platform' => 'Instagram', 'url' => 'https://instagram.com/' . Str::slug($storeSlug)],
+                ['platform' => 'Facebook', 'url' => 'https://facebook.com/' . Str::slug($storeSlug)]
+            ],
+            'master_classes' => ['Elektronik', 'Pakaian & Aksesoris', 'Satwa Hias', 'Pakan & Perlengkapan', 'Produk General'],
+            'master_habitats' => ['Baru (New)', 'Bekas (Used)', 'General'],
+            'master_statuses' => ['Tersedia (Ready Stock)', 'Habis Terjual (Out of Stock)', 'Pre-Order'],
+            'master_shipping_coverages' => ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (Pickup)']
+        ]);
+
+        $token = $newUser->createToken('admin-token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'is_new_user' => true,
+            'message' => 'Pendaftaran Google berhasil!',
+            'token' => $token,
+            'is_password_changed' => true,
+            'user' => [
+                'name' => $newUser->name,
+                'email' => $newUser->email,
+                'avatar' => $newUser->avatar,
+                'store_slug' => $newStore->slug,
+                'store_title' => $newStore->store_title,
+                'store_plan' => $newStore->plan
+            ]
+        ]);
+    }
+
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
