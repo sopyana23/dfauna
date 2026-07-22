@@ -3301,9 +3301,33 @@ function App() {
                               cursor: 'pointer'
                             }}
                             onClick={() => processCheckoutSubmission(true)}
+                            disabled={registerLoading}
                           >
                             <Sparkles size={18} />
-                            <span>Aktifkan Paket Pro Gratis Sekarang</span>
+                            <span>{registerLoading ? 'Mengaktifkan Akun...' : 'Aktifkan Paket Pro Gratis Sekarang'}</span>
+                          </button>
+
+                          <button 
+                            type="button" 
+                            className="btn-secondary btn-full" 
+                            style={{ 
+                              padding: '0.65rem', 
+                              fontWeight: 700, 
+                              fontSize: '0.78rem', 
+                              borderRadius: '0.5rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.4rem',
+                              backgroundColor: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.12)',
+                              color: '#d1d5db',
+                              cursor: 'pointer'
+                            }}
+                            onClick={handleCancelCheckout}
+                          >
+                            <Home size={15} />
+                            <span>Kembali ke Halaman Utama</span>
                           </button>
                         </div>
                       );
