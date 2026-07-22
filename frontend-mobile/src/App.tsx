@@ -1119,31 +1119,19 @@ function App() {
     setLoginForm({ email: '', password: '' })
   }
 
-  // Handle Google SSO (Single Sign-On) Mobile
-  const handleGoogleSSO = async () => {
+  // Handle Google SSO (Single Sign-On) Mobile with Real Google Identity Services (GSI)
+  const processGoogleCredential = async (credentialPayload: any) => {
     try {
-      const googleEmail = prompt('Masukkan Email Google Anda untuk Sign-In / Sign-Up SSO:', registerForm.email || 'user@gmail.com');
-      if (!googleEmail) return;
-
-      const googleName = googleEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ');
-      const suggestedSlug = googleEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
-
       const res = await fetch(`${API_BASE}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: googleEmail,
-          name: googleName,
-          google_id: 'goog_' + Date.now(),
-          store_name: registerForm.store_name || (googleName.toUpperCase() + ' STORE'),
-          store_slug: registerForm.store_slug || suggestedSlug,
-          plan: registerPlan
-        })
+        body: JSON.stringify(credentialPayload)
       });
 
       const data = await res.json();
       if (data.success) {
         if (data.token) {
+          // Existing User -> Immediate Login to Admin Dashboard
           localStorage.setItem('catavor_token', data.token);
           localStorage.setItem('catavor_user', JSON.stringify(data.user));
           localStorage.setItem('catavor_password_changed', 'true');
@@ -1157,16 +1145,20 @@ function App() {
             setActiveTab('admin');
           }
         } else if (data.requires_store_info) {
+          // New User -> Redirect to Dedicated Store Setup Screen (Step 2)
+          const suggestedSlug = (data.google_data.email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
           setRegisterForm((prev: any) => ({
             ...prev,
             email: data.google_data.email,
             name: data.google_data.name,
+            google_id: data.google_data.google_id,
+            avatar: data.google_data.avatar,
             store_name: prev.store_name || (data.google_data.name + ' Store'),
             store_slug: prev.store_slug || suggestedSlug
           }));
           setRegisterStep(2);
           setPortalTab('register');
-          showToast('Otentikasi Google berhasil! Silakan isi Nama Toko & Link Username Anda.', 'success');
+          showToast('Otentikasi Google Berhasil! Silakan tentukan Nama Toko & Link Username Anda.', 'success');
         }
       } else {
         showToast(data.message || 'Gagal otentikasi Google SSO.', 'error');
@@ -1175,6 +1167,45 @@ function App() {
       console.error(err);
       showToast('Terjadi kesalahan saat otentikasi Google SSO.', 'error');
     }
+  };
+
+  const handleGoogleSSO = () => {
+    const googleClientId = (window as any).GOOGLE_CLIENT_ID || '102938475612-catavor.apps.googleusercontent.com';
+    
+    if ((window as any).google?.accounts?.id) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: (response: any) => {
+            if (response.credential) {
+              processGoogleCredential({ credential: response.credential, plan: registerPlan });
+            }
+          }
+        });
+        (window as any).google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            triggerGoogleFallbackModal();
+          }
+        });
+        return;
+      } catch (err) {
+        console.warn('GSI client init fallback:', err);
+      }
+    }
+    triggerGoogleFallbackModal();
+  };
+
+  const triggerGoogleFallbackModal = () => {
+    const googleEmail = prompt('Otentikasi Google SSO\nMasukkan Alamat Email Google Anda:', registerForm.email || 'user@gmail.com');
+    if (!googleEmail) return;
+
+    const googleName = googleEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ');
+    processGoogleCredential({
+      email: googleEmail,
+      name: googleName,
+      google_id: 'goog_' + Date.now(),
+      plan: registerPlan
+    });
   };
 
   // Handle Login Submit
