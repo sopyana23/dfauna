@@ -2376,8 +2376,31 @@ function App() {
               </div>
 
               {registerError && (
-                <div className="alert-message alert-danger" style={{ marginBottom: '1.25rem', fontSize: '0.78rem', borderRadius: '0.5rem', padding: '0.65rem 0.85rem' }}>
-                  {registerError}
+                <div 
+                  id="register-error-banner"
+                  style={{ 
+                    marginBottom: '1.25rem', 
+                    fontSize: '0.8rem', 
+                    borderRadius: '0.75rem', 
+                    padding: '0.85rem 1rem',
+                    backgroundColor: 'rgba(239, 68, 68, 0.14)',
+                    border: '1px solid rgba(239, 68, 68, 0.45)',
+                    boxShadow: '0 8px 25px rgba(239, 68, 68, 0.25)',
+                    color: '#fca5a5',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.65rem',
+                    lineHeight: 1.45,
+                    fontWeight: 600,
+                    backdropFilter: 'blur(10px)',
+                    animation: 'fadeIn 0.3s ease-in-out'
+                  }}
+                >
+                  <AlertTriangle size={18} style={{ color: '#f87171', flexShrink: 0, marginTop: '0.1rem' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 800, color: '#f87171', fontSize: '0.82rem', marginBottom: '0.15rem' }}>Perhatian!</div>
+                    <div>{registerError}</div>
+                  </div>
                 </div>
               )}
 
@@ -2528,9 +2551,13 @@ function App() {
                       const res = await fetch(`${API_BASE}/check-slug/${registerForm.store_slug.toLowerCase()}`);
                       const data = await res.json();
                       if (!data.available) {
-                        const errMsg = data.message || `Link username "catavor.com/${registerForm.store_slug}" sudah digunakan oleh toko lain. Silakan pilih username lain.`;
+                        const errMsg = 'Mohon periksa kembali isian Anda: Link username toko yang Anda masukkan sudah digunakan oleh toko lain. Silakan ganti dengan username lain yang masih tersedia.';
                         setRegisterError(errMsg);
-                        setSlugStatus({ available: false, message: errMsg });
+                        setSlugStatus({ available: false, message: `Link username "${registerForm.store_slug}" sudah digunakan oleh toko lain.` });
+                        setTimeout(() => {
+                          const el = document.getElementById('register-error-banner');
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 50);
                         return;
                       }
                       setRegisterError(null);
