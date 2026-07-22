@@ -2460,17 +2460,17 @@ function App() {
             {/* Hero Section */}
             <section className="hero-section">
               <h2 className="hero-title">
-                Galeri Satwa Hias <span className="hero-highlight">Premium</span>
+                Katalog Produk & <span className="hero-highlight">Informasi Bisnis</span>
               </h2>
               <p className="hero-desc">
-                Kami menjual ikan hias eksotis dan hewan darat berkualitas tinggi dengan jaminan kesehatan. Melayani pengiriman ke seluruh wilayah Indonesia untuk jenis hewan tertentu dengan packing khusus berstandar tinggi.
+                Selamat datang di katalog resmi toko kami! Jelajahi berbagai koleksi produk unggulan, cek spesifikasi & harga terbaru, dan terhubung langsung ke WhatsApp atau toko online resmi kami.
               </p>
 
-              {/* Shipping Guarantee Banner */}
+              {/* Status Guarantee Banner */}
               <div className="glass-panel" style={{ padding: '1.25rem 2rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', border: '1px solid var(--border-light)', color: 'var(--primary-hover)', backgroundColor: 'var(--bg-card)' }}>
-                <MapPin size={20} />
+                <ShieldCheck size={20} />
                 <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                  Melayani Pengiriman Aman se-Indonesia (Khusus Hewan Bertanda Khusus)
+                  Katalog Resmi & Transaksi Langsung via WhatsApp / Marketplace
                 </span>
               </div>
             </section>
