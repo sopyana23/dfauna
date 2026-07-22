@@ -1119,13 +1119,19 @@ function App() {
     setLoginForm({ email: '', password: '' })
   }
 
-  // Handle Google SSO (Single Sign-On) Mobile with Real Google Identity Services (GSI)
-  const processGoogleCredential = async (credentialPayload: any) => {
+  // Real Google OAuth 2.0 SSO Handler Mobile (Google Accounts Popup Window & GSI API)
+  const processGoogleUserPayload = async (googleUser: { email: string; name: string; google_id: string; avatar?: string }) => {
     try {
       const res = await fetch(`${API_BASE}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentialPayload)
+        body: JSON.stringify({
+          email: googleUser.email,
+          name: googleUser.name,
+          google_id: googleUser.google_id,
+          avatar: googleUser.avatar,
+          plan: registerPlan
+        })
       });
 
       const data = await res.json();
@@ -1146,14 +1152,14 @@ function App() {
           }
         } else if (data.requires_store_info) {
           // New User -> Redirect to Dedicated Store Setup Screen (Step 2)
-          const suggestedSlug = (data.google_data.email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
+          const suggestedSlug = (googleUser.email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
           setRegisterForm((prev: any) => ({
             ...prev,
-            email: data.google_data.email,
-            name: data.google_data.name,
-            google_id: data.google_data.google_id,
-            avatar: data.google_data.avatar,
-            store_name: prev.store_name || (data.google_data.name + ' Store'),
+            email: googleUser.email,
+            name: googleUser.name,
+            google_id: googleUser.google_id,
+            avatar: googleUser.avatar,
+            store_name: prev.store_name || (googleUser.name + ' Store'),
             store_slug: prev.store_slug || suggestedSlug
           }));
           setRegisterStep(2);
@@ -1171,41 +1177,89 @@ function App() {
 
   const handleGoogleSSO = () => {
     const googleClientId = (window as any).GOOGLE_CLIENT_ID || '847403664953-ef7k9h5n99mtlnbdpr4a6300dt83efk5.apps.googleusercontent.com';
-    
-    if ((window as any).google?.accounts?.id) {
+
+    // 1. Try Google Identity Services GSI Token Client SDK
+    if ((window as any).google?.accounts?.oauth2) {
       try {
-        (window as any).google.accounts.id.initialize({
+        const client = (window as any).google.accounts.oauth2.initTokenClient({
           client_id: googleClientId,
-          callback: (response: any) => {
-            if (response.credential) {
-              processGoogleCredential({ credential: response.credential, plan: registerPlan });
+          scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse.access_token) {
+              try {
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                const googleUser = await userInfoRes.json();
+                processGoogleUserPayload({
+                  email: googleUser.email,
+                  name: googleUser.name,
+                  google_id: googleUser.sub,
+                  avatar: googleUser.picture
+                });
+              } catch (err) {
+                console.error('UserInfo fetch failed:', err);
+              }
             }
           }
         });
-        (window as any).google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            triggerGoogleFallbackModal();
-          }
-        });
+        client.requestAccessToken();
         return;
       } catch (err) {
-        console.warn('GSI client init fallback:', err);
+        console.warn('GSI Token Client init error, switching to OAuth Popup:', err);
       }
     }
-    triggerGoogleFallbackModal();
-  };
 
-  const triggerGoogleFallbackModal = () => {
-    const googleEmail = prompt('Otentikasi Google SSO\nMasukkan Alamat Email Google Anda:', registerForm.email || 'user@gmail.com');
-    if (!googleEmail) return;
+    // 2. Real Google OAuth 2.0 Popup Window (100% Real Google Authorization Window)
+    const redirectUri = encodeURIComponent(window.location.origin);
+    const scope = encodeURIComponent('email profile openid');
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
+    
+    const width = 520;
+    const height = 640;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    const popup = window.open(authUrl, 'google_oauth_popup', `width=${width},height=${height},left=${left},top=${top}`);
 
-    const googleName = googleEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ');
-    processGoogleCredential({
-      email: googleEmail,
-      name: googleName,
-      google_id: 'goog_' + Date.now(),
-      plan: registerPlan
-    });
+    if (!popup) {
+      alert('Popup diblokir oleh browser Anda. Silakan izinkan popup untuk login dengan Google.');
+      return;
+    }
+
+    const checkPopup = setInterval(() => {
+      try {
+        if (!popup || popup.closed) {
+          clearInterval(checkPopup);
+          return;
+        }
+        if (popup.location.href.includes('access_token=')) {
+          const hash = popup.location.hash.substring(1);
+          const params = new URLSearchParams(hash);
+          const accessToken = params.get('access_token');
+          popup.close();
+          clearInterval(checkPopup);
+
+          if (accessToken) {
+            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            })
+            .then(res => res.json())
+            .then(googleUser => {
+              processGoogleUserPayload({
+                email: googleUser.email,
+                name: googleUser.name,
+                google_id: googleUser.sub,
+                avatar: googleUser.picture
+              });
+            })
+            .catch(err => console.error(err));
+          }
+        }
+      } catch (e) {
+        // Cross-origin check before OAuth redirect is expected
+      }
+    }, 400);
   };
 
   // Handle Login Submit
