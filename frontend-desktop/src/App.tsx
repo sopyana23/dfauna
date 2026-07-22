@@ -2348,7 +2348,7 @@ function App() {
                     <input 
                       type="text" 
                       className="form-input" 
-                      placeholder="Contoh: Cerahnian Aquatic" 
+                      placeholder="Contoh: DFauna Gallery" 
                       required 
                       value={registerForm.store_name} 
                       onChange={(e) => setRegisterForm({ ...registerForm, store_name: e.target.value })}
@@ -2363,7 +2363,7 @@ function App() {
                       <input 
                         type="text" 
                         className="form-input" 
-                        placeholder="cerahnian" 
+                        placeholder="dfauna" 
                         required 
                         value={registerForm.store_slug} 
                         onChange={(e) => setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') })}
@@ -2500,7 +2500,7 @@ function App() {
                           <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Bebas watermark Catavor
                         </div>
                         <div style={{ fontSize: '0.72rem', color: '#e5e7eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Kontrol Tombol Beli WA &amp; Rekber
+                          <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Kontrol tombol beli
                         </div>
                       </div>
                     </div>
