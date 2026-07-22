@@ -5735,33 +5735,6 @@ function App() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  {token && (
-                    <button 
-                      type="button" 
-                      onClick={() => setShowNotificationModal(true)}
-                      style={{ 
-                        position: 'relative', 
-                        background: 'rgba(255,255,255,0.06)', 
-                        border: '1px solid rgba(255,255,255,0.12)', 
-                        borderRadius: '9999px', 
-                        padding: '0.35rem 0.5rem', 
-                        cursor: 'pointer', 
-                        color: '#fff', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '0.25rem',
-                        fontSize: '0.7rem',
-                        fontWeight: 700
-                      }}
-                    >
-                      <Bell size={15} style={{ color: notifications.some(n => !n.read) ? '#f59e0b' : '#9ca3af' }} />
-                      {notifications.filter(n => !n.read).length > 0 && (
-                        <span style={{ backgroundColor: '#ef4444', color: '#fff', fontSize: '0.58rem', fontWeight: 900, borderRadius: '9999px', padding: '0.05rem 0.35rem' }}>
-                          {notifications.filter(n => !n.read).length}
-                        </span>
-                      )}
-                    </button>
-                  )}
                   {!token && (
                     <button
                       type="button"
@@ -5801,18 +5774,6 @@ function App() {
 
       {/* Tabs Content */}
       <main className="container" style={{ marginTop: '0.5rem' }}>
-        {/* Pending Pro Payment Verification Banner Mobile */}
-        {adminUser?.payment_status === 'pending_approval' && (
-          <div style={{ padding: '0.85rem 1rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '0.75rem', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
-              <strong style={{ color: '#ffffff', fontSize: '0.82rem' }}>Pembayaran Plan Pro Dalam Verifikasi (1x24 Jam)</strong>
-            </div>
-            <p style={{ margin: 0, color: '#9ca3af', lineHeight: 1.35 }}>
-              Bukti pembayaran telah kami terima. Akun Anda dapat digunakan dengan fitur Plan Free sementara sampai disetujui Tim Admin.
-            </p>
-          </div>
-        )}
 
         {/* Modal Pusat Notifikasi Dashboard Mobile */}
         {showNotificationModal && (
@@ -6535,15 +6496,58 @@ function App() {
                       <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }}>Admin Dashboard</h2>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Halo, {adminUser?.name || 'Administrator'}</span>
                     </div>
-                    <button 
-                      className="btn-danger" 
-                      style={{ padding: '0.4rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}
-                      onClick={handleLogout}
-                    >
-                      <LogOut size={14} />
-                      Keluar
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      {/* Notification Bell Button (Admin Only) */}
+                      <button 
+                        type="button" 
+                        onClick={() => setShowNotificationModal(true)}
+                        style={{ 
+                          position: 'relative', 
+                          background: 'rgba(255,255,255,0.06)', 
+                          border: '1px solid rgba(255,255,255,0.12)', 
+                          borderRadius: '0.5rem', 
+                          padding: '0.4rem 0.65rem', 
+                          cursor: 'pointer', 
+                          color: '#fff', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '0.3rem',
+                          fontSize: '0.72rem',
+                          fontWeight: 700
+                        }}
+                      >
+                        <Bell size={15} style={{ color: notifications.some(n => !n.read) ? '#f59e0b' : '#9ca3af' }} />
+                        <span>Notifikasi</span>
+                        {notifications.filter(n => !n.read).length > 0 && (
+                          <span style={{ backgroundColor: '#ef4444', color: '#fff', fontSize: '0.58rem', fontWeight: 900, borderRadius: '9999px', padding: '0.05rem 0.35rem' }}>
+                            {notifications.filter(n => !n.read).length}
+                          </span>
+                        )}
+                      </button>
+
+                      <button 
+                        className="btn-danger" 
+                        style={{ padding: '0.4rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}
+                        onClick={handleLogout}
+                      >
+                        <LogOut size={14} />
+                        Keluar
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Pending Pro Payment Verification Banner Mobile (ADMIN ONLY) */}
+                  {adminUser?.payment_status === 'pending_approval' && (
+                    <div style={{ padding: '0.85rem 1rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '0.75rem', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.5rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Clock size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                        <strong style={{ color: '#ffffff', fontSize: '0.82rem' }}>Pembayaran Plan Pro Dalam Verifikasi (1x24 Jam)</strong>
+                      </div>
+                      <p style={{ margin: 0, color: '#9ca3af', lineHeight: 1.35 }}>
+                        Bukti pembayaran telah kami terima. Akun Anda dapat digunakan dengan fitur Plan Free sementara sampai disetujui Tim Admin.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Premium SaaS Free Plan Promotional Upgrade Panel (Mobile) */}
                   {settings.plan === 'free' && (
