@@ -5804,45 +5804,9 @@ function App() {
                     >
                       {titleText}
                     </h1>
-                    {settings.plan === 'free' && (
-                      <span 
-                        className="free-badge" 
-                        style={{ fontSize: scale.badgeFontSize, cursor: 'pointer' }}
-                        onClick={() => {
-                          setStoreSlug(null);
-                          setPortalTab('register');
-                          setRegisterStep(1);
-                        }}
-                        title="Klik untuk membuat toko Catavor gratis"
-                      >
-                        Free by Catavor ⚡
-                      </span>
-                    )}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  {!token && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStoreSlug(null);
-                        setPortalTab('register');
-                        setRegisterStep(1);
-                      }}
-                      style={{
-                        padding: '0.25rem 0.55rem',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        borderRadius: '20px',
-                        backgroundColor: 'rgba(16,185,129,0.15)',
-                        border: '1px solid rgba(16,185,129,0.3)',
-                        color: '#10b981',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      + Buat Toko
-                    </button>
-                  )}
                   <button
                     type="button"
                     className="header-share-btn"
@@ -5860,6 +5824,56 @@ function App() {
 
       {/* Tabs Content */}
       <main className="container" style={{ marginTop: '0.5rem' }}>
+        {/* Catavor SaaS Floating Banner for Free Plan Stores */}
+        {settings.plan === 'free' && (
+          <div 
+            className="glass-panel animate-fade-in"
+            style={{
+              padding: '0.65rem 0.85rem',
+              borderRadius: '0.75rem',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(56, 189, 248, 0.08) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.28)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.65rem',
+              marginBottom: '1rem',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', flexShrink: 0 }}>
+                <Sparkles size={14} />
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#e5e7eb', lineHeight: 1.3, flex: 1, minWidth: 0 }}>
+                <span>Ingin membuat katalog digital seperti <strong>{settings.store_title || 'toko ini'}</strong>?</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setStoreSlug(null);
+                setPortalTab('register');
+                setRegisterStep(1);
+              }}
+              style={{
+                padding: '0.35rem 0.65rem',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                borderRadius: '0.45rem',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                flexShrink: 0
+              }}
+            >
+              Buat Katalog Gratis ⚡
+            </button>
+          </div>
+        )}
 
         {/* Modal Pusat Notifikasi Dashboard Mobile */}
         {showNotificationModal && (
