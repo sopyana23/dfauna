@@ -2246,17 +2246,46 @@ function App() {
 
         {portalTab === 'register' && (
           <div style={{ padding: '1.5rem 1rem' }}>
-            <div className="glass-panel" style={{ padding: '1.25rem', borderRadius: '0.85rem' }}>
-              {/* Stepper Header Indicator Mobile */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: registerStep === 1 ? 'var(--primary)' : 'rgba(16,185,129,0.2)', color: registerStep === 1 ? '#000' : 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem' }}>1</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: registerStep === 1 ? '#fff' : 'var(--text-secondary)' }}>Data Toko</span>
+            <div className="glass-panel" style={{ padding: '1.25rem', borderRadius: '0.85rem', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }}>
+              {/* Premium Glowing Logo & Icon Header Mobile */}
+              <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '90px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.25), transparent 70%)', pointerEvents: 'none' }} />
+                
+                <div style={{ 
+                  width: '48px', 
+                  height: '48px', 
+                  borderRadius: '14px', 
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(11, 14, 12, 0.9))', 
+                  border: '1px solid rgba(16, 185, 129, 0.4)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  margin: '0 auto 0.65rem auto',
+                  boxShadow: '0 6px 20px rgba(16, 185, 129, 0.25)',
+                  backdropFilter: 'blur(10px)',
+                  position: 'relative'
+                }}>
+                  <Sparkles size={24} style={{ color: 'var(--primary)', filter: 'drop-shadow(0 2px 6px rgba(16, 185, 129, 0.5))' }} />
                 </div>
-                <div style={{ width: '25px', height: '2px', backgroundColor: registerStep === 2 ? 'var(--primary)' : 'var(--border-light)' }} />
+
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 900, background: 'linear-gradient(135deg, #ffffff 40%, var(--primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: '0 0 0.25rem 0', letterSpacing: '-0.01em' }}>
+                  Daftar Toko Catavor
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.72rem', margin: 0, lineHeight: 1.3 }}>
+                  Katalog Online Modern &amp; Storefront Link 1 Klik
+                </p>
+              </div>
+
+              {/* Stepper Header Indicator Mobile */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.25rem', backgroundColor: 'rgba(0,0,0,0.3)', padding: '0.4rem 0.85rem', borderRadius: '30px', border: '1px solid var(--border-light)', width: 'fit-content', margin: '0 auto 1.25rem auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: registerStep === 2 ? '#f59e0b' : 'rgba(245,158,11,0.2)', color: registerStep === 2 ? '#000' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem' }}>2</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: registerStep === 2 ? '#fff' : 'var(--text-secondary)' }}>Pilih Paket</span>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: registerStep === 1 ? 'var(--primary)' : 'rgba(16,185,129,0.2)', color: registerStep === 1 ? '#000' : 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem', boxShadow: registerStep === 1 ? '0 2px 6px rgba(16,185,129,0.4)' : 'none' }}>1</span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: registerStep === 1 ? '#fff' : 'var(--text-secondary)' }}>Data Toko</span>
+                </div>
+                <div style={{ width: '20px', height: '2px', backgroundColor: registerStep === 2 ? 'var(--primary)' : 'var(--border-light)', borderRadius: '2px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: registerStep === 2 ? '#f59e0b' : 'rgba(245,158,11,0.2)', color: registerStep === 2 ? '#000' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.7rem', boxShadow: registerStep === 2 ? '0 2px 6px rgba(245,158,11,0.4)' : 'none' }}>2</span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: registerStep === 2 ? '#fff' : 'var(--text-secondary)' }}>Pilih Paket</span>
                 </div>
               </div>
 
