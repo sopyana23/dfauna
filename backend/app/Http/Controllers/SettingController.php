@@ -32,7 +32,11 @@ class SettingController extends Controller
             'social_links' => json_encode([
                 ['platform' => 'Instagram', 'url' => 'https://instagram.com/dfauna'],
                 ['platform' => 'Facebook', 'url' => 'https://facebook.com/dfauna']
-            ])
+            ]),
+            'payment_bank_name' => 'Bank Central Asia (BCA)',
+            'payment_bank_account' => '8830-1928-3920',
+            'payment_bank_holder' => 'PT Catavor Media Digital',
+            'payment_qris_image' => '/img/qris_demo.svg'
         ];
 
         foreach ($defaults as $key => $defaultValue) {

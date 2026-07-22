@@ -59,9 +59,42 @@ import {
   Store,
   Layers,
   Globe,
-  ShoppingBag
+  ShoppingBag,
+  CreditCard,
+  QrCode,
+  Copy,
+  Download,
+  Send
 } from 'lucide-react'
 import './App.css'
+
+interface ShopSettings {
+  plan?: string
+  enable_wa_direct?: boolean
+  enable_wa_rekber?: boolean
+  whatsapp_number: string
+  store_slogan: string
+  promo_banner?: string
+  articles_enabled?: string
+  about_title?: string
+  about_slogan?: string
+  about_description?: string
+  about_cards?: string
+  about_location?: string
+  about_hours?: string
+  about_disclaimer?: string
+  social_links?: string
+  store_title?: string
+  store_logo_url?: string
+  default_is_comments_enabled?: string
+  default_require_comment_approval?: string
+  default_require_comment_email?: string
+  default_verify_comment_email_domain?: string
+  payment_bank_name?: string
+  payment_bank_account?: string
+  payment_bank_holder?: string
+  payment_qris_image?: string
+}
 
 interface Fauna {
   id: number
@@ -415,9 +448,14 @@ function App() {
 
   const initialRegState = loadSavedRegistrationState();
 
-  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>(initialRegState.tab);
+  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register' | 'checkout'>(initialRegState.tab);
   const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>(initialRegState.plan);
   const [registerStep, setRegisterStep] = useState<1 | 2 | 3>(initialRegState.step);
+  const [paymentMethod, setPaymentMethod] = useState<'bank' | 'qris'>('bank');
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
+  const [paymentProofNote, setPaymentProofNote] = useState<string>('');
+  const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState<boolean>(false);
+  const [copiedAccountToast, setCopiedAccountToast] = useState<boolean>(false);
   const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
 
@@ -1480,10 +1518,12 @@ function App() {
         setIsPasswordChanged(true);
         setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
         
-        // Redirect to store admin
-        
-        setStoreSlug(data.user.store_slug);
-        setActiveTab('admin');
+        if (registerPlan === 'pro') {
+          setPortalTab('checkout');
+        } else {
+          setStoreSlug(data.user.store_slug);
+          setActiveTab('admin');
+        }
       } else {
         if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[];
@@ -3305,6 +3345,344 @@ function App() {
                 Sudah punya akun? <span style={{ color: '#10b981', cursor: 'pointer', fontWeight: 700 }} onClick={() => setPortalTab('login')}>Login Admin</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {portalTab === 'checkout' && (
+          <div style={{ padding: '1.5rem 1rem', animation: 'fadeIn 0.3s ease-in-out' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem 1rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Header Title Checkout Mobile */}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.3rem 0.75rem', borderRadius: '9999px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', marginBottom: '0.65rem' }}>
+                  <Sparkles size={12} style={{ color: '#f59e0b' }} />
+                  <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#f59e0b', letterSpacing: '0.03em', textTransform: 'uppercase' }}>CHECKOUT PEMBAYARAN PLAN PRO</span>
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
+                  Aktivasi Paket Pro Catavor
+                </h2>
+                <p style={{ color: '#9ca3af', fontSize: '0.72rem', margin: 0, lineHeight: 1.35 }}>
+                  Transfer sesuai nominal berikut untuk mengaktifkan fitur Unlimited produk &amp; biolink kustom.
+                </p>
+              </div>
+
+              {/* Rincian Tagihan Card Mobile */}
+              <div style={{ padding: '1rem', borderRadius: '0.75rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(15, 23, 42, 0.75)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#ffffff' }}>Rincian Tagihan</span>
+                  <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>PAKET PRO</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.72rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
+                    <span>Berlangganan:</span>
+                    <strong style={{ color: '#ffffff' }}>Plan Pro (1 Bulan)</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
+                    <span>Harga Normal:</span>
+                    <span style={{ textDecoration: 'line-through', color: '#64748b' }}>Rp 50.000</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
+                    <span>Diskon Promo:</span>
+                    <strong style={{ color: '#34d399' }}>- Rp 20.000</strong>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px border-dashed rgba(255, 255, 255, 0.15)', paddingTop: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ffffff' }}>Total Tagihan:</span>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#f59e0b' }}>Rp 30.000</div>
+                </div>
+
+                <div style={{ padding: '0.5rem 0.65rem', borderRadius: '0.5rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '0.68rem', color: '#fcd34d', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Clock size={14} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                  <span>Batas pembayaran: <strong>24 jam</strong></span>
+                </div>
+              </div>
+
+              {/* Payment Method Selector Tabs Mobile */}
+              <div>
+                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#e5e7eb', marginBottom: '0.45rem', display: 'block' }}>Metode Pembayaran:</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setPaymentMethod('bank')}
+                    style={{ 
+                      padding: '0.55rem 0.4rem', 
+                      borderRadius: '0.5rem', 
+                      border: paymentMethod === 'bank' ? '2px solid #10b981' : '1px solid rgba(255,255,255,0.12)', 
+                      backgroundColor: paymentMethod === 'bank' ? 'rgba(16,185,129,0.12)' : 'rgba(0,0,0,0.3)', 
+                      color: paymentMethod === 'bank' ? '#ffffff' : '#9ca3af',
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <CreditCard size={14} style={{ color: paymentMethod === 'bank' ? '#10b981' : '#9ca3af' }} />
+                    <span>Transfer Bank</span>
+                  </button>
+
+                  <button 
+                    type="button"
+                    onClick={() => setPaymentMethod('qris')}
+                    style={{ 
+                      padding: '0.55rem 0.4rem', 
+                      borderRadius: '0.5rem', 
+                      border: paymentMethod === 'qris' ? '2px solid #10b981' : '1px solid rgba(255,255,255,0.12)', 
+                      backgroundColor: paymentMethod === 'qris' ? 'rgba(16,185,129,0.12)' : 'rgba(0,0,0,0.3)', 
+                      color: paymentMethod === 'qris' ? '#ffffff' : '#9ca3af',
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <QrCode size={14} style={{ color: paymentMethod === 'qris' ? '#10b981' : '#9ca3af' }} />
+                    <span>Scan QRIS</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Panel Details: Bank Transfer Manual Mobile */}
+              {paymentMethod === 'bank' && (
+                <div style={{ padding: '0.85rem', borderRadius: '0.65rem', backgroundColor: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#9ca3af' }}>Bank Tujuan:</span>
+                    <strong style={{ fontSize: '0.78rem', color: '#38bdf8', fontWeight: 800 }}>{settings.payment_bank_name || 'Bank Central Asia (BCA)'}</strong>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.04)', padding: '0.5rem 0.75rem', borderRadius: '0.45rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div>
+                      <div style={{ fontSize: '0.62rem', color: '#9ca3af' }}>Nomor Rekening:</div>
+                      <div style={{ fontSize: '1rem', fontWeight: 900, color: '#ffffff', letterSpacing: '0.03em' }}>{settings.payment_bank_account || '8830-1928-3920'}</div>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText((settings.payment_bank_account || '8830-1928-3920').replace(/[^0-9]/g, ''));
+                        setCopiedAccountToast(true);
+                        setTimeout(() => setCopiedAccountToast(false), 2500);
+                      }}
+                      style={{ 
+                        padding: '0.35rem 0.65rem', 
+                        borderRadius: '0.35rem', 
+                        backgroundColor: copiedAccountToast ? '#10b981' : 'rgba(16, 185, 129, 0.15)', 
+                        border: '1px solid rgba(16, 185, 129, 0.3)', 
+                        color: copiedAccountToast ? '#000' : '#34d399',
+                        fontSize: '0.68rem',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                    >
+                      {copiedAccountToast ? <Check size={11} /> : <Copy size={11} />}
+                      <span>{copiedAccountToast ? 'Tersalin!' : 'Salin'}</span>
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#9ca3af' }}>Atas Nama:</span>
+                    <strong style={{ fontSize: '0.75rem', color: '#ffffff' }}>{settings.payment_bank_holder || 'PT Catavor Media Digital'}</strong>
+                  </div>
+                </div>
+              )}
+
+              {/* Panel Details: QRIS Mobile */}
+              {paymentMethod === 'qris' && (
+                <div style={{ padding: '0.85rem', borderRadius: '0.65rem', backgroundColor: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.65rem', textAlign: 'center' }}>
+                  <div style={{ width: '160px', height: '160px', borderRadius: '10px', background: '#ffffff', padding: '6px', boxShadow: '0 0 16px rgba(16, 185, 129, 0.25)', border: '2px solid #10b981' }}>
+                    <img 
+                      src={settings.payment_qris_image || '/img/qris_demo.svg'} 
+                      alt="QRIS Catavor" 
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  </div>
+                  <p style={{ fontSize: '0.68rem', color: '#9ca3af', margin: 0, lineHeight: 1.35 }}>
+                    Scan QRIS via M-Banking / E-Wallet (GoPay, OVO, ShopeePay, DANA, LinkAja).
+                  </p>
+                  <a 
+                    href={settings.payment_qris_image || '/img/qris_demo.svg'} 
+                    download="QRIS_Catavor_Payment.svg"
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.3rem', 
+                      padding: '0.4rem 0.75rem', 
+                      borderRadius: '0.4rem', 
+                      backgroundColor: 'rgba(255,255,255,0.08)', 
+                      border: '1px solid rgba(255,255,255,0.15)', 
+                      color: '#ffffff', 
+                      fontSize: '0.7rem', 
+                      fontWeight: 700, 
+                      textDecoration: 'none' 
+                    }}
+                  >
+                    <Download size={13} /> Download Gambar QRIS
+                  </a>
+                </div>
+              )}
+
+              {/* Form Upload Bukti Transfer Mobile */}
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setShowPaymentSuccessModal(true);
+                }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+              >
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: '#e5e7eb' }}>Unggah Bukti Transfer / Scan *</label>
+                  <div 
+                    style={{ 
+                      border: '2px dashed rgba(255,255,255,0.18)', 
+                      borderRadius: '0.5rem', 
+                      padding: '0.75rem', 
+                      textAlign: 'center', 
+                      backgroundColor: 'rgba(0,0,0,0.25)', 
+                      cursor: 'pointer',
+                      position: 'relative'
+                    }}
+                  >
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      required
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = () => setPaymentProofPreview(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                    />
+                    {paymentProofPreview ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                        <img src={paymentProofPreview} alt="Bukti Transfer" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #10b981' }} />
+                        <span style={{ fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>Foto Bukti Siap Diunggah</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                        <Upload size={18} style={{ color: '#10b981' }} />
+                        <span style={{ fontSize: '0.72rem', color: '#d1d5db', fontWeight: 600 }}>Klik / Upload Foto Bukti Pembayaran</span>
+                        <span style={{ fontSize: '0.62rem', color: '#6b7280' }}>JPG, PNG, WEBP (Maks 5MB)</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: '#e5e7eb' }}>Nomor WA / Catatan Pengirim (Opsional)</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Contoh: WA 08123456789 - a.n Dzikri" 
+                    value={paymentProofNote} 
+                    onChange={(e) => setPaymentProofNote(e.target.value)}
+                    style={{ borderRadius: '0.5rem', padding: '0.6rem 0.75rem', fontSize: '0.78rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="btn-primary btn-full" 
+                  style={{ 
+                    padding: '0.7rem', 
+                    fontWeight: 800, 
+                    fontSize: '0.8rem', 
+                    borderRadius: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Send size={15} />
+                  <span>Kirim Bukti Pembayaran</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  className="btn-secondary btn-full" 
+                  style={{ 
+                    padding: '0.65rem', 
+                    fontWeight: 700, 
+                    fontSize: '0.78rem', 
+                    borderRadius: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    backgroundColor: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#d1d5db',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setPortalTab('home')}
+                >
+                  <Home size={15} />
+                  <span>Kembali ke Halaman Utama</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Modal Sukses Konfirmasi Pembayaran Mobile */}
+            {showPaymentSuccessModal && (
+              <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '380px', padding: '1.5rem 1.25rem', borderRadius: '1.15rem', border: '1px solid rgba(16, 185, 129, 0.35)', background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(9, 14, 12, 0.99) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.2)', textAlign: 'center' }}>
+                  <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', boxShadow: '0 0 16px rgba(16, 185, 129, 0.4)' }}>
+                    <CheckCircle size={30} style={{ color: '#10b981' }} />
+                  </div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: '#ffffff', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
+                    Bukti Pembayaran Berhasil!
+                  </h3>
+                  <p style={{ fontSize: '0.75rem', color: '#9ca3af', lineHeight: 1.45, marginBottom: '1.25rem' }}>
+                    Terima kasih telah mengonfirmasi. Tim Admin Catavor akan memverifikasi transaksi. Akses <strong>Plan Pro</strong> Anda akan otomatis aktif maksimal dalam <strong>1x24 Jam</strong>.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <button 
+                      className="btn-primary btn-full" 
+                      style={{ padding: '0.75rem', fontSize: '0.8rem', fontWeight: 800 }}
+                      onClick={() => {
+                        const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
+                        if (user.store_slug) {
+                          setStoreSlug(user.store_slug);
+                          setActiveTab('admin');
+                        } else {
+                          setPortalTab('home');
+                        }
+                        setShowPaymentSuccessModal(false);
+                      }}
+                    >
+                      <span>Lanjut ke Dashboard</span>
+                      <ArrowRight size={15} />
+                    </button>
+                    <button 
+                      className="btn-secondary btn-full" 
+                      style={{ padding: '0.65rem', fontSize: '0.75rem', fontWeight: 700 }}
+                      onClick={() => {
+                        setShowPaymentSuccessModal(false);
+                        setPortalTab('home');
+                      }}
+                    >
+                      <span>Kembali ke Halaman Utama</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
