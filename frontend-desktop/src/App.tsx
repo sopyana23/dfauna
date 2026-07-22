@@ -54,7 +54,8 @@ import {
   Zap,
   Store,
   Layers,
-  Globe
+  Globe,
+  ShoppingBag
 } from 'lucide-react'
 import './App.css'
 
@@ -1978,11 +1979,10 @@ function App() {
           <main style={{ padding: '4.5rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
             {/* Multi-Genre Niche Badges Showcase */}
             <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '2rem' }}>
-              <span className="genre-tag-pill"><Utensils size={14} style={{ color: '#f97316' }} /> Kuliner &amp; Makanan</span>
-              <span className="genre-tag-pill"><Shirt size={14} style={{ color: '#a855f7' }} /> Fashion &amp; Distro</span>
-              <span className="genre-tag-pill"><Smartphone size={14} style={{ color: '#38bdf8' }} /> Gadget &amp; Barang</span>
-              <span className="genre-tag-pill"><PawPrint size={14} style={{ color: '#10b981' }} /> Fauna &amp; Pet Shop</span>
-              <span className="genre-tag-pill"><Scissors size={14} style={{ color: '#f59e0b' }} /> Jasa &amp; Barber</span>
+              <span className="genre-tag-pill"><Utensils size={14} style={{ color: '#f97316' }} /> Kuliner</span>
+              <span className="genre-tag-pill"><ShoppingBag size={14} style={{ color: '#38bdf8' }} /> Barang (Fashion, Gadget &amp; Alat)</span>
+              <span className="genre-tag-pill"><PawPrint size={14} style={{ color: '#10b981' }} /> Hewan &amp; Fauna</span>
+              <span className="genre-tag-pill"><Scissors size={14} style={{ color: '#f59e0b' }} /> Jasa &amp; Layanan</span>
             </div>
 
             {/* Hero Section */}
@@ -2020,29 +2020,19 @@ function App() {
                 <div className="icon-badge-box" style={{ background: 'rgba(249, 115, 22, 0.12)', border: '1px solid rgba(249, 115, 22, 0.25)', color: '#f97316' }}>
                   <Utensils size={22} />
                 </div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Kuliner &amp; Cafe</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Kuliner</h3>
                 <p style={{ fontSize: '0.83rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
                   Buku menu digital interaktif dengan foto hidangan lezat dan tombol pesan via WA.
                 </p>
               </div>
 
               <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                <div className="icon-badge-box" style={{ background: 'rgba(168, 85, 247, 0.12)', border: '1px solid rgba(168, 85, 247, 0.25)', color: '#a855f7' }}>
-                  <Shirt size={22} />
-                </div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Fashion &amp; Retail</h3>
-                <p style={{ fontSize: '0.83rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-                  Katalog baju, sepatu, dan aksesoris dengan varian ukuran &amp; harga jernih.
-                </p>
-              </div>
-
-              <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <div className="icon-badge-box" style={{ background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)', color: '#38bdf8' }}>
-                  <Smartphone size={22} />
+                  <ShoppingBag size={22} />
                 </div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Gadget &amp; Barang</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Barang</h3>
                 <p style={{ fontSize: '0.83rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-                  Toko online serba ada ala marketplace untuk memamerkan produk unggulan Anda.
+                  Katalog fashion, gadget, barang harian, dan aksesoris dengan varian &amp; harga jernih.
                 </p>
               </div>
 
@@ -2050,9 +2040,19 @@ function App() {
                 <div className="icon-badge-box" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10b981' }}>
                   <PawPrint size={22} />
                 </div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Fauna &amp; Pet Shop</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Hewan</h3>
                 <p style={{ fontSize: '0.83rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-                  Galeri satwa hias, taksonomi kelas, spesifikasi habitat, dan pengiriman aman.
+                  Galeri satwa &amp; hewan hias, taksonomi kelas, spesifikasi habitat, dan pengiriman aman.
+                </p>
+              </div>
+
+              <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div className="icon-badge-box" style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.25)', color: '#f59e0b' }}>
+                  <Scissors size={22} />
+                </div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Jasa</h3>
+                <p style={{ fontSize: '0.83rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+                  Portofolio layanan, tarif kustom, jam operasional, dan lokasi terhubung kontak WA.
                 </p>
               </div>
             </div>
