@@ -354,18 +354,30 @@ function App() {
     return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
-  // Persistent Onboarding Registration State across Page Refreshes (Mobile)
+  // Persistent Onboarding Registration State across Page Refreshes (Mobile) & URL Query Sync
   const loadSavedRegistrationState = () => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTab = urlParams.get('tab');
+      const urlStep = urlParams.get('step');
+      const urlPlan = urlParams.get('plan');
+
       const savedTab = sessionStorage.getItem('catavor_portal_tab');
       const savedStep = sessionStorage.getItem('catavor_register_step');
       const savedPlan = sessionStorage.getItem('catavor_register_plan');
       const savedForm = sessionStorage.getItem('catavor_register_form');
+
+      const finalTab = (urlTab || savedTab || 'home') as 'home' | 'login' | 'register';
+      const parsedStep = urlStep ? parseInt(urlStep, 10) : (savedStep ? parseInt(savedStep, 10) : 1);
+      const validStep = (parsedStep >= 1 && parsedStep <= 3 ? parsedStep : 1) as 1 | 2 | 3;
+      const finalPlan = (urlPlan || savedPlan || 'free') as 'free' | 'pro';
+      const finalForm = savedForm ? JSON.parse(savedForm) : { name: '', email: '', password: '', store_name: '', store_slug: '' };
+
       return {
-        tab: (savedTab as 'home' | 'login' | 'register') || 'home',
-        step: (savedStep ? parseInt(savedStep, 10) : 1) as 1 | 2 | 3,
-        plan: (savedPlan as 'free' | 'pro') || 'free',
-        form: savedForm ? JSON.parse(savedForm) : { name: '', email: '', password: '', store_name: '', store_slug: '' }
+        tab: finalTab,
+        step: validStep,
+        plan: finalPlan,
+        form: finalForm
       };
     } catch {
       return {
@@ -1058,9 +1070,6 @@ function App() {
   // Sync activeTab state to browser URL pathname
   useEffect(() => {
     if (!storeSlug) {
-      if (window.location.pathname !== '/') {
-        window.history.pushState({}, '', '/');
-      }
       return;
     }
 
@@ -1076,6 +1085,81 @@ function App() {
       window.history.pushState({}, '', targetPath);
     }
   }, [activeTab, storeSlug]);
+
+  // Sync Onboarding & Portal State to URL and sessionStorage in Mobile (handles refresh, back button, gestures)
+  useEffect(() => {
+    if (storeSlug) return;
+
+    sessionStorage.setItem('catavor_portal_tab', portalTab);
+    sessionStorage.setItem('catavor_register_step', registerStep.toString());
+    sessionStorage.setItem('catavor_register_plan', registerPlan);
+    sessionStorage.setItem('catavor_register_form', JSON.stringify(registerForm));
+
+    const params = new URLSearchParams(window.location.search);
+    let updated = false;
+
+    if (params.get('tab') !== portalTab) {
+      params.set('tab', portalTab);
+      updated = true;
+    }
+
+    if (portalTab === 'register') {
+      if (params.get('step') !== registerStep.toString()) {
+        params.set('step', registerStep.toString());
+        updated = true;
+      }
+      if (params.get('plan') !== registerPlan) {
+        params.set('plan', registerPlan);
+        updated = true;
+      }
+    } else {
+      if (params.has('step')) { params.delete('step'); updated = true; }
+      if (params.has('plan')) { params.delete('plan'); updated = true; }
+    }
+
+    const queryString = params.toString();
+    const targetUrl = window.location.pathname + (queryString ? '?' + queryString : '');
+
+    if (updated && window.location.search !== (queryString ? '?' + queryString : '')) {
+      window.history.pushState(
+        { tab: portalTab, step: registerStep, plan: registerPlan },
+        '',
+        targetUrl
+      );
+    }
+  }, [portalTab, registerStep, registerPlan, registerForm, storeSlug]);
+
+  // Mobile PopState listener for Back/Forward & gesture back navigation
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const slug = getStoreSlug();
+      setStoreSlug(slug);
+      if (slug) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as 'home' | 'login' | 'register' | null;
+      const stepParam = params.get('step');
+      const planParam = params.get('plan') as 'free' | 'pro' | null;
+
+      const targetTab = tabParam || (event.state?.tab as 'home' | 'login' | 'register') || 'home';
+      setPortalTab(targetTab);
+
+      if (targetTab === 'register') {
+        const stepNum = stepParam ? parseInt(stepParam, 10) : (event.state?.step || 1);
+        if (stepNum >= 1 && stepNum <= 3) {
+          setRegisterStep(stepNum as 1 | 2 | 3);
+        }
+        if (planParam) {
+          setRegisterPlan(planParam);
+        } else if (event.state?.plan) {
+          setRegisterPlan(event.state.plan);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
 
   // Reset displayLimit on search or filter change
@@ -2741,7 +2825,7 @@ function App() {
                         cursor: 'pointer',
                         fontWeight: 600
                       }}
-                      onClick={() => setRegisterStep(1)}
+                      onClick={() => window.history.back()}
                     >
                       <ChevronLeft size={15} />
                       <span>Kembali</span>
@@ -2879,7 +2963,7 @@ function App() {
                         cursor: 'pointer',
                         fontWeight: 600
                       }}
-                      onClick={() => setRegisterStep(2)}
+                      onClick={() => window.history.back()}
                     >
                       <ChevronLeft size={15} />
                       <span>Edit Toko</span>
