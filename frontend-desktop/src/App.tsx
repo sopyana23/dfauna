@@ -8,6 +8,7 @@ import {
   ShieldAlert, 
   Trash2,
   Check,
+  CheckCircle,
   Edit3, 
   FileText, 
   Loader,
@@ -274,20 +275,39 @@ function App() {
     return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
-  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>('home')
-  const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>('free')
-  const [registerStep, setRegisterStep] = useState<1 | 2>(1)
-  const [heroEmailInput, setHeroEmailInput] = useState('');
+  // Persistent Onboarding Registration State across Page Refreshes
+  const loadSavedRegistrationState = () => {
+    try {
+      const savedTab = sessionStorage.getItem('catavor_portal_tab');
+      const savedStep = sessionStorage.getItem('catavor_register_step');
+      const savedPlan = sessionStorage.getItem('catavor_register_plan');
+      const savedForm = sessionStorage.getItem('catavor_register_form');
+      return {
+        tab: (savedTab as 'home' | 'login' | 'register') || 'home',
+        step: (savedStep ? parseInt(savedStep, 10) : 1) as 1 | 2,
+        plan: (savedPlan as 'free' | 'pro') || 'free',
+        form: savedForm ? JSON.parse(savedForm) : { name: '', email: '', password: '', store_name: '', store_slug: '' }
+      };
+    } catch {
+      return {
+        tab: 'home' as const,
+        step: 1 as const,
+        plan: 'free' as const,
+        form: { name: '', email: '', password: '', store_name: '', store_slug: '' }
+      };
+    }
+  };
+
+  const initialRegState = loadSavedRegistrationState();
+
+  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>(initialRegState.tab);
+  const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>(initialRegState.plan);
+  const [registerStep, setRegisterStep] = useState<1 | 2>(initialRegState.step);
+  const [heroEmailInput, setHeroEmailInput] = useState('');;
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
   
   // Registration form state
-  const [registerForm, setRegisterForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    store_name: '',
-    store_slug: ''
-  });
+  const [registerForm, setRegisterForm] = useState(initialRegState.form);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
 
@@ -807,6 +827,14 @@ function App() {
     }
   }, [view, storeSlug]);
 
+
+  // Sync Onboarding State to sessionStorage to prevent loss on page refresh
+  useEffect(() => {
+    sessionStorage.setItem('catavor_portal_tab', portalTab);
+    sessionStorage.setItem('catavor_register_step', registerStep.toString());
+    sessionStorage.setItem('catavor_register_plan', registerPlan);
+    sessionStorage.setItem('catavor_register_form', JSON.stringify(registerForm));
+  }, [portalTab, registerStep, registerPlan, registerForm]);
 
   // Reset displayLimit on search or filter change
   useEffect(() => {
@@ -1938,87 +1966,288 @@ function App() {
         )}
 
         {portalTab === 'register' && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem 2rem' }}>
-            <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '2rem' }}>
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <Sparkles size={32} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Daftar Galeri Baru</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.25rem' }}>Buat halaman katalog kustom dalam hitungan menit</p>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '3.5rem 1.5rem' }}>
+            <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '460px', padding: '2rem 1.65rem', borderRadius: '1.25rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)' }}>
+              {/* Premium Header Icon & Branding */}
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem', position: 'relative' }}>
+                <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.35) 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.85rem auto', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2)', backdropFilter: 'blur(10px)' }}>
+                  <Sparkles size={26} style={{ color: '#10b981' }} />
+                </div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
+                  Daftar Toko Catavor
+                </h2>
+                <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>
+                  Buat katalog produk &amp; storefront online profesional Anda
+                </p>
+              </div>
+
+              {/* Stepper Progress Indicator */}
+              <div style={{ marginBottom: '1.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', padding: '0 0.25rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: registerStep === 1 ? '#10b981' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: registerStep === 1 ? '#10b981' : 'rgba(255,255,255,0.1)', color: registerStep === 1 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 900 }}>1</span>
+                    Data Toko
+                  </span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: registerStep === 2 ? '#f59e0b' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: registerStep === 2 ? '#f59e0b' : 'rgba(255,255,255,0.1)', color: registerStep === 2 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 900 }}>2</span>
+                    Pilih Paket
+                  </span>
+                </div>
+                <div style={{ width: '100%', height: '4px', backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ width: registerStep === 1 ? '50%' : '100%', height: '100%', background: registerStep === 1 ? '#10b981' : 'linear-gradient(90deg, #10b981, #f59e0b)', transition: 'all 0.3s ease-in-out' }} />
+                </div>
               </div>
 
               {registerError && (
-                <div className="alert-message alert-danger" style={{ marginBottom: '1rem' }}>
+                <div className="alert-message alert-danger" style={{ marginBottom: '1.25rem', fontSize: '0.78rem', borderRadius: '0.5rem', padding: '0.65rem 0.85rem' }}>
                   {registerError}
                 </div>
               )}
 
-              <form onSubmit={handleRegisterSubmit}>
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label">Nama Lengkap Pemilik</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="Contoh: Dzikri Muhammad" 
-                    required 
-                    value={registerForm.name} 
-                    onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label">Alamat Email</label>
-                  <input 
-                    type="email" 
-                    className="form-input" 
-                    placeholder="nama@domain.com" 
-                    required 
-                    value={registerForm.email} 
-                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label">Kata Sandi</label>
-                  <input 
-                    type="password" 
-                    className="form-input" 
-                    placeholder="Min 6 karakter..." 
-                    required 
-                    value={registerForm.password} 
-                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label">Nama Toko / Galeri</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="Contoh: Bandung Aquatic" 
-                    required 
-                    value={registerForm.store_name} 
-                    onChange={(e) => setRegisterForm({ ...registerForm, store_name: e.target.value })}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                  <label className="form-label">Link Username Toko (Insta Handle)</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>catavor.com/</span>
+              {/* STEP 1: Account & Store Information */}
+              {registerStep === 1 && (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!registerForm.name || !registerForm.email || !registerForm.password || !registerForm.store_name || !registerForm.store_slug) {
+                      setRegisterError('Silakan lengkapi semua bidang data toko terlebih dahulu.');
+                      return;
+                    }
+                    setRegisterError(null);
+                    setRegisterStep(2);
+                  }} 
+                  style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                >
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Pemilik *</label>
                     <input 
                       type="text" 
                       className="form-input" 
-                      placeholder="bandung-aquatic" 
+                      placeholder="Contoh: Dzikri Muhammad" 
                       required 
-                      value={registerForm.store_slug} 
-                      onChange={(e) => setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') })}
-                      style={{ flex: 1 }}
+                      value={registerForm.name} 
+                      onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                      style={{ borderRadius: '0.6rem', padding: '0.65rem 0.85rem', fontSize: '0.85rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
                     />
                   </div>
-                  <small style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', marginTop: '0.25rem', display: 'block' }}>Hanya huruf kecil, angka, dan tanda hubung (-)</small>
-                </div>
-                <button type="submit" className="btn-primary btn-full" disabled={registerLoading}>
-                  {registerLoading ? 'Mendaftarkan Toko...' : 'Daftar & Buat Halaman'}
-                </button>
-              </form>
-              <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Sudah punya akun? <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => setPortalTab('login')}>Login</span>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e5e7eb' }}>Email *</label>
+                    <input 
+                      type="email" 
+                      className="form-input" 
+                      placeholder="nama@domain.com" 
+                      required 
+                      value={registerForm.email} 
+                      onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                      style={{ borderRadius: '0.6rem', padding: '0.65rem 0.85rem', fontSize: '0.85rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e5e7eb' }}>Kata Sandi *</label>
+                    <input 
+                      type="password" 
+                      className="form-input" 
+                      placeholder="Minimal 6 karakter..." 
+                      required 
+                      value={registerForm.password} 
+                      onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                      style={{ borderRadius: '0.6rem', padding: '0.65rem 0.85rem', fontSize: '0.85rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Toko / Bisnis *</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Contoh: Cerahnian Aquatic" 
+                      required 
+                      value={registerForm.store_name} 
+                      onChange={(e) => setRegisterForm({ ...registerForm, store_name: e.target.value })}
+                      style={{ borderRadius: '0.6rem', padding: '0.65rem 0.85rem', fontSize: '0.85rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e5e7eb' }}>Link Username Toko *</label>
+                    <div style={{ display: 'flex', alignItems: 'center', borderRadius: '0.6rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', overflow: 'hidden', paddingLeft: '0.75rem' }}>
+                      <span style={{ color: '#6b7280', fontSize: '0.8rem', fontWeight: 600, userSelect: 'none' }}>catavor.com/</span>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="cerahnian" 
+                        required 
+                        value={registerForm.store_slug} 
+                        onChange={(e) => setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') })}
+                        style={{ flex: 1, padding: '0.65rem 0.65rem', fontSize: '0.85rem', border: 'none', backgroundColor: 'transparent', color: '#fff' }}
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="btn-primary btn-full" 
+                    style={{ 
+                      marginTop: '0.5rem', 
+                      padding: '0.75rem', 
+                      fontWeight: 800, 
+                      fontSize: '0.85rem', 
+                      borderRadius: '0.6rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span>Lanjut ke Pemilihan Paket</span>
+                    <ChevronRight size={16} />
+                  </button>
+                </form>
+              )}
+
+              {/* STEP 2: Plan Selection (Free vs Pro) */}
+              {registerStep === 2 && (
+                <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#f3f4f6', margin: '0 0 0.25rem 0' }}>
+                      Pilih Paket untuk <strong>{registerForm.store_name}</strong>
+                    </h3>
+                    <p style={{ fontSize: '0.75rem', color: '#9ca3af', margin: 0 }}>
+                      Pilih paket yang paling sesuai dengan kebutuhan usaha Anda
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    {/* Plan Gratis Option Card */}
+                    <div 
+                      onClick={() => setRegisterPlan('free')}
+                      style={{ 
+                        padding: '1rem 1.15rem', 
+                        borderRadius: '0.75rem', 
+                        border: registerPlan === 'free' ? '2px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)', 
+                        backgroundColor: registerPlan === 'free' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)', 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        position: 'relative'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: registerPlan === 'free' ? '5px solid #10b981' : '2px solid #6b7280', backgroundColor: registerPlan === 'free' ? '#000' : 'transparent', transition: 'all 0.2s ease' }} />
+                          <span style={{ fontSize: '0.92rem', fontWeight: 800, color: registerPlan === 'free' ? '#10b981' : '#ffffff' }}>Plan Gratis (Free)</span>
+                        </div>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#ffffff' }}>Rp 0 <small style={{ fontSize: '0.65rem', color: '#9ca3af' }}>/selamanya</small></span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', paddingLeft: '1.65rem' }}>
+                        <div style={{ fontSize: '0.72rem', color: '#d1d5db', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#10b981', flexShrink: 0 }} /> Maksimal 10 postingan produk
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#d1d5db', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#10b981', flexShrink: 0 }} /> Katalog interaktif &amp; WhatsApp
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#d1d5db', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#10b981', flexShrink: 0 }} /> Watermark "Free by Catavor"
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Plan Pro Option Card */}
+                    <div 
+                      onClick={() => setRegisterPlan('pro')}
+                      style={{ 
+                        padding: '1rem 1.15rem', 
+                        borderRadius: '0.75rem', 
+                        border: registerPlan === 'pro' ? '2px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.3)', 
+                        backgroundColor: registerPlan === 'pro' ? 'rgba(245, 158, 11, 0.09)' : 'rgba(245, 158, 11, 0.03)', 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        position: 'relative'
+                      }}
+                    >
+                      <div style={{ position: 'absolute', top: '-10px', right: '14px', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#000000', fontSize: '0.58rem', fontWeight: 900, padding: '0.15rem 0.55rem', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.04em', boxShadow: '0 2px 8px rgba(245,158,11,0.4)' }}>
+                        🔥 Rekomendasi Utama
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: registerPlan === 'pro' ? '5px solid #f59e0b' : '2px solid #6b7280', backgroundColor: registerPlan === 'pro' ? '#000' : 'transparent', transition: 'all 0.2s ease' }} />
+                          <span style={{ fontSize: '0.92rem', fontWeight: 800, color: registerPlan === 'pro' ? '#f59e0b' : '#ffffff' }}>Plan Pro (Premium)</span>
+                        </div>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#ffffff' }}>Rp 49rb <small style={{ fontSize: '0.65rem', color: '#9ca3af' }}>/bln</small></span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', paddingLeft: '1.65rem' }}>
+                        <div style={{ fontSize: '0.72rem', color: '#e5e7eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Postingan produk Unlimited
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#e5e7eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Halaman "Tentang Kami" kustom
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#e5e7eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Bebas watermark Catavor
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#e5e7eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={13} style={{ color: '#f59e0b', flexShrink: 0 }} /> Kontrol Tombol Beli WA &amp; Rekber
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.65rem', marginTop: '0.5rem' }}>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ 
+                        padding: '0.75rem 1rem', 
+                        fontSize: '0.8rem', 
+                        borderRadius: '0.6rem',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#d1d5db',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                      onClick={() => setRegisterStep(1)}
+                    >
+                      <ChevronLeft size={16} />
+                      <span>Edit Data</span>
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn-primary" 
+                      style={{ 
+                        flex: 1, 
+                        padding: '0.75rem', 
+                        fontWeight: 800, 
+                        fontSize: '0.85rem', 
+                        borderRadius: '0.6rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        background: registerPlan === 'pro' ? 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        boxShadow: registerPlan === 'pro' ? '0 4px 15px rgba(245, 158, 11, 0.35)' : '0 4px 15px rgba(16, 185, 129, 0.35)'
+                      }}
+                      disabled={registerLoading}
+                    >
+                      <span>{registerLoading ? 'Mendaftarkan Toko...' : 'Selesaikan & Buka Toko'}</span>
+                      <CheckCircle size={16} />
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: '#9ca3af' }}>
+                Sudah punya akun? <span style={{ color: '#10b981', cursor: 'pointer', fontWeight: 700 }} onClick={() => setPortalTab('login')}>Login Admin</span>
               </div>
             </div>
           </div>
