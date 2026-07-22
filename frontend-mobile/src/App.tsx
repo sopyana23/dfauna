@@ -2411,7 +2411,7 @@ function App() {
               ) : (
                 <>
                   <button className="btn-secondary btn-small" onClick={() => setPortalTab('login')} style={{ height: '32px', padding: '0 0.85rem', fontSize: '0.75rem' }}>Masuk</button>
-                  <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '32px', padding: '0 0.85rem', fontSize: '0.75rem' }}>Buat Toko</button>
+                  <button className="btn-primary btn-small" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ height: '32px', padding: '0 0.85rem', fontSize: '0.75rem' }}>Buat Katalog</button>
                 </>
               )}
             </div>
@@ -2436,11 +2436,11 @@ function App() {
                 Satu Link Katalog Interaktif untuk <span className="gradient-text-emerald">Segala Jenis Usaha Anda</span>
               </h1>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.75rem', lineHeight: 1.55 }}>
-                Tampilkan katalog barang, menu makanan, satwa hias, lokasi toko, dan tombol WhatsApp langsung dalam satu biolink kustom modern.
+                Tampilkan katalog barang, menu makanan, satwa hias, layanan jasa, lokasi usaha, dan tombol WhatsApp langsung dalam satu biolink kustom modern.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button className="btn-primary btn-full" style={{ padding: '0.85rem', fontSize: '0.9rem' }} onClick={() => { setRegisterStep(1); setPortalTab('register'); }}>
-                  <span>Mulai Buat Toko - Gratis</span>
+                  <span>Mulai Buat Katalog - Gratis</span>
                   <ArrowRight size={16} />
                 </button>
                 <button className="btn-secondary btn-full" style={{ padding: '0.85rem', fontSize: '0.88rem' }} onClick={() => {
@@ -2505,22 +2505,22 @@ function App() {
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Buat akun & dapatkan link unik (catavor.com/toko-anda).</p>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Daftarkan Katalog Anda</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Buat akun & dapatkan link unik (catavor.com/katalog-anda).</p>
                   </div>
                 </div>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Upload Produk & Barang</h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Masukkan foto, harga, dan tautan marketplace toko.</p>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Upload Produk &amp; Layanan</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Masukkan foto, tarif harga, deskripsi, dan kontak usaha.</p>
                   </div>
                 </div>
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>3</div>
                   <div>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Sebarkan Link Katalog</h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Pasang link toko di bio Instagram, TikTok, & WA.</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>Pasang link katalog di bio Instagram, TikTok, & WA.</p>
                   </div>
                 </div>
               </div>
@@ -2530,7 +2530,7 @@ function App() {
             <div id="pricing-mobile" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Pilihan Paket Bisnis</span>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#ffffff' }}>Pilih Paket Toko Anda</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.25rem', color: '#ffffff' }}>Pilih Paket Katalog Anda</h2>
               </div>
 
               {/* Free Card */}
@@ -2582,9 +2582,9 @@ function App() {
                 <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.95rem', flexShrink: 0 }}>1</div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Daftarkan Toko Anda</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Daftarkan Katalog Anda</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
-                      Daftar dan klaim link unik Anda seperti <strong>catavor.com/toko-anda</strong>.
+                      Daftar dan klaim link unik Anda seperti <strong>catavor.com/katalog-anda</strong>.
                     </p>
                   </div>
                 </div>
@@ -2594,7 +2594,7 @@ function App() {
                   <div>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Kelola Katalog & Profil</h4>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
-                      Masukkan barang/satwa hias beserta harga, jam buka, lokasi, dan tautan marketplace.
+                      Masukkan barang, jasa, hidangan atau satwa hias beserta harga, lokasi, dan kontak usaha.
                     </p>
                   </div>
                 </div>
@@ -2619,7 +2619,7 @@ function App() {
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={28} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffffff' }}>Masuk Admin</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Kelola katalog & halaman kustom Anda</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Kelola profil &amp; katalog bisnis Anda</p>
               </div>
               
               {loginError && (
@@ -2720,10 +2720,10 @@ function App() {
                   <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.25rem 0' }}>
-                  Daftar Toko Catavor
+                  Daftar Katalog Catavor
                 </h2>
                 <p style={{ color: '#9ca3af', fontSize: '0.75rem', margin: 0, lineHeight: 1.3 }}>
-                  Katalog Online Modern &amp; Storefront Link 1 Klik
+                  Katalog Online &amp; Biolink Bisnis Modern
                 </p>
               </div>
 
@@ -2736,7 +2736,7 @@ function App() {
                   </span>
                   <span style={{ fontSize: '0.68rem', fontWeight: 700, color: registerStep === 2 ? '#10b981' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                     <span style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: registerStep === 2 ? '#10b981' : 'rgba(255,255,255,0.1)', color: registerStep === 2 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 900 }}>2</span>
-                    Data Toko
+                    Profil Usaha
                   </span>
                   <span style={{ fontSize: '0.68rem', fontWeight: 700, color: registerStep === 3 ? '#f59e0b' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                     <span style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: registerStep === 3 ? '#f59e0b' : 'rgba(255,255,255,0.1)', color: registerStep === 3 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 900 }}>3</span>
@@ -2782,7 +2782,7 @@ function App() {
                 <div>
                   <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                     <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f3f4f6', margin: '0 0 0.2rem 0' }}>
-                      Langkah 1: Identitas Pemilik Toko
+                      Langkah 1: Identitas Pemilik Usaha
                     </h3>
                     <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: 0 }}>
                       Daftar instan dengan Google atau buat password manual
@@ -2845,7 +2845,7 @@ function App() {
                     style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
                   >
                     <div className="form-group">
-                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Pemilik *</label>
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Pemilik Usaha *</label>
                       <input 
                         type="text" 
                         className="form-input" 
@@ -2926,7 +2926,7 @@ function App() {
                         cursor: 'pointer'
                       }}
                     >
-                      <span>Lanjut ke Informasi Toko</span>
+                      <span>Lanjut ke Informasi Katalog</span>
                       <ChevronRight size={15} />
                     </button>
                     <button 
@@ -2981,10 +2981,10 @@ function App() {
                       const res = await fetch(`${API_BASE}/check-slug/${registerForm.store_slug.toLowerCase()}`);
                       const data = await res.json();
                       if (!data.available) {
-                        const errMsg = 'Mohon periksa kembali isian Anda: Link username toko yang Anda masukkan sudah digunakan oleh toko lain. Silakan ganti dengan username lain yang masih tersedia.';
+                        const errMsg = 'Mohon periksa kembali isian Anda: Link username yang Anda masukkan sudah digunakan oleh pengelola lain. Silakan ganti dengan username lain yang masih tersedia.';
                         setRegisterError(errMsg);
-                        setFieldErrors(prev => ({ ...prev, store_slug: `Link username "${registerForm.store_slug}" sudah digunakan oleh toko lain.` }));
-                        setSlugStatus({ available: false, message: `Link username "${registerForm.store_slug}" sudah digunakan oleh toko lain.` });
+                        setFieldErrors(prev => ({ ...prev, store_slug: `Link username "${registerForm.store_slug}" sudah digunakan oleh pengelola lain.` }));
+                        setSlugStatus({ available: false, message: `Link username "${registerForm.store_slug}" sudah digunakan oleh pengelola lain.` });
                         setTimeout(() => {
                           const el = document.getElementById('register-error-banner-mobile');
                           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3004,10 +3004,10 @@ function App() {
                 >
                   <div style={{ textAlign: 'center', marginBottom: '0.15rem' }}>
                     <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f3f4f6', margin: '0 0 0.2rem 0' }}>
-                      Langkah 2: Informasi Toko
+                      Langkah 2: Informasi Katalog Usaha
                     </h3>
                     <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: 0 }}>
-                      Tentukan nama bisnis dan link tautan unik toko Anda
+                      Tentukan nama usaha dan link tautan unik katalog Anda
                     </p>
                   </div>
 
@@ -3018,11 +3018,11 @@ function App() {
                   )}
 
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Toko / Bisnis *</label>
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Usaha / Brand *</label>
                     <input 
                       type="text" 
                       className="form-input" 
-                      placeholder="Contoh: DFauna Gallery" 
+                      placeholder="Contoh: DFauna Studio & Gallery" 
                       value={registerForm.store_name} 
                       onChange={(e) => {
                         setRegisterForm({ ...registerForm, store_name: e.target.value });
@@ -3039,7 +3039,7 @@ function App() {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Link Username Toko *</label>
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Link Username Katalog *</label>
                     <div style={{ display: 'flex', alignItems: 'center', borderRadius: '0.5rem', backgroundColor: 'rgba(0,0,0,0.3)', border: fieldErrors.store_slug ? '1px solid #ef4444' : (slugStatus ? (slugStatus.available ? '1px solid #10b981' : '1px solid #ef4444') : '1px solid rgba(255,255,255,0.12)'), boxShadow: fieldErrors.store_slug ? '0 0 8px rgba(239, 68, 68, 0.25)' : 'none', overflow: 'hidden', paddingLeft: '0.65rem', transition: 'all 0.2s ease' }}>
                       <span style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, userSelect: 'none' }}>catavor.com/</span>
                       <input 
