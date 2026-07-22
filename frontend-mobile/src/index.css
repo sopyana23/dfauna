@@ -4,26 +4,26 @@
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Colors - Ultra-Premium, Elegant & Professional Dark Slate Palette */
-  --bg-deep: #080c14;
-  --bg-card: #0f172a;
-  --bg-card-hover: #1e293b;
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.18);
+  /* Colors - Warm Luxury Cream Base & Deep Forest Emerald Palette */
+  --bg-deep: #FAF7F2; /* Warm Cream Linen */
+  --bg-card: #FFFFFF; /* Pure Warm White Surface */
+  --bg-card-hover: #F5EFE6; /* Warm Soft Oat Hover */
+  --border-light: rgba(15, 81, 50, 0.12); /* Soft Muted Emerald Border */
+  --border-hover: rgba(15, 81, 50, 0.28);
   
-  --primary: #10b981; /* Emerald Precision */
-  --primary-glow: rgba(16, 185, 129, 0.2);
-  --primary-hover: #059669;
+  --primary: #0F5132; /* Deep Forest Emerald */
+  --primary-glow: rgba(15, 81, 50, 0.18);
+  --primary-hover: #0A3D25;
   
-  --secondary: #f59e0b; /* Amber/Gold */
-  --accent-blue: #38bdf8;
-  --accent-purple: #8b5cf6;
+  --secondary: #D97706; /* Warm Champagne Gold */
+  --accent-blue: #0284C7;
+  --accent-purple: #7C3AED;
   
-  --danger: #ef4444;
+  --danger: #DC2626;
 
-  --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #1C2A24; /* Deep Forest Espresso Charcoal */
+  --text-secondary: #4A5D54; /* Muted Sage Green */
+  --text-muted: #788B81;
 
   --transition-smooth: all 0.2s ease-in-out;
 }
@@ -51,21 +51,20 @@ body::-webkit-scrollbar {
   display: none !important;
 }
 
-/* Custom Ambient Mesh Glow Background - Sleek Executive Backdrop */
 .ambient-glow-bg {
   position: relative;
-  background-color: #080c14;
+  background-color: #FAF7F2;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 55%),
-    radial-gradient(circle at 10% 45%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 90% 70%, rgba(139, 92, 246, 0.07) 0%, transparent 45%);
+    radial-gradient(circle at 50% -10%, rgba(15, 81, 50, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 10% 40%, rgba(217, 119, 6, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 60%, rgba(5, 150, 105, 0.06) 0%, transparent 45%);
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 a {
@@ -77,49 +76,49 @@ button, input, textarea, select {
   font-family: inherit;
 }
 
-/* Glassmorphism Panel */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 81, 50, 0.12);
   border-radius: 1rem;
-  transition: var(--transition-smooth);
+  box-shadow: 0 8px 24px rgba(15, 81, 50, 0.06);
 }
 
-/* Metallic & Sleek Typography Gradients */
 .gradient-text-hero {
-  background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #94a3b8 100%);
+  background: linear-gradient(135deg, #1C2A24 30%, #0F5132 70%, #047857 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-emerald {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 60%, #059669 100%);
+  background: linear-gradient(135deg, #0F5132 0%, #059669 60%, #10B981 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #0F5132 0%, #059669 100%);
   color: #ffffff;
   border: none;
   border-radius: 9999px;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-smooth);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 14px rgba(15, 81, 50, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
 }
+.btn-primary:active {
+  transform: scale(0.98);
+}
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 81, 50, 0.06);
+  color: #1C2A24;
+  border: 1px solid rgba(15, 81, 50, 0.18);
   border-radius: 9999px;
   font-weight: 600;
   cursor: pointer;
@@ -134,33 +133,36 @@ button, input, textarea, select {
   width: 100%;
 }
 
-/* Premium Multi-Genre Vector Tag Pills */
 .genre-tag-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.38rem 0.8rem;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
   border-radius: 9999px;
   font-size: 0.72rem;
   font-weight: 600;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 81, 50, 0.15);
+  color: #1C2A24;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(15, 81, 50, 0.05);
 }
 
-/* Icon Box Badge Container */
 .icon-badge-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-#root {
-  min-height: 100vh;
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

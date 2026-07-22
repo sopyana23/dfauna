@@ -4,30 +4,30 @@
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Colors - Ultra-Premium, Elegant & Professional Dark Slate Palette */
-  --bg-deep: #080c14;
-  --bg-card: #0f172a;
-  --bg-card-hover: #1e293b;
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.18);
+  /* Colors - Warm Luxury Cream Base & Deep Forest Emerald Palette */
+  --bg-deep: #FAF7F2; /* Warm Cream Linen */
+  --bg-card: #FFFFFF; /* Pure Warm White Surface */
+  --bg-card-hover: #F5EFE6; /* Warm Soft Oat Hover */
+  --border-light: rgba(15, 81, 50, 0.12); /* Soft Muted Emerald Border */
+  --border-hover: rgba(15, 81, 50, 0.28);
   
-  --primary: #10b981; /* Emerald Precision */
-  --primary-glow: rgba(16, 185, 129, 0.2);
-  --primary-hover: #059669;
+  --primary: #0F5132; /* Deep Forest Emerald */
+  --primary-glow: rgba(15, 81, 50, 0.18);
+  --primary-hover: #0A3D25;
   
-  --secondary: #f59e0b; /* Amber/Gold */
-  --accent-blue: #38bdf8;
-  --accent-purple: #8b5cf6;
+  --secondary: #D97706; /* Warm Champagne Gold */
+  --accent-blue: #0284C7;
+  --accent-purple: #7C3AED;
   
-  --danger: #ef4444;
-  --danger-bg: #2d1616;
+  --danger: #DC2626;
+  --danger-bg: #FEF2F2;
 
-  --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #1C2A24; /* Deep Forest Espresso Charcoal */
+  --text-secondary: #4A5D54; /* Muted Sage Green */
+  --text-muted: #788B81;
 
   --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.6);
+  --shadow-premium: 0 15px 40px rgba(15, 81, 50, 0.08);
 }
 
 * {
@@ -46,14 +46,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Ambient Mesh Glow Background - Sleek Executive Backdrop */
+/* Custom Ambient Mesh Glow Background - Sleek Executive Warm Cream Backdrop */
 .ambient-glow-bg {
   position: relative;
-  background-color: #080c14;
+  background-color: #FAF7F2;
   background-image: 
-    radial-gradient(circle at 50% -10%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 10% 40%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 90% 60%, rgba(139, 92, 246, 0.07) 0%, transparent 45%);
+    radial-gradient(circle at 50% -10%, rgba(15, 81, 50, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 10% 40%, rgba(217, 119, 6, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 60%, rgba(5, 150, 105, 0.06) 0%, transparent 45%);
 }
 
 /* Custom Scrollbar */
@@ -64,11 +64,11 @@ body {
   background: var(--bg-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(15, 81, 50, 0.2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(15, 81, 50, 0.35);
 }
 
 /* Typography */
@@ -76,7 +76,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
   letter-spacing: -0.025em;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 a {
@@ -88,45 +88,46 @@ button, input, textarea, select {
   font-family: inherit;
 }
 
-/* Glassmorphism Panel - Refined SaaS Style */
+/* Glassmorphism Panel - Refined SaaS Warm Style */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 81, 50, 0.12);
   border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(15, 81, 50, 0.06);
   transition: var(--transition-smooth);
 }
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(15, 81, 50, 0.25);
+  background: rgba(255, 255, 255, 0.98);
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 40px rgba(15, 81, 50, 0.12);
 }
 
 /* Metallic & Sleek Typography Gradients */
 .gradient-text-hero {
-  background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #94a3b8 100%);
+  background: linear-gradient(135deg, #1C2A24 30%, #0F5132 70%, #047857 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-emerald {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 60%, #059669 100%);
+  background: linear-gradient(135deg, #0F5132 0%, #059669 60%, #10B981 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 /* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #0F5132 0%, #059669 100%);
   color: #ffffff;
   border: none;
   border-radius: 9999px;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-smooth);
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 18px rgba(15, 81, 50, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -134,14 +135,14 @@ button, input, textarea, select {
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 8px 24px rgba(15, 81, 50, 0.38);
+  background: linear-gradient(135deg, #135e3b 0%, #06a875 100%);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 81, 50, 0.06);
+  color: #1C2A24;
+  border: 1px solid rgba(15, 81, 50, 0.18);
   border-radius: 9999px;
   font-weight: 600;
   cursor: pointer;
@@ -153,8 +154,8 @@ button, input, textarea, select {
   gap: 0.5rem;
 }
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(15, 81, 50, 0.12);
+  border-color: rgba(15, 81, 50, 0.3);
   transform: translateY(-2px);
 }
 
@@ -171,17 +172,18 @@ button, input, textarea, select {
   border-radius: 9999px;
   font-size: 0.78rem;
   font-weight: 600;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 81, 50, 0.15);
+  color: #1C2A24;
   backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(15, 81, 50, 0.05);
   transition: var(--transition-smooth);
   cursor: default;
 }
 .genre-tag-pill:hover {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  background: rgba(15, 81, 50, 0.08);
+  border-color: rgba(15, 81, 50, 0.3);
+  color: #0F5132;
   transform: translateY(-1px);
 }
 
