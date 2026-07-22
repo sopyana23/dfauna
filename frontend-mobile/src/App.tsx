@@ -423,6 +423,36 @@ function App() {
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
 
+  // Store username (slug) real-time availability check state (Mobile)
+  const [slugChecking, setSlugChecking] = useState<boolean>(false);
+  const [slugStatus, setSlugStatus] = useState<{ available: boolean; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!registerForm.store_slug || registerForm.store_slug.length < 3) {
+      setSlugStatus(null);
+      setSlugChecking(false);
+      return;
+    }
+
+    setSlugChecking(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/check-slug/${registerForm.store_slug.toLowerCase()}`);
+        const data = await res.json();
+        setSlugStatus({
+          available: data.available,
+          message: data.message || (data.available ? 'Username tersedia!' : 'Username sudah digunakan.')
+        });
+      } catch {
+        setSlugStatus(null);
+      } finally {
+        setSlugChecking(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [registerForm.store_slug]);
+
   const [faunas, setFaunas] = useState<Fauna[]>([])
   const [settings, setSettings] = useState<ShopSettings>({
     whatsapp_number: '628123456789',
@@ -2763,14 +2793,36 @@ function App() {
               {/* STEP 2: Store Information Mobile */}
               {registerStep === 2 && (
                 <form 
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
                     if (!registerForm.store_name || !registerForm.store_slug) {
                       setRegisterError('Silakan lengkapi Nama Toko dan Link Username Toko.');
                       return;
                     }
+
+                    if (registerForm.store_slug.length < 3) {
+                      setRegisterError('Link Username Toko minimal 3 karakter.');
+                      return;
+                    }
+
+                    setRegisterLoading(true);
                     setRegisterError(null);
-                    setRegisterStep(3);
+                    try {
+                      const res = await fetch(`${API_BASE}/check-slug/${registerForm.store_slug.toLowerCase()}`);
+                      const data = await res.json();
+                      if (!data.available) {
+                        const errMsg = data.message || `Link username "catavor.com/${registerForm.store_slug}" sudah digunakan oleh toko lain. Silakan pilih username lain.`;
+                        setRegisterError(errMsg);
+                        setSlugStatus({ available: false, message: errMsg });
+                        return;
+                      }
+                      setRegisterError(null);
+                      setRegisterStep(3);
+                    } catch (err) {
+                      setRegisterError('Gagal memeriksa ketersediaan username. Silakan coba lagi.');
+                    } finally {
+                      setRegisterLoading(false);
+                    }
                   }} 
                   style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
                 >
@@ -2804,7 +2856,7 @@ function App() {
 
                   <div className="form-group">
                     <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Link Username Toko *</label>
-                    <div style={{ display: 'flex', alignItems: 'center', borderRadius: '0.5rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', overflow: 'hidden', paddingLeft: '0.65rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', borderRadius: '0.5rem', backgroundColor: 'rgba(0,0,0,0.3)', border: slugStatus ? (slugStatus.available ? '1px solid #10b981' : '1px solid #ef4444') : '1px solid rgba(255,255,255,0.12)', overflow: 'hidden', paddingLeft: '0.65rem', transition: 'all 0.2s ease' }}>
                       <span style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, userSelect: 'none' }}>catavor.com/</span>
                       <input 
                         type="text" 
@@ -2816,6 +2868,18 @@ function App() {
                         style={{ flex: 1, padding: '0.65rem 0.5rem', fontSize: '0.8rem', border: 'none', backgroundColor: 'transparent', color: '#fff' }}
                       />
                     </div>
+                    {slugChecking && (
+                      <div style={{ fontSize: '0.68rem', color: '#38bdf8', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <Sparkles size={11} style={{ color: '#38bdf8' }} />
+                        <span>Memeriksa ketersediaan username catavor.com/{registerForm.store_slug}...</span>
+                      </div>
+                    )}
+                    {!slugChecking && slugStatus && (
+                      <div style={{ fontSize: '0.68rem', color: slugStatus.available ? '#34d399' : '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                        {slugStatus.available ? <Check size={12} style={{ color: '#34d399' }} /> : <AlertTriangle size={12} style={{ color: '#f87171' }} />}
+                        <span>{slugStatus.message}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem' }}>

@@ -42,6 +42,39 @@ class StoreController extends Controller
     }
 
     /**
+     * Check if a store slug is available or taken
+     */
+    public function checkSlug($slug)
+    {
+        $cleanSlug = strtolower(trim($slug));
+        $reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets', 'login', 'register', 'admin', 'u'];
+        
+        if (in_array($cleanSlug, $reserved) || strlen($cleanSlug) < 3) {
+            return response()->json([
+                'success' => false,
+                'available' => false,
+                'message' => 'Username ini tidak tersedia atau dicadangkan oleh sistem.'
+            ], 200);
+        }
+
+        $exists = Store::where('slug', $cleanSlug)->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'available' => false,
+                'message' => 'Link username "' . $cleanSlug . '" sudah digunakan oleh toko lain.'
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'available' => true,
+            'message' => 'Link username "' . $cleanSlug . '" tersedia!'
+        ], 200);
+    }
+
+    /**
      * Get fauna items scoped to a store slug
      */
     public function indexFauna(Request $request, $slug)

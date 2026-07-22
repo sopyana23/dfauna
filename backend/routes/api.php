@@ -22,6 +22,7 @@ Route::post('/sightings', [SightingController::class, 'store']); // kept for com
 
 // Multi-Tenant public store endpoints
 Route::get('/stores/featured', [StoreController::class, 'featuredStores']);
+Route::get('/check-slug/{slug}', [StoreController::class, 'checkSlug']);
 Route::get('/u/{slug}', [StoreController::class, 'show']);
 Route::get('/u/{slug}/fauna', [StoreController::class, 'indexFauna']);
 
