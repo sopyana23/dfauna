@@ -2022,6 +2022,50 @@ function App() {
               </div>
             </div>
 
+            {/* Pricing Section Desktop */}
+            <div id="pricing-desktop" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '5rem', marginBottom: '5rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pilihan Paket Bisnis</span>
+                <h2 style={{ fontSize: '2.25rem', fontWeight: 900, marginTop: '0.5rem', color: '#fff' }}>Pilih Paket Toko Anda</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '500px', margin: '0.5rem auto 0 auto' }}>Fitur transparan untuk mendukung pertumbuhan usaha galeri &amp; toko Anda.</p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', maxWidth: '900px', margin: '0 auto' }}>
+                {/* Free Card */}
+                <div className="glass-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-light)' }}>
+                  <div>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Plan Gratis</span>
+                    <div style={{ fontSize: '2.25rem', fontWeight: 900, color: '#fff', margin: '0.5rem 0 1.25rem 0' }}>Rp 0 <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ selamanya</span></div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                      <li>✅ Maksimal 10 postingan produk</li>
+                      <li>✅ Katalog interaktif &amp; WhatsApp</li>
+                      <li>✅ Watermark "Free by Catavor"</li>
+                    </ul>
+                  </div>
+                  <button className="btn-secondary btn-full" style={{ padding: '0.85rem', marginTop: '2rem' }} onClick={() => { setRegisterStep(1); setRegisterPlan('free'); setPortalTab('register'); }}>
+                    Daftar Plan Gratis
+                  </button>
+                </div>
+
+                {/* Pro Card */}
+                <div className="glass-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '2px solid var(--primary)', backgroundColor: 'rgba(16,185,129,0.03)' }}>
+                  <div>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Plan Pro / Premium</span>
+                    <div style={{ fontSize: '2.25rem', fontWeight: 900, color: '#fff', margin: '0.5rem 0 1.25rem 0' }}>Rp 49rb <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ bulan</span></div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                      <li>✨ Postingan produk Unlimited</li>
+                      <li>✨ Halaman "Tentang Kami" kustom</li>
+                      <li>✨ Bebas watermark Catavor</li>
+                      <li>✨ Kontrol tombol beli</li>
+                    </ul>
+                  </div>
+                  <button className="btn-primary btn-full" style={{ padding: '0.85rem', marginTop: '2rem' }} onClick={() => { setRegisterStep(1); setRegisterPlan('pro'); setPortalTab('register'); }}>
+                    Daftar Plan Pro
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Concept Section */}
             <div id="concept-section" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '5rem', marginBottom: '3rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '4rem' }}>

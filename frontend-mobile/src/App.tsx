@@ -2291,10 +2291,9 @@ function App() {
                   <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0' }}>Rp 0 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ selamanya</span></div>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
-                  <li>✅ Maksimal 10 Postingan Produk</li>
-                  <li>✅ Display Katalog Interaktif</li>
-                  <li>✅ Link WA & Marketplace</li>
-                  <li style={{ color: 'var(--text-muted)' }}>❌ Halaman "Tentang Kami"</li>
+                  <li>✅ Maksimal 10 postingan produk</li>
+                  <li>✅ Katalog interaktif &amp; WhatsApp</li>
+                  <li>✅ Watermark "Free by Catavor"</li>
                 </ul>
                 <button className="btn-secondary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterStep(1); setRegisterPlan('free'); setPortalTab('register'); }}>
                   Daftar Plan Gratis
@@ -2308,10 +2307,10 @@ function App() {
                   <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0' }}>Rp 49rb <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ bulan</span></div>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
-                  <li>✨ Postingan Produk Tanpa Batas</li>
-                  <li>✨ Fitur Halaman "Tentang Kami"</li>
-                  <li>✨ Sakelar Tombol Chat WA & Rekber</li>
-                  <li>✨ Prioritas Tampil di Landing Page</li>
+                  <li>✨ Postingan produk Unlimited</li>
+                  <li>✨ Halaman "Tentang Kami" kustom</li>
+                  <li>✨ Bebas watermark Catavor</li>
+                  <li>✨ Kontrol tombol beli</li>
                 </ul>
                 <button className="btn-primary btn-full" style={{ padding: '0.75rem' }} onClick={() => { setRegisterStep(1); setRegisterPlan('pro'); setPortalTab('register'); }}>
                   Daftar Plan Pro
