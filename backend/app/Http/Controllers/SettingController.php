@@ -36,7 +36,12 @@ class SettingController extends Controller
             'payment_bank_name' => 'Bank Central Asia (BCA)',
             'payment_bank_account' => '8830-1928-3920',
             'payment_bank_holder' => 'PT Catavor Media Digital',
-            'payment_qris_image' => '/img/qris_demo.svg'
+            'payment_qris_image' => '/img/qris_demo.svg',
+            'master_coupons' => json_encode([
+                ['code' => 'CATAVOR100', 'type' => 'free', 'discount' => 30000, 'label' => 'Gratis 100% Plan Pro (1 Bulan)'],
+                ['code' => 'GRATISPRO', 'type' => 'free', 'discount' => 30000, 'label' => 'Gratis Uji Coba Plan Pro'],
+                ['code' => 'DISKON10K', 'type' => 'discount', 'discount' => 10000, 'label' => 'Potongan Harga Rp 10.000']
+            ])
         ];
 
         foreach ($defaults as $key => $defaultValue) {

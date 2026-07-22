@@ -16,7 +16,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => $request->filled('google_id') ? 'nullable|string|min:6' : 'required|string|min:6',
             'store_name' => 'required|string|max:255',
             'store_slug' => [
                 'required',
@@ -37,11 +37,14 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Create User
+        // Create User (Generate random secure hash if registering via Google SSO without manual password)
+        $userPassword = $request->filled('password') ? $request->password : Str::random(32);
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($userPassword),
+            'google_id' => $request->input('google_id'),
+            'avatar' => $request->input('avatar'),
             'is_password_changed' => true
         ]);
 

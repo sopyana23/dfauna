@@ -94,6 +94,7 @@ interface ShopSettings {
   payment_bank_account?: string
   payment_bank_holder?: string
   payment_qris_image?: string
+  master_coupons?: string
 }
 
 interface Fauna {
@@ -483,6 +484,10 @@ function App() {
     setFieldErrors({});
   }, [registerStep, portalTab]);
 
+  const [couponInput, setCouponInput] = useState<string>('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string, type: 'free' | 'discount', discount: number, label: string } | null>(null);
+  const [couponMsg, setCouponMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
     if (!registerForm.name || !registerForm.name.trim()) {
@@ -493,10 +498,13 @@ function App() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
       errors.email = 'Format alamat email tidak valid (Contoh: nama@domain.com).';
     }
-    if (!registerForm.password) {
-      errors.password = 'Kata Sandi wajib diisi.';
-    } else if (registerForm.password.length < 6) {
-      errors.password = 'Kata Sandi minimal 6 karakter.';
+    // Bypass password validation if user registered via Google SSO
+    if (!registerForm.google_id) {
+      if (!registerForm.password) {
+        errors.password = 'Kata Sandi wajib diisi.';
+      } else if (registerForm.password.length < 6) {
+        errors.password = 'Kata Sandi minimal 6 karakter.';
+      }
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -3365,38 +3373,157 @@ function App() {
                 </p>
               </div>
 
-              {/* Rincian Tagihan Card Mobile */}
-              <div style={{ padding: '1rem', borderRadius: '0.75rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(15, 23, 42, 0.75)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#ffffff' }}>Rincian Tagihan</span>
-                  <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>PAKET PRO</span>
-                </div>
+              {/* Price Calculations Mobile */}
+              {(() => {
+                const originalPrice = 30000;
+                const discountAmount = appliedCoupon ? (appliedCoupon.type === 'free' ? 30000 : appliedCoupon.discount) : 0;
+                const finalPrice = Math.max(0, originalPrice - discountAmount);
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.72rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
-                    <span>Berlangganan:</span>
-                    <strong style={{ color: '#ffffff' }}>Plan Pro (1 Bulan)</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
-                    <span>Harga Normal:</span>
-                    <span style={{ textDecoration: 'line-through', color: '#64748b' }}>Rp 50.000</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
-                    <span>Diskon Promo:</span>
-                    <strong style={{ color: '#34d399' }}>- Rp 20.000</strong>
-                  </div>
-                </div>
+                return (
+                  <>
+                    {/* Rincian Tagihan Card Mobile */}
+                    <div style={{ padding: '0.85rem 1rem', borderRadius: '0.75rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(15, 23, 42, 0.75)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.45rem' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#ffffff' }}>Rincian Tagihan</span>
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>PAKET PRO</span>
+                      </div>
 
-                <div style={{ borderTop: '1px border-dashed rgba(255, 255, 255, 0.15)', paddingTop: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ffffff' }}>Total Tagihan:</span>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#f59e0b' }}>Rp 30.000</div>
-                </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.72rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
+                          <span>Berlangganan:</span>
+                          <strong style={{ color: '#ffffff' }}>Plan Pro (1 Bulan)</strong>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
+                          <span>Harga Normal:</span>
+                          <span style={{ textDecoration: 'line-through', color: '#64748b' }}>Rp 50.000</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#9ca3af' }}>
+                          <span>Diskon Promo:</span>
+                          <strong style={{ color: '#34d399' }}>- Rp 20.000</strong>
+                        </div>
+                        {appliedCoupon && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)', padding: '0.35rem 0.5rem', borderRadius: '0.35rem', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                            <span>Kupon ({appliedCoupon.code}):</span>
+                            <strong>- Rp {discountAmount.toLocaleString('id-ID')}</strong>
+                          </div>
+                        )}
+                      </div>
 
-                <div style={{ padding: '0.5rem 0.65rem', borderRadius: '0.5rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '0.68rem', color: '#fcd34d', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Clock size={14} style={{ color: '#f59e0b', flexShrink: 0 }} />
-                  <span>Batas pembayaran: <strong>24 jam</strong></span>
-                </div>
-              </div>
+                      {/* Input Box Kode Kupon Mobile */}
+                      <div style={{ marginTop: '0.2rem', paddingTop: '0.55rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#e5e7eb', marginBottom: '0.35rem', display: 'block' }}>Gunakan Kode Kupon / Diskon:</label>
+                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                          <input 
+                            type="text" 
+                            className="form-input" 
+                            placeholder="Contoh: CATAVOR100" 
+                            value={couponInput} 
+                            onChange={(e) => {
+                              setCouponInput(e.target.value.toUpperCase());
+                              if (couponMsg) setCouponMsg(null);
+                            }}
+                            style={{ flex: 1, padding: '0.45rem 0.65rem', fontSize: '0.75rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '0.45rem', color: '#fff', textTransform: 'uppercase' }}
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const cleanCode = couponInput.trim().toUpperCase();
+                              if (!cleanCode) {
+                                setCouponMsg({ type: 'error', text: 'Masukkan kode kupon.' });
+                                return;
+                              }
+                              let masterCoupons = [];
+                              try {
+                                if (settings.master_coupons) masterCoupons = JSON.parse(settings.master_coupons);
+                              } catch {}
+                              if (!masterCoupons.length) {
+                                masterCoupons = [
+                                  { code: 'CATAVOR100', type: 'free', discount: 30000, label: 'Gratis 100% Plan Pro (1 Bulan)' },
+                                  { code: 'GRATISPRO', type: 'free', discount: 30000, label: 'Gratis Uji Coba Plan Pro' },
+                                  { code: 'DISKON10K', type: 'discount', discount: 10000, label: 'Potongan Harga Rp 10.000' }
+                                ];
+                              }
+                              const found = masterCoupons.find((c: any) => c.code.toUpperCase() === cleanCode);
+                              if (found) {
+                                setAppliedCoupon(found);
+                                setCouponMsg({ type: 'success', text: `Kupon ${found.code} Berhasil!` });
+                              } else {
+                                setCouponMsg({ type: 'error', text: `Kode "${cleanCode}" tidak berlaku.` });
+                              }
+                            }}
+                            style={{ padding: '0.45rem 0.75rem', borderRadius: '0.45rem', backgroundColor: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34d399', fontSize: '0.72rem', fontWeight: 800, cursor: 'pointer' }}
+                          >
+                            Terapkan
+                          </button>
+                        </div>
+
+                        {couponMsg && (
+                          <div style={{ fontSize: '0.68rem', color: couponMsg.type === 'success' ? '#34d399' : '#f87171', marginTop: '0.35rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            {couponMsg.type === 'success' ? <Check size={12} /> : <AlertTriangle size={12} />}
+                            <span>{couponMsg.text}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ borderTop: '1px border-dashed rgba(255, 255, 255, 0.15)', paddingTop: '0.55rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ffffff' }}>Total Tagihan:</span>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 900, color: finalPrice === 0 ? '#34d399' : '#f59e0b' }}>
+                          Rp {finalPrice.toLocaleString('id-ID')}
+                          {finalPrice === 0 && <span style={{ fontSize: '0.65rem', color: '#34d399', marginLeft: '0.3rem', fontWeight: 800 }}>(GRATIS)</span>}
+                        </div>
+                      </div>
+
+                      {finalPrice > 0 ? (
+                        <div style={{ padding: '0.45rem 0.6rem', borderRadius: '0.45rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '0.68rem', color: '#fcd34d', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Clock size={13} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                          <span>Batas pembayaran: <strong>24 jam</strong></span>
+                        </div>
+                      ) : (
+                        <div style={{ padding: '0.45rem 0.6rem', borderRadius: '0.45rem', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '0.68rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Sparkles size={13} style={{ color: '#34d399', flexShrink: 0 }} />
+                          <span>Kupon gratis 100%! Tidak perlu transfer bank.</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {finalPrice === 0 ? (
+                      <div style={{ padding: '0.75rem 0.35rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.15)', border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Sparkles size={24} style={{ color: '#10b981' }} />
+                        </div>
+                        <div>
+                          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>Aktivasi 100% Gratis!</h3>
+                          <p style={{ fontSize: '0.72rem', color: '#9ca3af', margin: 0, lineHeight: 1.35 }}>
+                            Kupon Anda menggratiskan paket Pro. Klik tombol di bawah untuk membuka Dashboard.
+                          </p>
+                        </div>
+                        <button 
+                          type="button" 
+                          className="btn-primary btn-full" 
+                          style={{ 
+                            padding: '0.75rem', 
+                            fontWeight: 800, 
+                            fontSize: '0.82rem', 
+                            borderRadius: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.4rem',
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => setShowPaymentSuccessModal(true)}
+                        >
+                          <Sparkles size={16} />
+                          <span>Aktifkan Paket Pro Gratis Sekarang</span>
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                );
+              })()}
 
               {/* Payment Method Selector Tabs Mobile */}
               <div>
