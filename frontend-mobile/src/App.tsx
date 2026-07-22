@@ -2350,8 +2350,19 @@ function App() {
         {portalTab !== 'register' && (
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'rgba(8, 12, 20, 0.85)', position: 'sticky', top: 0, zIndex: 100 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.4) 100%)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16,185,129,0.2)', color: '#34d399' }}>
-                <Zap size={18} />
+              <div style={{ 
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '10px', 
+                background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
+                border: '1px solid rgba(255, 255, 255, 0.9)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                boxShadow: '0 0 12px rgba(255, 255, 255, 0.35), 0 4px 10px rgba(16, 185, 129, 0.3)',
+                padding: '4px'
+              }}>
+                <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 Catavor <span style={{ fontSize: '0.58rem', fontWeight: 700, padding: '0.12rem 0.45rem', background: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', borderRadius: '15px', border: '1px solid rgba(56,189,248,0.25)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>PRO</span>
@@ -2667,8 +2678,20 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem 1.25rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding Mobile */}
               <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
-                <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.35) 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.65rem auto', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.2)', backdropFilter: 'blur(10px)' }}>
-                  <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                <div style={{ 
+                  width: '54px', 
+                  height: '54px', 
+                  borderRadius: '16px', 
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
+                  border: '1px solid rgba(255, 255, 255, 0.95)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  margin: '0 auto 0.65rem auto', 
+                  boxShadow: '0 0 16px rgba(255, 255, 255, 0.4), 0 6px 20px rgba(16, 185, 129, 0.3)', 
+                  padding: '6px'
+                }}>
+                  <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.25rem 0' }}>
                   Daftar Toko Catavor
