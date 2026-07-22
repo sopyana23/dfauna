@@ -97,6 +97,18 @@ export const SOCIAL_MEDIA_OPTIONS = [
   { key: 'Twitter', label: '🐦 Twitter / X' }
 ];
 
+// Helper for adaptive mobile header scale based on title length
+const getMobileHeaderScale = (titleStr: string) => {
+  const len = titleStr.trim().length
+  if (len <= 10) {
+    return { titleFontSize: '1.5rem', iconSize: 32, badgeFontSize: '0.65rem', gap: '0.5rem' }
+  } else if (len <= 20) {
+    return { titleFontSize: '1.25rem', iconSize: 26, badgeFontSize: '0.58rem', gap: '0.4rem' }
+  } else {
+    return { titleFontSize: '1.05rem', iconSize: 22, badgeFontSize: '0.5rem', gap: '0.3rem' }
+  }
+}
+
 export const renderAboutIcon = (key: string, size = 20, color = 'var(--primary)') => {
   switch (key) {
     case 'shield': return <ShieldCheck size={size} style={{ color }} />;
@@ -4065,29 +4077,48 @@ function App() {
       {/* Mobile Top Header */}
       <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
         <div className="container">
-          <div className="mobile-header-bar">
-            <div className="mobile-header-brand">
-              <Compass className="logo-icon" style={{ flexShrink: 0 }} />
-              <div className="mobile-header-title-wrapper">
-                <h1 className="logo-title" title={settings.store_title || 'Catavor'}>
-                  {settings.store_title || 'Catavor'}
-                </h1>
-                {settings.plan === 'free' && (
-                  <span className="free-badge">
-                    Free by Catavor
-                  </span>
-                )}
+          {(() => {
+            const titleText = settings.store_title || 'Catavor';
+            const scale = getMobileHeaderScale(titleText);
+            return (
+              <div className="mobile-header-bar" style={{ gap: scale.gap }}>
+                <div className="mobile-header-brand" style={{ gap: scale.gap }}>
+                  {settings.store_logo_url ? (
+                    <img 
+                      src={settings.store_logo_url} 
+                      alt="Logo" 
+                      style={{ height: `${scale.iconSize}px`, width: 'auto', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 }} 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <Compass className="logo-icon" style={{ width: `${scale.iconSize}px`, height: `${scale.iconSize}px`, flexShrink: 0, color: 'var(--primary)' }} />
+                  )}
+                  <div className="mobile-header-title-wrapper" style={{ gap: '0.35rem' }}>
+                    <h1 
+                      className="logo-title" 
+                      style={{ fontSize: scale.titleFontSize }}
+                      title={titleText}
+                    >
+                      {titleText}
+                    </h1>
+                    {settings.plan === 'free' && (
+                      <span className="free-badge" style={{ fontSize: scale.badgeFontSize }}>
+                        Free by Catavor
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="header-share-btn"
+                  onClick={handleShareStore}
+                  title="Bagikan Link Toko"
+                >
+                  <Share2 size={16} style={{ color: 'var(--primary)' }} />
+                </button>
               </div>
-            </div>
-            <button
-              type="button"
-              className="header-share-btn"
-              onClick={handleShareStore}
-              title="Bagikan Link Toko"
-            >
-              <Share2 size={16} style={{ color: 'var(--primary)' }} />
-            </button>
-          </div>
+            );
+          })()}
         </div>
       </header>
 

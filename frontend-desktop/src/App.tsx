@@ -90,6 +90,18 @@ export const ABOUT_ICONS_OPTIONS = [
   { key: 'compass', label: '🧭 Eksplorasi / Visi' }
 ];
 
+// Helper for adaptive desktop header scale based on title length
+const getDesktopHeaderScale = (titleStr: string) => {
+  const len = titleStr.trim().length
+  if (len <= 12) {
+    return { titleFontSize: '1.85rem', iconSize: 36, maxWidth: '480px', badgeFontSize: '0.68rem' }
+  } else if (len <= 24) {
+    return { titleFontSize: '1.45rem', iconSize: 30, maxWidth: '400px', badgeFontSize: '0.62rem' }
+  } else {
+    return { titleFontSize: '1.2rem', iconSize: 26, maxWidth: '320px', badgeFontSize: '0.58rem' }
+  }
+}
+
 export const renderAboutIcon = (key: string, size = 20, color = 'var(--primary)') => {
   switch (key) {
     case 'shield': return <ShieldCheck size={size} style={{ color }} />;
@@ -2381,16 +2393,27 @@ function App() {
           <div className="logo-area">
             {renderStoreLogo(settings.store_logo_url, 'logo-icon', 28)}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
-                <h1 className="logo-text" style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '320px' }} title={settings.store_title || 'Catavor'}>
-                  {settings.store_title || 'Catavor'}
-                </h1>
-                {settings.plan === 'free' && (
-                  <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '12px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    Free by Catavor
-                  </span>
-                )}
-              </div>
+              {(() => {
+                const titleText = settings.store_title || 'Catavor';
+                const scale = getDesktopHeaderScale(titleText);
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
+                    {renderStoreLogo(settings.store_logo_url, 'logo-icon', scale.iconSize)}
+                    <h1 
+                      className="logo-text" 
+                      style={{ margin: 0, fontSize: scale.titleFontSize, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: scale.maxWidth, transition: 'font-size 0.2s ease' }} 
+                      title={titleText}
+                    >
+                      {titleText}
+                    </h1>
+                    {settings.plan === 'free' && (
+                      <span style={{ fontSize: scale.badgeFontSize, fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '12px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        Free by Catavor
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
               <button
                 type="button"
                 onClick={handleShareStore}
