@@ -4065,29 +4065,24 @@ function App() {
       {/* Mobile Top Header */}
       <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
         <div className="container">
-          <div className="logo-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-            <Compass className="logo-icon" />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <h1 className="logo-title">{settings.store_title || 'Catavor'}</h1>
-              {settings.plan === 'free' && (
-                <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '10px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)' }}>
-                  Free by Catavor
-                </span>
-              )}
+          <div className="mobile-header-bar">
+            <div className="mobile-header-brand">
+              <Compass className="logo-icon" style={{ flexShrink: 0 }} />
+              <div className="mobile-header-title-wrapper">
+                <h1 className="logo-title" title={settings.store_title || 'Catavor'}>
+                  {settings.store_title || 'Catavor'}
+                </h1>
+                {settings.plan === 'free' && (
+                  <span className="free-badge">
+                    Free by Catavor
+                  </span>
+                )}
+              </div>
             </div>
             <button
               type="button"
+              className="header-share-btn"
               onClick={handleShareStore}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0.25rem',
-                cursor: 'pointer'
-              }}
               title="Bagikan Link Toko"
             >
               <Share2 size={16} style={{ color: 'var(--primary)' }} />

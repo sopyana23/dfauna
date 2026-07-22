@@ -27,13 +27,71 @@
   height: 1.75rem;
 }
 
+.mobile-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.mobile-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-header-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
 .logo-title {
-  font-size: 1.65rem;
+  font-size: 1.15rem;
   font-weight: 800;
   background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: var(--font-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.free-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.12rem 0.4rem;
+  border-radius: 10px;
+  background-color: rgba(16,185,129,0.15);
+  color: var(--primary);
+  border: 1px solid rgba(16,185,129,0.3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.header-share-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  color: var(--primary);
+  transition: all 0.2s ease;
 }
 
 .slogan-banner {
