@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Eye,
   ArrowLeft,
+  Home,
   Bold,
   Italic,
   Underline,
@@ -2096,8 +2097,8 @@ function App() {
         {portalTab !== 'register' && (
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'rgba(8, 12, 20, 0.8)', position: 'sticky', top: 0, zIndex: 100 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.4) 100%)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(16,185,129,0.2)', color: '#34d399' }}>
-                <Zap size={20} />
+              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.4) 100%)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(16,185,129,0.2)' }}>
+                <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
               </div>
               <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 Catavor <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.55rem', background: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', borderRadius: '20px', border: '1px solid rgba(56,189,248,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LINK / PRO</span>
@@ -2383,8 +2384,8 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '480px', padding: '2rem 1.75rem', borderRadius: '1.25rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding */}
               <div style={{ textAlign: 'center', marginBottom: '1.5rem', position: 'relative' }}>
-                <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.35) 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.85rem auto', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2)', backdropFilter: 'blur(10px)' }}>
-                  <Sparkles size={26} style={{ color: '#10b981' }} />
+                <div style={{ width: '58px', height: '58px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.35) 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.85rem auto', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2)', backdropFilter: 'blur(10px)' }}>
+                  <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
                 </div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
                   Daftar Toko Catavor
@@ -2595,6 +2596,33 @@ function App() {
                     >
                       <span>Lanjut ke Informasi Toko</span>
                       <ChevronRight size={16} />
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-secondary btn-full" 
+                      style={{ 
+                        padding: '0.75rem', 
+                        fontWeight: 700, 
+                        fontSize: '0.82rem', 
+                        borderRadius: '0.6rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#d1d5db',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onClick={() => {
+                        setPortalTab('home');
+                        setRegisterError(null);
+                        setFieldErrors({});
+                      }}
+                    >
+                      <Home size={16} />
+                      <span>Kembali ke Halaman Utama</span>
                     </button>
                   </form>
                 </div>

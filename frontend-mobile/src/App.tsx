@@ -24,6 +24,7 @@ import {
   X,
   Eye,
   ArrowLeft,
+  Home,
   ShieldCheck,
   MessageCircle,
   Heart,
@@ -2666,8 +2667,8 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem 1.25rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding Mobile */}
               <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.35) 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.65rem auto', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.2)', backdropFilter: 'blur(10px)' }}>
-                  <Sparkles size={24} style={{ color: '#10b981' }} />
+                <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.35) 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.65rem auto', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.2)', backdropFilter: 'blur(10px)' }}>
+                  <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
                 </div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.25rem 0' }}>
                   Daftar Toko Catavor
@@ -2878,6 +2879,33 @@ function App() {
                     >
                       <span>Lanjut ke Informasi Toko</span>
                       <ChevronRight size={15} />
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-secondary btn-full" 
+                      style={{ 
+                        padding: '0.65rem', 
+                        fontWeight: 700, 
+                        fontSize: '0.78rem', 
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.4rem',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#d1d5db',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onClick={() => {
+                        setPortalTab('home');
+                        setRegisterError(null);
+                        setFieldErrors({});
+                      }}
+                    >
+                      <Home size={15} />
+                      <span>Kembali ke Halaman Utama</span>
                     </button>
                   </form>
                 </div>
