@@ -2965,7 +2965,7 @@ function App() {
                     <input 
                       type="text" 
                       className="form-input" 
-                      placeholder="Contoh: DFauna Gallery" 
+                      placeholder="Contoh: Catavor Gallery" 
                       value={registerForm.store_name} 
                       onChange={(e) => {
                         setRegisterForm({ ...registerForm, store_name: e.target.value });
@@ -2988,7 +2988,7 @@ function App() {
                       <input 
                         type="text" 
                         className="form-input" 
-                        placeholder="dfauna" 
+                        placeholder="toko-saya" 
                         value={registerForm.store_slug} 
                         onChange={(e) => {
                           setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') });
