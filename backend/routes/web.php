@@ -7,8 +7,10 @@ use Illuminate\Support\Facades\File;
 Route::get('/{any?}', function () {
     $userAgent = Request::header('User-Agent');
     
-    // Simple but robust mobile browser / OS regex
-    $isMobile = preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i', $userAgent);
+    // Simple but robust mobile browser / OS regex + query param + header check
+    $isMobile = preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i', $userAgent)
+                || Request::query('view') === 'mobile'
+                || Request::header('Sec-CH-UA-Mobile') === '?1';
 
     if ($isMobile) {
         $path = public_path('mobile/index.html');
