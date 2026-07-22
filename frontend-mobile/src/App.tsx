@@ -4165,13 +4165,7 @@ function App() {
               </div>
             </section>
 
-            {/* Status Banner */}
-            <div className="glass-panel" style={{ padding: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', border: '1px solid rgba(16,185,129,0.1)' }}>
-              <ShieldCheck size={16} style={{ color: 'var(--primary)' }} />
-              <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                Katalog Resmi & Transaksi Langsung via WhatsApp / Marketplace
-              </span>
-            </div>
+
 
             {/* Dynamic Promo Banner */}
             {settings.promo_banner && settings.promo_banner.trim() !== '' && (

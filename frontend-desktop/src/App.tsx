@@ -2460,19 +2460,11 @@ function App() {
             {/* Hero Section */}
             <section className="hero-section">
               <h2 className="hero-title">
-                Katalog Produk & <span className="hero-highlight">Informasi Bisnis</span>
+                Galeri Satwa Hias <span className="hero-highlight">Premium</span>
               </h2>
               <p className="hero-desc">
-                Selamat datang di katalog resmi toko kami! Jelajahi berbagai koleksi produk unggulan, cek spesifikasi & harga terbaru, dan terhubung langsung ke WhatsApp atau toko online resmi kami.
+                Kami menyediakan berbagai pilihan produk barang dan produk berkualitas tinggi dengan layanan cepat, aman, dan terpercaya.
               </p>
-
-              {/* Status Guarantee Banner */}
-              <div className="glass-panel" style={{ padding: '1.25rem 2rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', border: '1px solid var(--border-light)', color: 'var(--primary-hover)', backgroundColor: 'var(--bg-card)' }}>
-                <ShieldCheck size={20} />
-                <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                  Katalog Resmi & Transaksi Langsung via WhatsApp / Marketplace
-                </span>
-              </div>
             </section>
 
             {/* Dynamic Promo Banner */}
