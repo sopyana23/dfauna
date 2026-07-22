@@ -22,6 +22,8 @@ import {
   Eye,
   ArrowLeft,
   Home,
+  Sun,
+  Moon,
   Bold,
   Italic,
   Underline,
@@ -349,6 +351,20 @@ function App() {
   const [registerStep, setRegisterStep] = useState<1 | 2 | 3>(initialRegState.step);
   const [heroEmailInput, setHeroEmailInput] = useState('');;
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
+
+  // Theme Mode (Dark Mode vs Warm Cream Mode)
+  const [themeMode, setThemeMode] = useState<'dark' | 'cream'>(() => {
+    return (localStorage.getItem('catavor_theme') as 'dark' | 'cream') || 'dark';
+  });
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', themeMode);
+    localStorage.setItem('catavor_theme', themeMode);
+  }, [themeMode]);
+
+  const toggleTheme = () => {
+    setThemeMode(prev => (prev === 'dark' ? 'cream' : 'dark'));
+  };
   
   // Registration form state
   const [registerForm, setRegisterForm] = useState(initialRegState.form);
@@ -2095,27 +2111,45 @@ function App() {
       <div className="portal-container ambient-glow-bg" style={{ minHeight: '100vh', color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}>
         {/* Header (Hidden during registration for clean focus) */}
         {portalTab !== 'register' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2.5rem', borderBottom: '1px solid rgba(15, 81, 50, 0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'rgba(250, 247, 242, 0.9)', position: 'sticky', top: 0, zIndex: 100 }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2.5rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'var(--header-bg)', position: 'sticky', top: 0, zIndex: 100 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
               <div style={{ 
                 width: '42px', 
                 height: '42px', 
                 borderRadius: '12px', 
                 background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                border: '1px solid rgba(15, 81, 50, 0.2)', 
+                border: '1px solid var(--border-light)', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                boxShadow: '0 4px 14px rgba(15, 81, 50, 0.15)',
+                boxShadow: '0 4px 14px var(--primary-glow)',
                 padding: '5px'
               }}>
                 <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1C2A24', letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                Catavor <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.55rem', background: 'rgba(15, 81, 50, 0.08)', color: '#0F5132', borderRadius: '20px', border: '1px solid rgba(15, 81, 50, 0.2)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LINK / PRO</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                Catavor <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.55rem', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--primary)', borderRadius: '20px', border: '1px solid var(--border-light)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LINK / PRO</span>
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <button 
+                type="button"
+                className="theme-toggle-btn" 
+                onClick={toggleTheme} 
+                title="Ganti Tema Visual Aplikasi (Dark / Warm Cream)"
+              >
+                {themeMode === 'dark' ? (
+                  <>
+                    <Sun size={15} style={{ color: '#f59e0b' }} />
+                    <span>Mode Cream</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon size={15} style={{ color: '#0F5132' }} />
+                    <span>Mode Dark</span>
+                  </>
+                )}
+              </button>
               {token ? (
                 <button className="btn-primary" style={{ padding: '0.6rem 1.4rem', fontSize: '0.85rem' }} onClick={() => {
                   const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');

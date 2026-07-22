@@ -23,6 +23,7 @@ class SettingController extends Controller
             'about_location' => 'Bandung, Jawa Barat, Indonesia',
             'about_hours' => '08:00 - 21:00 WIB (Setiap Hari)',
             'about_disclaimer' => 'DFauna berkomitmen penuh terhadap pelestarian lingkungan dan kepatuhan hukum. Kami tidak pernah dan tidak akan melayani transaksi jual-beli untuk jenis satwa liar atau hewan langka yang dilindungi oleh undang-undang.',
+            'app_theme' => 'dark',
             'about_cards' => json_encode([
                 ['title' => 'Garansi Kesehatan', 'content' => 'Setiap satwa melewati proses karantina ketat dan pemeriksaan kesehatan berkala sebelum dipasarkan.', 'icon' => 'shield'],
                 ['title' => 'Transaksi Aman & Terpercaya', 'content' => 'Kami mendukung sistem pembayaran aman secara langsung maupun menggunakan jasa Rekber Syariah.', 'icon' => 'lock'],
