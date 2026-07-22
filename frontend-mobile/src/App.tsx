@@ -6424,7 +6424,7 @@ function App() {
 
 
       {/* Fixed Bottom Navigation Bar */}
-      {!(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && !(activeTab !== 'admin' && settings.plan === 'free') && (
+      {!(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && !(settings.plan === 'free' && !token) && (
         <nav className="bottom-nav">
           <button 
             className={`nav-item ${activeTab === 'catalog' ? 'active' : ''}`}
