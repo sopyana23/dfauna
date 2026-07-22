@@ -939,7 +939,7 @@ function App() {
   };
 
   const handleGoogleSSO = () => {
-    const googleClientId = (window as any).GOOGLE_CLIENT_ID || '102938475612-catavor.apps.googleusercontent.com';
+    const googleClientId = (window as any).GOOGLE_CLIENT_ID || '847403664953-ef7k9h5n99mtlnbdpr4a6300dt83efk5.apps.googleusercontent.com';
     
     if ((window as any).google?.accounts?.id) {
       try {
