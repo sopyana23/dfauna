@@ -580,6 +580,9 @@ function App() {
         if (settingsData.success && settingsData.data) {
           const store = settingsData.data;
           const fetchedSettings = {
+            plan: store.plan || 'free',
+            enable_wa_direct: store.enable_wa_direct !== undefined ? store.enable_wa_direct : true,
+            enable_wa_rekber: store.enable_wa_rekber !== undefined ? store.enable_wa_rekber : true,
             whatsapp_number: store.whatsapp_number || '628123456789',
             store_slogan: store.store_slogan || 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             promo_banner: store.promo_banner || '',
@@ -857,7 +860,7 @@ function App() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(registerForm)
+        body: JSON.stringify({ ...registerForm, plan: registerPlan })
       });
 
       const data = await res.json();
