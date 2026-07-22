@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { 
   Search, 
   Plus, 
@@ -556,6 +556,31 @@ function App() {
   const [search, setSearch] = useState<string>('')
   const [classFilter, setClassFilter] = useState<string>('all')
   const [habitatFilter, setHabitatFilter] = useState<string>('all')
+
+  // Dynamically derived filter options & filtered items strictly from store items
+  const availableCategories = useMemo(() => {
+    const cats = faunas.map(f => f.class).filter(Boolean);
+    return Array.from(new Set(cats));
+  }, [faunas]);
+
+  const availableSubTypes = useMemo(() => {
+    const types = faunas.map(f => f.habitat).filter(Boolean);
+    return Array.from(new Set(types));
+  }, [faunas]);
+
+  const filteredFaunas = useMemo(() => {
+    return faunas.filter(item => {
+      const matchesSearch = !search.trim() || 
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        (item.scientific_name && item.scientific_name.toLowerCase().includes(search.toLowerCase())) ||
+        (item.description && item.description.toLowerCase().includes(search.toLowerCase()));
+      
+      const matchesClass = classFilter === 'all' || item.class === classFilter;
+      const matchesHabitat = habitatFilter === 'all' || item.habitat === habitatFilter;
+
+      return matchesSearch && matchesClass && matchesHabitat;
+    });
+  }, [faunas, search, classFilter, habitatFilter]);
 
   // Modals
   const [showCrudModal, setShowCrudModal] = useState<boolean>(false)
@@ -4202,41 +4227,6 @@ function App() {
               </div>
             )}
 
-            {/* Filter Panel */}
-            <section className="glass-panel controls-panel">
-              <div className="search-wrapper">
-                <Search className="search-icon" />
-                <input 
-                  type="text" 
-                  className="search-input" 
-                  placeholder="Cari satwa hias yang dijual..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <div className="filters-wrapper">
-                <select 
-                  className="filter-select"
-                  value={classFilter}
-                  onChange={(e) => setClassFilter(e.target.value)}
-                >
-                  <option value="all">Semua Kelas</option>
-                  <option value="Ikan Hias">Ikan Hias</option>
-                  <option value="Mamalia">Mamalia</option>
-                  <option value="Mamalia Kecil">Mamalia Kecil</option>
-                </select>
-                <select 
-                  className="filter-select"
-                  value={habitatFilter}
-                  onChange={(e) => setHabitatFilter(e.target.value)}
-                >
-                  <option value="all">Semua Habitat</option>
-                  <option value="Air Tawar">Air Tawar</option>
-                  <option value="Darat">Darat</option>
-                </select>
-              </div>
-            </section>
-
             {/* Loading & Error States */}
             {loading && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '1rem' }}>
@@ -4256,19 +4246,117 @@ function App() {
               </div>
             )}
 
-            {/* Animals Grid */}
+            {/* Catalog Main Content */}
             {!loading && !error && (
               <>
                 {faunas.length === 0 ? (
-                  <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    <BookOpen size={48} style={{ marginBottom: '1rem', color: 'var(--text-muted)' }} />
-                    <h3>Tidak ada hewan yang sesuai</h3>
-                    <p style={{ fontSize: '0.9rem' }}>Coba ubah filter pencarian Anda.</p>
+                  /* EXECUTIVE PREMIUM EMPTY STATE (Shown when store has 0 products) */
+                  <div 
+                    className="glass-panel animate-fade-in" 
+                    style={{ 
+                      padding: '4.5rem 2rem', 
+                      textAlign: 'center', 
+                      borderRadius: '1.25rem',
+                      border: '1px solid var(--border-light)',
+                      background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(9, 14, 12, 0.8) 100%)',
+                      boxShadow: '0 12px 36px rgba(0,0,0,0.3)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '1.15rem'
+                    }}
+                  >
+                    <div 
+                      style={{ 
+                        width: '76px', 
+                        height: '76px', 
+                        borderRadius: '50%', 
+                        backgroundColor: 'rgba(16, 185, 129, 0.12)', 
+                        border: '2px solid rgba(16, 185, 129, 0.3)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        color: '#10b981',
+                        boxShadow: '0 0 24px rgba(16, 185, 129, 0.18)'
+                      }}
+                    >
+                      <Layers size={38} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.45rem' }}>
+                        Katalog Masih Kosong
+                      </h3>
+                      <p style={{ fontSize: '0.9rem', color: '#9ca3af', maxWidth: '460px', margin: '0 auto', lineHeight: 1.55 }}>
+                        Pemilik toko <strong>{settings.store_title || 'ini'}</strong> belum mengunggah postingan produk ke dalam katalog ini. Silakan kunjungi kembali nanti!
+                      </p>
+                    </div>
+                    {token && (
+                      <button 
+                        className="btn-primary" 
+                        onClick={() => setView('admin')}
+                        style={{ padding: '0.75rem 1.6rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '0.65rem', marginTop: '0.5rem' }}
+                      >
+                        + Tambah Produk Pertama
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <>
-                    <div className="fauna-grid">
-                      {faunas.slice(0, displayLimit).map((fauna) => (
+                    {/* Filter Panel (Only shown if store has at least 1 product) */}
+                    <section className="glass-panel controls-panel">
+                      <div className="search-wrapper">
+                        <Search className="search-icon" />
+                        <input 
+                          type="text" 
+                          className="search-input" 
+                          placeholder="Cari produk / item katalog..."
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                      </div>
+                      <div className="filters-wrapper">
+                        <select 
+                          className="filter-select"
+                          value={classFilter}
+                          onChange={(e) => setClassFilter(e.target.value)}
+                        >
+                          <option value="all">Semua Kategori</option>
+                          {availableCategories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                        <select 
+                          className="filter-select"
+                          value={habitatFilter}
+                          onChange={(e) => setHabitatFilter(e.target.value)}
+                        >
+                          <option value="all">Semua Tipe / Variasi</option>
+                          {availableSubTypes.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </section>
+
+                    {filteredFaunas.length === 0 ? (
+                      /* SEARCH NO RESULTS EMPTY STATE */
+                      <div className="glass-panel animate-fade-in" style={{ padding: '3.5rem 2rem', textAlign: 'center', color: 'var(--text-secondary)', borderRadius: '1rem' }}>
+                        <Search size={44} style={{ marginBottom: '0.85rem', color: 'var(--text-muted)' }} />
+                        <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.35rem' }}>Produk Tidak Ditemukan</h3>
+                        <p style={{ fontSize: '0.85rem', color: '#9ca3af' }}>Tidak ada item yang sesuai dengan kriteria pencarian atau filter Anda.</p>
+                        <button 
+                          className="btn-secondary" 
+                          onClick={() => { setSearch(''); setClassFilter('all'); setHabitatFilter('all'); }}
+                          style={{ marginTop: '1.25rem', padding: '0.55rem 1.25rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '0.5rem', cursor: 'pointer' }}
+                        >
+                          Reset Filter Pencarian
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="fauna-grid">
+                          {filteredFaunas.slice(0, displayLimit).map((fauna) => (
                         <div 
                           key={fauna.id} 
                           className="glass-panel glass-panel-hover fauna-card"
@@ -4360,6 +4448,8 @@ function App() {
                           </div>
                         ))}
                       </div>
+                        )}
+                      </>
                     )}
                   </>
                 )}

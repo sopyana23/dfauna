@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { 
   Search, 
   Plus, 
@@ -657,6 +657,31 @@ function App() {
   const [classFilter, setClassFilter] = useState<string>('all')
   const [habitatFilter, setHabitatFilter] = useState<string>('all')
   const [commentFilter, setCommentFilter] = useState<'all' | 'pending' | 'approved'>('all')
+
+  // Dynamically derived filter options & filtered items strictly from store items
+  const availableCategories = useMemo(() => {
+    const cats = faunas.map(f => f.class).filter(Boolean);
+    return Array.from(new Set(cats));
+  }, [faunas]);
+
+  const availableSubTypes = useMemo(() => {
+    const types = faunas.map(f => f.habitat).filter(Boolean);
+    return Array.from(new Set(types));
+  }, [faunas]);
+
+  const filteredFaunas = useMemo(() => {
+    return faunas.filter(item => {
+      const matchesSearch = !search.trim() || 
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        (item.scientific_name && item.scientific_name.toLowerCase().includes(search.toLowerCase())) ||
+        (item.description && item.description.toLowerCase().includes(search.toLowerCase()));
+      
+      const matchesClass = classFilter === 'all' || item.class === classFilter;
+      const matchesHabitat = habitatFilter === 'all' || item.habitat === habitatFilter;
+
+      return matchesSearch && matchesClass && matchesHabitat;
+    });
+  }, [faunas, search, classFilter, habitatFilter]);
 
   // Bottom Sheets
   const [showCrudSheet, setShowCrudSheet] = useState<boolean>(false)
@@ -5952,82 +5977,6 @@ function App() {
            ========================================================== */}
         {activeTab === 'catalog' && (
           <>
-            {/* Mobile Search & Filters */}
-            <section className="mobile-search-section">
-              <div className="search-wrapper">
-                <Search className="search-icon" />
-                <input 
-                  type="text" 
-                  className="search-input" 
-                  placeholder="Cari ikan hias / hewan..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <div className="filters-row">
-                <select 
-                  className="filter-select"
-                  value={classFilter}
-                  onChange={(e) => setClassFilter(e.target.value)}
-                >
-                  <option value="all">Semua Kelas</option>
-                  <option value="Ikan Hias">Ikan Hias</option>
-                  <option value="Mamalia">Mamalia</option>
-                  <option value="Mamalia Kecil">Mamalia Kecil</option>
-                </select>
-                <select 
-                  className="filter-select"
-                  value={habitatFilter}
-                  onChange={(e) => setHabitatFilter(e.target.value)}
-                >
-                  <option value="all">Semua Habitat</option>
-                  <option value="Air Tawar">Air Tawar</option>
-                  <option value="Darat">Darat</option>
-                </select>
-              </div>
-            </section>
-
-
-
-            {/* Dynamic Promo Banner */}
-            {settings.promo_banner && settings.promo_banner.trim() !== '' && (
-              <div 
-                className="glass-panel" 
-                style={{ 
-                  padding: '1rem', 
-                  borderRadius: '0.75rem', 
-                  border: '1px dashed var(--primary)', 
-                  backgroundColor: 'rgba(16, 185, 129, 0.05)', 
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.75rem'
-                }}
-              >
-                <div style={{ 
-                  backgroundColor: 'var(--primary)', 
-                  color: '#0b0e0c', 
-                  borderRadius: '50%', 
-                  width: '24px', 
-                  height: '24px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  fontSize: '0.8rem',
-                  fontWeight: 'bold'
-                }}>
-                  %
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>Promo Spesial Hari Ini!</h4>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {settings.promo_banner}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* List Render */}
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
@@ -6047,13 +5996,115 @@ function App() {
 
             {!loading && !error && (
               <>
-                <div className="mobile-list-grid">
-                  {faunas.length === 0 ? (
-                    <div className="glass-panel" style={{ gridColumn: 'span 2', padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                      Belum ada hewan peliharaan terdaftar.
+                {faunas.length === 0 ? (
+                  /* EXECUTIVE PREMIUM EMPTY STATE (Shown when store has 0 products) */
+                  <div 
+                    className="glass-panel animate-fade-in" 
+                    style={{ 
+                      padding: '3rem 1.25rem', 
+                      textAlign: 'center', 
+                      borderRadius: '1rem',
+                      border: '1px solid var(--border-light)',
+                      background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(9, 14, 12, 0.8) 100%)',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.85rem',
+                      margin: '0.5rem 0'
+                    }}
+                  >
+                    <div 
+                      style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '50%', 
+                        backgroundColor: 'rgba(16, 185, 129, 0.12)', 
+                        border: '2px solid rgba(16, 185, 129, 0.3)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        color: '#10b981',
+                        boxShadow: '0 0 18px rgba(16, 185, 129, 0.18)'
+                      }}
+                    >
+                      <Layers size={28} />
                     </div>
-                  ) : (
-                    faunas.slice(0, displayLimit).map((item) => (
+                    <div>
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
+                        Katalog Masih Kosong
+                      </h3>
+                      <p style={{ fontSize: '0.78rem', color: '#9ca3af', maxWidth: '320px', margin: '0 auto', lineHeight: 1.5 }}>
+                        Pemilik toko <strong>{settings.store_title || 'ini'}</strong> belum mengunggah postingan produk ke dalam katalog ini. Silakan kunjungi kembali nanti!
+                      </p>
+                    </div>
+                    {token && (
+                      <button 
+                        className="btn-primary" 
+                        onClick={() => { setView('tabs'); setActiveTab('admin'); setAdminSubTab('items'); }}
+                        style={{ padding: '0.6rem 1.25rem', fontSize: '0.78rem', fontWeight: 700, borderRadius: '0.5rem', marginTop: '0.25rem' }}
+                      >
+                        + Tambah Produk Pertama
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {/* Mobile Search & Filters (Only shown if store has at least 1 product) */}
+                    <section className="mobile-search-section">
+                      <div className="search-wrapper">
+                        <Search className="search-icon" />
+                        <input 
+                          type="text" 
+                          className="search-input" 
+                          placeholder="Cari produk / item katalog..."
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                      </div>
+                      <div className="filters-row">
+                        <select 
+                          className="filter-select"
+                          value={classFilter}
+                          onChange={(e) => setClassFilter(e.target.value)}
+                        >
+                          <option value="all">Semua Kategori</option>
+                          {availableCategories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                        <select 
+                          className="filter-select"
+                          value={habitatFilter}
+                          onChange={(e) => setHabitatFilter(e.target.value)}
+                        >
+                          <option value="all">Semua Tipe / Variasi</option>
+                          {availableSubTypes.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </section>
+
+                    {filteredFaunas.length === 0 ? (
+                      /* SEARCH NO RESULTS EMPTY STATE */
+                      <div className="glass-panel animate-fade-in" style={{ padding: '2.5rem 1rem', textAlign: 'center', color: 'var(--text-secondary)', borderRadius: '0.85rem' }}>
+                        <Search size={36} style={{ marginBottom: '0.65rem', color: 'var(--text-muted)' }} />
+                        <h3 style={{ color: '#fff', fontSize: '1rem', fontWeight: 800, marginBottom: '0.25rem' }}>Produk Tidak Ditemukan</h3>
+                        <p style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Tidak ada item yang sesuai dengan kata kunci "{search}".</p>
+                        <button 
+                          className="btn-secondary" 
+                          onClick={() => { setSearch(''); setClassFilter('all'); setHabitatFilter('all'); }}
+                          style={{ marginTop: '1rem', padding: '0.5rem 1rem', fontSize: '0.75rem', fontWeight: 700, borderRadius: '0.45rem' }}
+                        >
+                          Reset Filter Pencarian
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mobile-list-grid">
+                          {filteredFaunas.slice(0, displayLimit).map((item) => (
                       <div 
                         key={item.id} 
                         className="glass-panel mobile-grid-card"
@@ -6116,43 +6167,43 @@ function App() {
                               {item.scientific_name}
                             </div>
                           </div>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444' }}>
-                            {formatRupiah(item.price)}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Infinite Scroll loading indicator */}
-                {loadingMore && (
-                  <div className="mobile-list-grid" style={{ marginTop: '0.75rem' }}>
-                    {[1, 2].map((i) => (
-                      <div 
-                        key={i} 
-                        className="glass-panel mobile-grid-card"
-                        style={{ display: 'flex', flexDirection: 'column', height: '220px', opacity: 0.7 }}
-                      >
-                        <div style={{ height: '130px', backgroundColor: 'rgba(255,255,255,0.03)', position: 'relative', overflow: 'hidden' }}>
-                          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'shimmer 1.5s infinite' }}></div>
-                        </div>
-                        <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, justifyContent: 'space-between' }}>
-                          <div>
-                            <div style={{ height: '8px', width: '30%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
-                            <div style={{ height: '12px', width: '80%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px', marginTop: '0.5rem' }}></div>
-                            <div style={{ height: '8px', width: '50%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px', marginTop: '0.35rem' }}></div>
-                          </div>
-                          <div style={{ height: '12px', width: '60%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </>
-            )}
-          </>
-        )}
+
+                  {/* Infinite Scroll loading indicator */}
+                  {loadingMore && (
+                    <div className="mobile-list-grid" style={{ marginTop: '0.75rem' }}>
+                      {[1, 2].map((i) => (
+                        <div 
+                          key={i} 
+                          className="glass-panel mobile-grid-card"
+                          style={{ display: 'flex', flexDirection: 'column', height: '220px', opacity: 0.7 }}
+                        >
+                          <div style={{ height: '130px', backgroundColor: 'rgba(255,255,255,0.03)', position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'shimmer 1.5s infinite' }}></div>
+                          </div>
+                          <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, justifyContent: 'space-between' }}>
+                            <div>
+                              <div style={{ height: '8px', width: '30%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
+                              <div style={{ height: '12px', width: '80%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px', marginTop: '0.5rem' }}></div>
+                              <div style={{ height: '8px', width: '50%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px', marginTop: '0.35rem' }}></div>
+                            </div>
+                            <div style={{ height: '12px', width: '60%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '2px' }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </>
+      )}
+    </>
+  )}
 
         {/* ==========================================================
            TAB 2: TENTANG KAMI
