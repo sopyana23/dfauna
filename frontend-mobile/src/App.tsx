@@ -64,7 +64,8 @@ import {
   QrCode,
   Copy,
   Download,
-  Send
+  Send,
+  Bell
 } from 'lucide-react'
 import './App.css'
 
@@ -457,6 +458,11 @@ function App() {
   const [paymentProofNote, setPaymentProofNote] = useState<string>('');
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState<boolean>(false);
   const [copiedAccountToast, setCopiedAccountToast] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<any[]>([
+    { id: 1, title: 'Status Verifikasi Plan Pro', message: 'Bukti pembayaran Anda sedang diproses oleh Tim Admin. Akses Plan Free aktif sementara (Est. 1x24 jam).', time: 'Baru saja', read: false, type: 'info' },
+    { id: 2, title: 'Selamat Datang di Catavor!', message: 'Katalog interaktif Anda berhasil dibuat. Tambahkan produk pertama Anda.', time: '10 menit lalu', read: false, type: 'success' }
+  ]);
+  const [showNotificationModal, setShowNotificationModal] = useState<boolean>(false);
   const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
 
@@ -668,7 +674,7 @@ function App() {
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('catavor_token'))
-  const [adminUser, setAdminUser] = useState<{name: string, email: string} | null>(
+  const [adminUser, setAdminUser] = useState<{name: string, email: string, payment_status?: string, store_slug?: string, store_title?: string, store_plan?: string} | null>(
     localStorage.getItem('catavor_user') ? JSON.parse(localStorage.getItem('catavor_user')!) : null
   )
   const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(
@@ -1502,6 +1508,12 @@ function App() {
   
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (registerPlan === 'pro') {
+      // Defer API registration & token storage until checkout submission!
+      setPortalTab('checkout');
+      return;
+    }
+
     setRegisterLoading(true);
     setRegisterError(null);
 
@@ -1512,7 +1524,7 @@ function App() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ ...registerForm, plan: registerPlan })
+        body: JSON.stringify({ ...registerForm, plan: 'free', payment_status: 'none' })
       });
 
       const data = await res.json();
@@ -1525,13 +1537,8 @@ function App() {
         setAdminUser(data.user);
         setIsPasswordChanged(true);
         setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
-        
-        if (registerPlan === 'pro') {
-          setPortalTab('checkout');
-        } else {
-          setStoreSlug(data.user.store_slug);
-          setActiveTab('admin');
-        }
+        setStoreSlug(data.user.store_slug);
+        setActiveTab('admin');
       } else {
         if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[];
@@ -1546,6 +1553,74 @@ function App() {
     } finally {
       setRegisterLoading(false);
     }
+  };
+
+  const processCheckoutSubmission = async (isFreeCoupon: boolean) => {
+    setRegisterLoading(true);
+    setRegisterError(null);
+    try {
+      const payload = {
+        ...registerForm,
+        plan: 'pro',
+        payment_status: isFreeCoupon ? 'approved' : 'pending_approval',
+        payment_proof_url: isFreeCoupon ? null : paymentProofPreview
+      };
+
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('catavor_token', data.token);
+        localStorage.setItem('catavor_user', JSON.stringify(data.user));
+        localStorage.setItem('catavor_password_changed', 'true');
+
+        setToken(data.token);
+        setAdminUser(data.user);
+        setIsPasswordChanged(true);
+        setShowPaymentSuccessModal(true);
+
+        setNotifications(prev => [
+          {
+            id: Date.now(),
+            title: isFreeCoupon ? 'Plan Pro Aktif (Kupon 100% Gratis)' : 'Status Verifikasi Plan Pro',
+            message: isFreeCoupon 
+              ? 'Selamat! Paket Pro Catavor Anda telah diaktifkan secara gratis.' 
+              : 'Bukti pembayaran sebesar Rp 30.000 telah diterima dan sedang diverifikasi oleh Tim Admin. Fitur Plan Free aktif sementara (Est. 1x24 jam).',
+            time: 'Baru saja',
+            read: false,
+            type: isFreeCoupon ? 'success' : 'info'
+          },
+          ...prev
+        ]);
+      } else {
+        if (data.errors) {
+          const firstErr = Object.values(data.errors)[0] as string[];
+          alert(firstErr[0] || 'Gagal memproses pendaftaran.');
+        } else {
+          alert(data.message || 'Pendaftaran gagal.');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Koneksi terputus. Pastikan server backend Laravel aktif.');
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
+  const handleCancelCheckout = () => {
+    setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
+    setRegisterStep(1);
+    setAppliedCoupon(null);
+    setPaymentProofPreview(null);
+    setPortalTab('home');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -3514,7 +3589,7 @@ function App() {
                             border: 'none',
                             cursor: 'pointer'
                           }}
-                          onClick={() => setShowPaymentSuccessModal(true)}
+                          onClick={() => processCheckoutSubmission(true)}
                         >
                           <Sparkles size={16} />
                           <span>Aktifkan Paket Pro Gratis Sekarang</span>
@@ -3660,7 +3735,7 @@ function App() {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  setShowPaymentSuccessModal(true);
+                  processCheckoutSubmission(false);
                 }}
                 style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
               >
@@ -3693,14 +3768,14 @@ function App() {
                     />
                     {paymentProofPreview ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                        <img src={paymentProofPreview} alt="Bukti Transfer" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #10b981' }} />
-                        <span style={{ fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>Foto Bukti Siap Diunggah</span>
+                        <img src={paymentProofPreview} alt="Bukti Transfer" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '5px', border: '1px solid #10b981' }} />
+                        <span style={{ fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>Foto Bukti Siap (Klik ganti)</span>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                         <Upload size={18} style={{ color: '#10b981' }} />
-                        <span style={{ fontSize: '0.72rem', color: '#d1d5db', fontWeight: 600 }}>Klik / Upload Foto Bukti Pembayaran</span>
-                        <span style={{ fontSize: '0.62rem', color: '#6b7280' }}>JPG, PNG, WEBP (Maks 5MB)</span>
+                        <span style={{ fontSize: '0.7rem', color: '#d1d5db', fontWeight: 600 }}>Upload Foto Bukti Transfer</span>
+                        <span style={{ fontSize: '0.6rem', color: '#6b7280' }}>JPG, PNG, WEBP (Maks 5MB)</span>
                       </div>
                     )}
                   </div>
@@ -3735,9 +3810,10 @@ function App() {
                     border: 'none',
                     cursor: 'pointer'
                   }}
+                  disabled={registerLoading}
                 >
                   <Send size={15} />
-                  <span>Kirim Bukti Pembayaran</span>
+                  <span>{registerLoading ? 'Memproses...' : 'Kirim Bukti Pembayaran'}</span>
                 </button>
 
                 <button 
@@ -3757,7 +3833,7 @@ function App() {
                     color: '#d1d5db',
                     cursor: 'pointer'
                   }}
-                  onClick={() => setPortalTab('home')}
+                  onClick={handleCancelCheckout}
                 >
                   <Home size={15} />
                   <span>Kembali ke Halaman Utama</span>
@@ -5622,6 +5698,33 @@ function App() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  {token && (
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNotificationModal(true)}
+                      style={{ 
+                        position: 'relative', 
+                        background: 'rgba(255,255,255,0.06)', 
+                        border: '1px solid rgba(255,255,255,0.12)', 
+                        borderRadius: '9999px', 
+                        padding: '0.35rem 0.5rem', 
+                        cursor: 'pointer', 
+                        color: '#fff', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.25rem',
+                        fontSize: '0.7rem',
+                        fontWeight: 700
+                      }}
+                    >
+                      <Bell size={15} style={{ color: notifications.some(n => !n.read) ? '#f59e0b' : '#9ca3af' }} />
+                      {notifications.filter(n => !n.read).length > 0 && (
+                        <span style={{ backgroundColor: '#ef4444', color: '#fff', fontSize: '0.58rem', fontWeight: 900, borderRadius: '9999px', padding: '0.05rem 0.35rem' }}>
+                          {notifications.filter(n => !n.read).length}
+                        </span>
+                      )}
+                    </button>
+                  )}
                   {!token && (
                     <button
                       type="button"
@@ -5661,6 +5764,90 @@ function App() {
 
       {/* Tabs Content */}
       <main className="container" style={{ marginTop: '0.5rem' }}>
+        {/* Pending Pro Payment Verification Banner Mobile */}
+        {adminUser?.payment_status === 'pending_approval' && (
+          <div style={{ padding: '0.85rem 1rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '0.75rem', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Clock size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+              <strong style={{ color: '#ffffff', fontSize: '0.82rem' }}>🕒 Pembayaran Plan Pro Dalam Verifikasi (1x24 Jam)</strong>
+            </div>
+            <p style={{ margin: 0, color: '#9ca3af', lineHeight: 1.35 }}>
+              Bukti pembayaran telah kami terima. Akun Anda dapat digunakan dengan fitur Plan Free sementara sampai disetujui Tim Admin.
+            </p>
+          </div>
+        )}
+
+        {/* Modal Pusat Notifikasi Dashboard Mobile */}
+        {showNotificationModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '400px', borderRadius: '1rem', border: '1px solid rgba(255, 255, 255, 0.15)', background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(9, 14, 12, 0.99) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.8)', overflow: 'hidden' }}>
+              <div style={{ padding: '1rem 1.15rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Bell size={18} style={{ color: '#f59e0b' }} />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>Notifikasi Catavor</h3>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => setShowNotificationModal(false)}
+                  style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.15rem', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ padding: '1rem', maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {notifications.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: '#9ca3af', padding: '1.5rem 0', fontSize: '0.78rem' }}>
+                    Belum ada notifikasi baru untuk Anda.
+                  </div>
+                ) : (
+                  notifications.map(n => (
+                    <div 
+                      key={n.id} 
+                      style={{ 
+                        padding: '0.75rem', 
+                        borderRadius: '0.65rem', 
+                        backgroundColor: n.read ? 'rgba(255,255,255,0.03)' : 'rgba(16, 185, 129, 0.08)', 
+                        border: n.read ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(16, 185, 129, 0.25)', 
+                        display: 'flex', 
+                        gap: '0.65rem', 
+                        alignItems: 'flex-start' 
+                      }}
+                    >
+                      <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: n.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {n.type === 'success' ? <CheckCircle size={15} style={{ color: '#10b981' }} /> : <Clock size={15} style={{ color: '#f59e0b' }} />}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.15rem' }}>
+                          <strong style={{ fontSize: '0.78rem', color: '#ffffff' }}>{n.title}</strong>
+                          <span style={{ fontSize: '0.62rem', color: '#6b7280' }}>{n.time}</span>
+                        </div>
+                        <p style={{ fontSize: '0.72rem', color: '#9ca3af', margin: 0, lineHeight: 1.35 }}>{n.message}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', backgroundColor: 'rgba(0, 0, 0, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                  style={{ background: 'none', border: 'none', color: '#10b981', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Tandai Dibaca
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowNotificationModal(false)}
+                  style={{ padding: '0.35rem 0.85rem', borderRadius: '0.4rem', backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* ==========================================================
            TAB 1: CATALOG

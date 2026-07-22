@@ -48,16 +48,23 @@ class AuthController extends Controller
             'is_password_changed' => true
         ]);
 
-        $plan = $request->input('plan', 'free');
-        if (!in_array($plan, ['free', 'pro'])) {
-            $plan = 'free';
+        $requestedPlan = $request->input('plan', 'free');
+        $paymentStatus = $request->input('payment_status', 'none');
+        $paymentProofUrl = $request->input('payment_proof_url');
+
+        // If user submitted payment proof for Pro plan, set initial active plan to 'free' until approved by admin
+        $activePlan = ($requestedPlan === 'pro' && $paymentStatus === 'pending_approval') ? 'free' : $requestedPlan;
+        if (!in_array($activePlan, ['free', 'pro'])) {
+            $activePlan = 'free';
         }
 
         // Create Store with default configuration parameters
         $store = Store::create([
             'user_id' => $user->id,
             'slug' => Str::slug($request->store_slug),
-            'plan' => $plan,
+            'plan' => $activePlan,
+            'payment_status' => $paymentStatus,
+            'payment_proof_url' => $paymentProofUrl,
             'store_title' => $request->store_name,
             'store_slogan' => 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis.',
             'whatsapp_number' => '628123456789',
@@ -96,7 +103,8 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'store_slug' => $store->slug,
                 'store_title' => $store->store_title,
-                'store_plan' => $store->plan
+                'store_plan' => $store->plan,
+                'payment_status' => $store->payment_status
             ]
         ]);
     }

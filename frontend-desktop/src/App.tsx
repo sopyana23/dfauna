@@ -64,7 +64,8 @@ import {
   QrCode,
   Copy,
   Download,
-  Send
+  Send,
+  Bell
 } from 'lucide-react'
 import './App.css'
 
@@ -365,6 +366,11 @@ function App() {
   const [paymentProofNote, setPaymentProofNote] = useState<string>('');
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState<boolean>(false);
   const [copiedAccountToast, setCopiedAccountToast] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<any[]>([
+    { id: 1, title: 'Status Verifikasi Plan Pro', message: 'Bukti pembayaran Anda sedang diproses oleh Tim Admin. Akses Plan Free aktif sementara (Est. 1x24 jam).', time: 'Baru saja', read: false, type: 'info' },
+    { id: 2, title: 'Selamat Datang di Catavor!', message: 'Katalog interaktif Anda berhasil dibuat. Tambahkan produk pertama Anda.', time: '10 menit lalu', read: false, type: 'success' }
+  ]);
+  const [showNotificationModal, setShowNotificationModal] = useState<boolean>(false);
   const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
 
@@ -561,7 +567,7 @@ function App() {
 
   // Authentication State
   const [token, setToken] = useState<string | null>(localStorage.getItem('catavor_token'))
-  const [adminUser, setAdminUser] = useState<{name: string, email: string} | null>(
+  const [adminUser, setAdminUser] = useState<{name: string, email: string, payment_status?: string, store_slug?: string, store_title?: string, store_plan?: string} | null>(
     localStorage.getItem('catavor_user') ? JSON.parse(localStorage.getItem('catavor_user')!) : null
   )
   const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(
@@ -1227,10 +1233,14 @@ function App() {
     }, 400);
   };
 
-  // Handle Login Submit
-  
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (registerPlan === 'pro') {
+      // Defer API registration & token storage until checkout submission!
+      setPortalTab('checkout');
+      return;
+    }
+
     setRegisterLoading(true);
     setRegisterError(null);
 
@@ -1241,7 +1251,7 @@ function App() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ ...registerForm, plan: registerPlan })
+        body: JSON.stringify({ ...registerForm, plan: 'free', payment_status: 'none' })
       });
 
       const data = await res.json();
@@ -1254,13 +1264,8 @@ function App() {
         setAdminUser(data.user);
         setIsPasswordChanged(true);
         setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
-        
-        if (registerPlan === 'pro') {
-          setPortalTab('checkout');
-        } else {
-          setStoreSlug(data.user.store_slug);
-          setView('admin');
-        }
+        setStoreSlug(data.user.store_slug);
+        setView('admin');
       } else {
         if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[];
@@ -1271,10 +1276,78 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      setRegisterError('Koneksi terputus. Pastikan server backend Laravel berjalan.');
+      setRegisterError('Koneksi terputus. Pastikan server backend Laravel aktif.');
     } finally {
       setRegisterLoading(false);
     }
+  };
+
+  const processCheckoutSubmission = async (isFreeCoupon: boolean) => {
+    setRegisterLoading(true);
+    setRegisterError(null);
+    try {
+      const payload = {
+        ...registerForm,
+        plan: 'pro',
+        payment_status: isFreeCoupon ? 'approved' : 'pending_approval',
+        payment_proof_url: isFreeCoupon ? null : paymentProofPreview
+      };
+
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('catavor_token', data.token);
+        localStorage.setItem('catavor_user', JSON.stringify(data.user));
+        localStorage.setItem('catavor_password_changed', 'true');
+
+        setToken(data.token);
+        setAdminUser(data.user);
+        setIsPasswordChanged(true);
+        setShowPaymentSuccessModal(true);
+
+        setNotifications(prev => [
+          {
+            id: Date.now(),
+            title: isFreeCoupon ? 'Plan Pro Aktif (Kupon 100% Gratis)' : 'Status Verifikasi Plan Pro',
+            message: isFreeCoupon 
+              ? 'Selamat! Paket Pro Catavor Anda telah diaktifkan secara gratis.' 
+              : 'Bukti pembayaran sebesar Rp 30.000 telah diterima dan sedang diverifikasi oleh Tim Admin. Fitur Plan Free aktif sementara (Est. 1x24 jam).',
+            time: 'Baru saja',
+            read: false,
+            type: isFreeCoupon ? 'success' : 'info'
+          },
+          ...prev
+        ]);
+      } else {
+        if (data.errors) {
+          const firstErr = Object.values(data.errors)[0] as string[];
+          alert(firstErr[0] || 'Gagal memproses pendaftaran.');
+        } else {
+          alert(data.message || 'Pendaftaran gagal.');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Koneksi terputus. Pastikan server backend Laravel aktif.');
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
+  const handleCancelCheckout = () => {
+    setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
+    setRegisterStep(1);
+    setAppliedCoupon(null);
+    setPaymentProofPreview(null);
+    setPortalTab('home');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -3227,7 +3300,7 @@ function App() {
                               border: 'none',
                               cursor: 'pointer'
                             }}
-                            onClick={() => setShowPaymentSuccessModal(true)}
+                            onClick={() => processCheckoutSubmission(true)}
                           >
                             <Sparkles size={18} />
                             <span>Aktifkan Paket Pro Gratis Sekarang</span>
@@ -3376,7 +3449,7 @@ function App() {
                         <form 
                           onSubmit={(e) => {
                             e.preventDefault();
-                            setShowPaymentSuccessModal(true);
+                            processCheckoutSubmission(false);
                           }}
                           style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: '0.25rem' }}
                         >
@@ -3451,9 +3524,10 @@ function App() {
                               border: 'none',
                               cursor: 'pointer'
                             }}
+                            disabled={registerLoading}
                           >
                             <Send size={16} />
-                            <span>Kirim Bukti Pembayaran</span>
+                            <span>{registerLoading ? 'Memproses Pendaftaran...' : 'Kirim Bukti Pembayaran'}</span>
                           </button>
                           
                           <button 
@@ -3473,7 +3547,7 @@ function App() {
                               color: '#d1d5db',
                               cursor: 'pointer'
                             }}
-                            onClick={() => setPortalTab('home')}
+                            onClick={handleCancelCheckout}
                           >
                             <Home size={15} />
                             <span>Kembali ke Halaman Utama</span>
@@ -4353,7 +4427,36 @@ function App() {
                     Selamat datang, <strong>{adminUser?.name}</strong> ({adminUser?.email}). Kelola toko dan postingan Anda.
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  {/* Notification Bell Button */}
+                  <button 
+                    type="button" 
+                    onClick={() => setShowNotificationModal(true)}
+                    style={{ 
+                      position: 'relative', 
+                      background: 'rgba(255,255,255,0.06)', 
+                      border: '1px solid rgba(255,255,255,0.12)', 
+                      borderRadius: '0.6rem', 
+                      padding: '0.65rem 0.85rem', 
+                      cursor: 'pointer', 
+                      color: '#fff', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.4rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Bell size={18} style={{ color: notifications.some(n => !n.read) ? '#f59e0b' : '#9ca3af' }} />
+                    <span>Notifikasi</span>
+                    {notifications.filter(n => !n.read).length > 0 && (
+                      <span style={{ backgroundColor: '#ef4444', color: '#fff', fontSize: '0.62rem', fontWeight: 900, borderRadius: '9999px', padding: '0.1rem 0.45rem', border: '1.5px solid #0f172a' }}>
+                        {notifications.filter(n => !n.read).length}
+                      </span>
+                    )}
+                  </button>
+
                   {adminTab === 'items' && (
                     <button className="btn-primary" onClick={openCreateModal}>
                       <Plus size={18} />
@@ -4366,6 +4469,94 @@ function App() {
                   </button>
                 </div>
               </div>
+
+              {/* Pending Pro Payment Verification Banner */}
+              {adminUser?.payment_status === 'pending_approval' && (
+                <div style={{ padding: '1rem 1.25rem', borderRadius: '0.85rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(245, 158, 11, 0.15)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Clock size={24} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                    <div>
+                      <strong style={{ color: '#ffffff', display: 'block', fontSize: '0.9rem', marginBottom: '0.15rem' }}>🕒 Pembayaran Plan Pro Dalam Verifikasi (Est. 1x24 Jam)</strong>
+                      <span>Bukti transaksi pembayaran Paket Pro Anda telah diterima. Akun Anda dapat digunakan dengan fitur Plan Free sementara sampai diverifikasi oleh Tim Admin.</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.3rem 0.75rem', borderRadius: '9999px', background: 'rgba(245, 158, 11, 0.25)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.5)', whiteSpace: 'nowrap' }}>
+                    PENDING VERIFIKASI
+                  </span>
+                </div>
+              )}
+
+              {/* Modal Pusat Notifikasi Dashboard */}
+              {showNotificationModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                  <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '540px', borderRadius: '1.25rem', border: '1px solid rgba(255, 255, 255, 0.15)', background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(9, 14, 12, 0.99) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)', overflow: 'hidden' }}>
+                    <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <Bell size={20} style={{ color: '#f59e0b' }} />
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>Pusat Notifikasi System &amp; Admin</h3>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setShowNotificationModal(false)}
+                        style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.25rem', cursor: 'pointer', fontWeight: 700 }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div style={{ padding: '1.25rem 1.5rem', maxHeight: '420px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                      {notifications.length === 0 ? (
+                        <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem 0', fontSize: '0.85rem' }}>
+                          Belum ada notifikasi baru untuk Anda.
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id} 
+                            style={{ 
+                              padding: '1rem', 
+                              borderRadius: '0.75rem', 
+                              backgroundColor: n.read ? 'rgba(255,255,255,0.03)' : 'rgba(16, 185, 129, 0.08)', 
+                              border: n.read ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(16, 185, 129, 0.25)', 
+                              display: 'flex', 
+                              gap: '0.85rem', 
+                              alignItems: 'flex-start' 
+                            }}
+                          >
+                            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: n.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {n.type === 'success' ? <CheckCircle size={18} style={{ color: '#10b981' }} /> : <Clock size={18} style={{ color: '#f59e0b' }} />}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                                <strong style={{ fontSize: '0.88rem', color: '#ffffff' }}>{n.title}</strong>
+                                <span style={{ fontSize: '0.68rem', color: '#6b7280' }}>{n.time}</span>
+                              </div>
+                              <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: 0, lineHeight: 1.4 }}>{n.message}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', backgroundColor: 'rgba(0, 0, 0, 0.3)', display: 'flex', justifyContent: 'space-between' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                        style={{ background: 'none', border: 'none', color: '#10b981', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        Tandai Semua Sudah Dibaca
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setShowNotificationModal(false)}
+                        style={{ padding: '0.45rem 1rem', borderRadius: '0.5rem', backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        Tutup
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Tab Selector */}
               <div className="admin-tabs">

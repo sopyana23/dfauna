@@ -10,6 +10,8 @@ class Store extends Model
         'user_id',
         'slug',
         'plan',
+        'payment_status',
+        'payment_proof_url',
         'store_title',
         'store_slogan',
         'store_logo_url',
