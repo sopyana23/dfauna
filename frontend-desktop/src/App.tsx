@@ -2109,47 +2109,27 @@ function App() {
       <div className="portal-container ambient-glow-bg" style={{ minHeight: '100vh', color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}>
         {/* Header (Hidden during registration for clean focus) */}
         {portalTab !== 'register' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2.5rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'var(--header-bg)', position: 'sticky', top: 0, zIndex: 100 }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'var(--header-bg)', position: 'sticky', top: 0, zIndex: 100 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
               <div style={{ 
-                width: '42px', 
-                height: '42px', 
-                borderRadius: '12px', 
+                width: '38px', 
+                height: '38px', 
+                borderRadius: '10px', 
                 background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
                 border: '1px solid var(--border-light)', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                boxShadow: '0 4px 14px var(--primary-glow)',
+                boxShadow: '0 4px 12px var(--primary-glow)',
                 padding: '5px'
               }}>
                 <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                Catavor <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.55rem', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--primary)', borderRadius: '20px', border: '1px solid var(--border-light)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LINK / PRO</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em' }}>
+                Catavor
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-              {/* Theme Switcher Button (Temporarily hidden as requested)
-              <button 
-                type="button"
-                className="theme-toggle-btn" 
-                onClick={toggleTheme} 
-                title="Ganti Tema Visual Aplikasi (Dark / Warm Cream)"
-              >
-                {themeMode === 'dark' ? (
-                  <>
-                    <Sun size={15} style={{ color: '#f59e0b' }} />
-                    <span>Mode Cream</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon size={15} style={{ color: '#0F5132' }} />
-                    <span>Mode Dark</span>
-                  </>
-                )}
-              </button>
-              */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               {token ? (
                 <button className="btn-primary" style={{ padding: '0.6rem 1.4rem', fontSize: '0.85rem' }} onClick={() => {
                   const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
@@ -2163,8 +2143,35 @@ function App() {
                 </button>
               ) : (
                 <>
-                  <button className="btn-secondary" onClick={() => setPortalTab('login')} style={{ padding: '0.55rem 1.35rem', fontSize: '0.85rem' }}>Masuk</button>
-                  <button className="btn-primary" onClick={() => { setRegisterStep(1); setPortalTab('register'); }} style={{ padding: '0.55rem 1.35rem', fontSize: '0.85rem' }}>Buat Link Katalog</button>
+                  <button 
+                    type="button"
+                    onClick={() => setPortalTab('login')} 
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      color: 'var(--text-secondary)', 
+                      fontSize: '0.85rem', 
+                      fontWeight: 600, 
+                      padding: '0.45rem 0.85rem', 
+                      cursor: 'pointer',
+                      transition: 'color 0.2s ease'
+                    }}
+                  >
+                    Masuk
+                  </button>
+                  <button 
+                    type="button"
+                    className="btn-primary" 
+                    onClick={() => { setRegisterStep(1); setPortalTab('register'); }} 
+                    style={{ 
+                      padding: '0.55rem 1.25rem', 
+                      fontSize: '0.85rem',
+                      fontWeight: 800,
+                      borderRadius: '0.6rem'
+                    }}
+                  >
+                    Buat Link Katalog
+                  </button>
                 </>
               )}
             </div>
