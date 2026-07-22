@@ -1266,6 +1266,26 @@ function App() {
         setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '' });
         setStoreSlug(data.user.store_slug);
         setView('admin');
+
+        // Dynamic Notifications for FREE Plan Registration
+        setNotifications([
+          {
+            id: Date.now() + 1,
+            title: '🎉 Selamat Datang di Catavor!',
+            message: 'Akun usaha Anda berhasil dibuat! Mulai tambahkan postingan produk pertama Anda ke dalam katalog.',
+            time: 'Baru saja',
+            read: false,
+            type: 'success'
+          },
+          {
+            id: Date.now() + 2,
+            title: 'ℹ️ Informasi Paket: Plan Free',
+            message: 'Akun Anda saat ini menggunakan Plan Free (maksimal 10 postingan produk). Anda dapat melakukan upgrade ke Plan Pro kapan saja.',
+            time: 'Baru saja',
+            read: false,
+            type: 'info'
+          }
+        ]);
       } else {
         if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[];
@@ -1313,19 +1333,85 @@ function App() {
         setIsPasswordChanged(true);
         setShowPaymentSuccessModal(true);
 
-        setNotifications(prev => [
+        const newNotifs: any[] = [
           {
-            id: Date.now(),
-            title: isFreeCoupon ? 'Plan Pro Aktif (Kupon 100% Gratis)' : 'Status Verifikasi Plan Pro',
+            id: Date.now() + 1,
+            title: '🎉 Selamat Datang di Catavor!',
             message: isFreeCoupon 
-              ? 'Selamat! Paket Pro Catavor Anda telah diaktifkan secara gratis.' 
-              : 'Bukti pembayaran sebesar Rp 30.000 telah diterima dan sedang diverifikasi oleh Tim Admin. Fitur Plan Free aktif sementara (Est. 1x24 jam).',
+              ? 'Akun usaha Anda berhasil dibuat! Selamat menikmati seluruh fitur premium platform Catavor.'
+              : 'Akun usaha Anda berhasil dibuat! Selamat datang di platform katalog digital Catavor.',
             time: 'Baru saja',
             read: false,
-            type: isFreeCoupon ? 'success' : 'info'
-          },
-          ...prev
-        ]);
+            type: 'success'
+          }
+        ];
+
+        if (appliedCoupon) {
+          if (appliedCoupon.type === 'free') {
+            newNotifs.push({
+              id: Date.now() + 2,
+              title: `🏷️ Kupon Gratis Diterapkan: ${appliedCoupon.code}`,
+              message: `Kupon "${appliedCoupon.code}" (${appliedCoupon.label}) berhasil membebaskan seluruh biaya pendaftaran 100%.`,
+              time: 'Baru saja',
+              read: false,
+              type: 'success'
+            });
+            newNotifs.push({
+              id: Date.now() + 3,
+              title: '⚡ Aktivasi Paket Pro Berhasil (100% Gratis)',
+              message: 'Selamat! Paket Pro Anda langsung aktif tanpa perlu menunggu verifikasi admin. Nikmati postingan produk unlimited dan fitur toko eksklusif.',
+              time: 'Baru saja',
+              read: false,
+              type: 'success'
+            });
+          } else {
+            const finalPrice = Math.max(0, 30000 - appliedCoupon.discount);
+            newNotifs.push({
+              id: Date.now() + 2,
+              title: `🏷️ Kupon Diskon Diterapkan: ${appliedCoupon.code}`,
+              message: `Kupon "${appliedCoupon.code}" memberikan potongan harga Rp ${appliedCoupon.discount.toLocaleString('id-ID')}. Total tagihan Anda menjadi Rp ${finalPrice.toLocaleString('id-ID')}.`,
+              time: 'Baru saja',
+              read: false,
+              type: 'success'
+            });
+            newNotifs.push({
+              id: Date.now() + 3,
+              title: '⏳ Status Pembayaran: Dalam Verifikasi (Est. 1x24 Jam)',
+              message: `Bukti pembayaran sebesar Rp ${finalPrice.toLocaleString('id-ID')} telah kami terima dan sedang diverifikasi oleh Tim Admin.`,
+              time: 'Baru saja',
+              read: false,
+              type: 'warning'
+            });
+            newNotifs.push({
+              id: Date.now() + 4,
+              title: 'ℹ️ Informasi Akses Sementara (Plan Free)',
+              message: 'Selama proses verifikasi berlangsung, fitur Plan Free aktif sementara sehingga Anda tetap dapat mengelola katalog usaha Anda.',
+              time: 'Baru saja',
+              read: false,
+              type: 'info'
+            });
+          }
+        } else {
+          // Bayar biasa tanpa kupon
+          newNotifs.push({
+            id: Date.now() + 2,
+            title: '⏳ Status Pembayaran: Dalam Verifikasi (Est. 1x24 Jam)',
+            message: 'Bukti pembayaran sebesar Rp 30.000 telah kami terima. Tim Admin akan melakukan verifikasi transaksi dalam maksimal 1x24 jam.',
+            time: 'Baru saja',
+            read: false,
+            type: 'warning'
+          });
+          newNotifs.push({
+            id: Date.now() + 3,
+            title: 'ℹ️ Informasi Akses Sementara (Plan Free)',
+            message: 'Selama proses verifikasi berlangsung, fitur Plan Free aktif sementara sehingga Anda tetap dapat mengelola katalog usaha Anda.',
+            time: 'Baru saja',
+            read: false,
+            type: 'info'
+          });
+        }
+
+        setNotifications(newNotifs);
       } else {
         if (data.errors) {
           const firstErr = Object.values(data.errors)[0] as string[];
