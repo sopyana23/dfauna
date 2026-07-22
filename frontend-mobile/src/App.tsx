@@ -421,14 +421,12 @@ function App() {
   const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
 
-  // Theme Mode (Dark Mode vs Warm Cream Mode)
-  const [themeMode, setThemeMode] = useState<'dark' | 'cream'>(() => {
-    return (localStorage.getItem('catavor_theme') as 'dark' | 'cream') || 'dark';
-  });
+  // Theme Mode (Temporarily defaulted to 'dark')
+  const [themeMode, setThemeMode] = useState<'dark' | 'cream'>('dark');
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', themeMode);
-    localStorage.setItem('catavor_theme', themeMode);
+    document.body.setAttribute('data-theme', 'dark');
+    localStorage.setItem('catavor_theme', 'dark');
   }, [themeMode]);
 
   const toggleTheme = () => {
@@ -2385,6 +2383,7 @@ function App() {
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {/* Theme Switcher Button (Temporarily hidden as requested)
               <button 
                 type="button"
                 className="theme-toggle-btn" 
@@ -2397,6 +2396,7 @@ function App() {
                   <Moon size={14} style={{ color: '#0F5132' }} />
                 )}
               </button>
+              */}
               {token ? (
                 <button className="btn-primary btn-small" onClick={() => {
                   const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
