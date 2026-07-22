@@ -352,7 +352,7 @@ function App() {
       const savedForm = sessionStorage.getItem('catavor_register_form');
       return {
         tab: (savedTab as 'home' | 'login' | 'register') || 'home',
-        step: (savedStep ? parseInt(savedStep, 10) : 1) as 1 | 2,
+        step: (savedStep ? parseInt(savedStep, 10) : 1) as 1 | 2 | 3,
         plan: (savedPlan as 'free' | 'pro') || 'free',
         form: savedForm ? JSON.parse(savedForm) : { name: '', email: '', password: '', store_name: '', store_slug: '' }
       };
@@ -370,7 +370,7 @@ function App() {
 
   const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register'>(initialRegState.tab);
   const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>(initialRegState.plan);
-  const [registerStep, setRegisterStep] = useState<1 | 2>(initialRegState.step);
+  const [registerStep, setRegisterStep] = useState<1 | 2 | 3>(initialRegState.step);
   const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
   
@@ -1164,9 +1164,9 @@ function App() {
             store_name: prev.store_name || (data.google_data.name + ' Store'),
             store_slug: prev.store_slug || suggestedSlug
           }));
-          setRegisterStep(1);
+          setRegisterStep(2);
           setPortalTab('register');
-          showToast('Otentikasi Google berhasil! Silakan tentukan Nama Toko & Username Anda.', 'success');
+          showToast('Otentikasi Google berhasil! Silakan isi Nama Toko & Link Username Anda.', 'success');
         }
       } else {
         showToast(data.message || 'Gagal otentikasi Google SSO.', 'error');
@@ -2376,20 +2376,24 @@ function App() {
                 </p>
               </div>
 
-              {/* Stepper Progress Indicator Mobile */}
+              {/* 3-Step Progress Indicator Mobile */}
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', padding: '0 0.2rem' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: registerStep === 1 ? '#10b981' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: registerStep === 1 ? '#10b981' : 'rgba(255,255,255,0.1)', color: registerStep === 1 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 900 }}>1</span>
-                    Data Toko
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', padding: '0 0.1rem' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: registerStep === 1 ? '#10b981' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <span style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: registerStep === 1 ? '#10b981' : 'rgba(255,255,255,0.1)', color: registerStep === 1 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 900 }}>1</span>
+                    1. Otentikasi
                   </span>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: registerStep === 2 ? '#f59e0b' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: registerStep === 2 ? '#f59e0b' : 'rgba(255,255,255,0.1)', color: registerStep === 2 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 900 }}>2</span>
-                    Pilih Paket
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: registerStep === 2 ? '#10b981' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <span style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: registerStep === 2 ? '#10b981' : 'rgba(255,255,255,0.1)', color: registerStep === 2 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 900 }}>2</span>
+                    2. Data Toko
+                  </span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: registerStep === 3 ? '#f59e0b' : '#9ca3af', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <span style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: registerStep === 3 ? '#f59e0b' : 'rgba(255,255,255,0.1)', color: registerStep === 3 ? '#000' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 900 }}>3</span>
+                    3. Pilih Paket
                   </span>
                 </div>
                 <div style={{ width: '100%', height: '4px', backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
-                  <div style={{ width: registerStep === 1 ? '50%' : '100%', height: '100%', background: registerStep === 1 ? '#10b981' : 'linear-gradient(90deg, #10b981, #f59e0b)', transition: 'all 0.3s ease-in-out' }} />
+                  <div style={{ width: registerStep === 1 ? '33.3%' : registerStep === 2 ? '66.6%' : '100%', height: '100%', background: registerStep === 3 ? 'linear-gradient(90deg, #10b981, #f59e0b)' : '#10b981', transition: 'all 0.3s ease-in-out' }} />
                 </div>
               </div>
 
@@ -2399,9 +2403,18 @@ function App() {
                 </div>
               )}
 
-              {/* STEP 1: Account & Store Information Mobile */}
+              {/* STEP 1: Account & Email / Google SSO Mobile */}
               {registerStep === 1 && (
                 <div>
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f3f4f6', margin: '0 0 0.2rem 0' }}>
+                      Langkah 1: Identitas Pemilik Toko
+                    </h3>
+                    <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: 0 }}>
+                      Daftar instan dengan Google atau buat password manual
+                    </p>
+                  </div>
+
                   {/* Google SSO Register Button Mobile */}
                   <button 
                     type="button" 
@@ -2425,11 +2438,11 @@ function App() {
                     }}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-    </svg>
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
                     <span>Daftar Cepat dengan Google</span>
                   </button>
 
@@ -2439,56 +2452,111 @@ function App() {
                     <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
                   </div>
 
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!registerForm.name || !registerForm.email || !registerForm.password) {
+                        setRegisterError('Silakan isi Nama Pemilik, Email, dan Password.');
+                        return;
+                      }
+                      setRegisterError(null);
+                      setRegisterStep(2);
+                    }} 
+                    style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
+                  >
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Pemilik *</label>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="Contoh: Dzikri Muhammad" 
+                        required 
+                        value={registerForm.name} 
+                        onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Email *</label>
+                      <input 
+                        type="email" 
+                        className="form-input" 
+                        placeholder="nama@domain.com" 
+                        required 
+                        value={registerForm.email} 
+                        onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Kata Sandi *</label>
+                      <input 
+                        type="password" 
+                        className="form-input" 
+                        placeholder="Minimal 6 karakter..." 
+                        required 
+                        value={registerForm.password} 
+                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                      />
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="btn-primary btn-full" 
+                      style={{ 
+                        marginTop: '0.35rem', 
+                        padding: '0.7rem', 
+                        fontWeight: 800, 
+                        fontSize: '0.8rem', 
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.4rem',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <span>Lanjut ke Informasi Toko</span>
+                      <ChevronRight size={15} />
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* STEP 2: Store Information Mobile */}
+              {registerStep === 2 && (
                 <form 
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (!registerForm.name || !registerForm.email || !registerForm.password || !registerForm.store_name || !registerForm.store_slug) {
-                      setRegisterError('Silakan lengkapi semua bidang data toko terlebih dahulu.');
+                    if (!registerForm.store_name || !registerForm.store_slug) {
+                      setRegisterError('Silakan lengkapi Nama Toko dan Link Username Toko.');
                       return;
                     }
                     setRegisterError(null);
-                    setRegisterStep(2);
+                    setRegisterStep(3);
                   }} 
                   style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
                 >
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Pemilik *</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="Contoh: Dzikri Muhammad" 
-                      required 
-                      value={registerForm.name} 
-                      onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                      style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
-                    />
+                  <div style={{ textAlign: 'center', marginBottom: '0.15rem' }}>
+                    <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f3f4f6', margin: '0 0 0.2rem 0' }}>
+                      Langkah 2: Informasi Toko
+                    </h3>
+                    <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: 0 }}>
+                      Tentukan nama bisnis dan link tautan unik toko Anda
+                    </p>
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Email *</label>
-                    <input 
-                      type="email" 
-                      className="form-input" 
-                      placeholder="nama@domain.com" 
-                      required 
-                      value={registerForm.email} 
-                      onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                      style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Kata Sandi *</label>
-                    <input 
-                      type="password" 
-                      className="form-input" 
-                      placeholder="Minimal 6 karakter..." 
-                      required 
-                      value={registerForm.password} 
-                      onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                      style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
-                    />
-                  </div>
+                  {registerForm.email && (
+                    <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.4rem', backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', fontSize: '0.7rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Check size={12} /> Terverifikasi: <strong>{registerForm.email}</strong>
+                    </div>
+                  )}
 
                   <div className="form-group">
                     <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nama Toko / Bisnis *</label>
@@ -2519,38 +2587,60 @@ function App() {
                     </div>
                   </div>
 
-                  <button 
-                    type="submit" 
-                    className="btn-primary btn-full" 
-                    style={{ 
-                      marginTop: '0.35rem', 
-                      padding: '0.7rem', 
-                      fontWeight: 800, 
-                      fontSize: '0.8rem', 
-                      borderRadius: '0.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.4rem',
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <span>Lanjut ke Pemilihan Paket</span>
-                    <ChevronRight size={15} />
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem' }}>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ 
+                        padding: '0.65rem 0.85rem', 
+                        fontSize: '0.75rem', 
+                        borderRadius: '0.5rem',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#d1d5db',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                      onClick={() => setRegisterStep(1)}
+                    >
+                      <ChevronLeft size={15} />
+                      <span>Kembali</span>
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn-primary" 
+                      style={{ 
+                        flex: 1, 
+                        padding: '0.65rem', 
+                        fontWeight: 800, 
+                        fontSize: '0.78rem', 
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.4rem',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      }}
+                    >
+                      <span>Lanjut ke Pemilihan Paket</span>
+                      <ChevronRight size={15} />
+                    </button>
+                  </div>
                 </form>
-                </div>
               )}
 
-              {/* STEP 2: Plan Selection Mobile */}
-              {registerStep === 2 && (
+              {/* STEP 3: Plan Selection Mobile */}
+              {registerStep === 3 && (
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                   <div style={{ textAlign: 'center', marginBottom: '0.15rem' }}>
                     <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f3f4f6', margin: '0 0 0.2rem 0' }}>
-                      Pilih Paket untuk <strong>{registerForm.store_name}</strong>
+                      Langkah 3: Pilih Paket untuk <strong>{registerForm.store_name}</strong>
                     </h3>
                     <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: 0 }}>
                       Pilih paket yang paling sesuai dengan kebutuhan usaha Anda
@@ -2648,10 +2738,10 @@ function App() {
                         cursor: 'pointer',
                         fontWeight: 600
                       }}
-                      onClick={() => setRegisterStep(1)}
+                      onClick={() => setRegisterStep(2)}
                     >
                       <ChevronLeft size={15} />
-                      <span>Edit Data</span>
+                      <span>Edit Toko</span>
                     </button>
                     <button 
                       type="submit" 
