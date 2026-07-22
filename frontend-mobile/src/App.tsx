@@ -4067,7 +4067,14 @@ function App() {
         <div className="container">
           <div className="logo-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
             <Compass className="logo-icon" />
-            <h1 className="logo-title">{settings.store_title || 'Catavor'}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <h1 className="logo-title">{settings.store_title || 'Catavor'}</h1>
+              {settings.plan === 'free' && (
+                <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '10px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                  Free by Catavor
+                </span>
+              )}
+            </div>
             <button
               type="button"
               onClick={handleShareStore}
@@ -6397,7 +6404,7 @@ function App() {
 
 
       {/* Fixed Bottom Navigation Bar */}
-      {!(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && (
+      {!(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && !(activeTab !== 'admin' && settings.plan === 'free') && (
         <nav className="bottom-nav">
           <button 
             className={`nav-item ${activeTab === 'catalog' ? 'active' : ''}`}

@@ -2381,7 +2381,14 @@ function App() {
           <div className="logo-area">
             {renderStoreLogo(settings.store_logo_url, 'logo-icon', 28)}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <h1 className="logo-text" style={{ margin: 0 }}>{settings.store_title || 'Catavor'}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h1 className="logo-text" style={{ margin: 0 }}>{settings.store_title || 'Catavor'}</h1>
+                {settings.plan === 'free' && (
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '12px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                    Free by Catavor
+                  </span>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={handleShareStore}
