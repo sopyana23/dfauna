@@ -1159,8 +1159,8 @@ function App() {
             name: googleUser.name,
             google_id: googleUser.google_id,
             avatar: googleUser.avatar,
-            store_name: prev.store_name || (googleUser.name + ' Store'),
-            store_slug: prev.store_slug || suggestedSlug
+            store_name: '',
+            store_slug: ''
           }));
           setRegisterStep(2);
           setPortalTab('register');
