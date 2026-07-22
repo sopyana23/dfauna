@@ -5806,7 +5806,7 @@ function App() {
           <div style={{ padding: '0.85rem 1rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fef3c7', fontSize: '0.75rem', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Clock size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
-              <strong style={{ color: '#ffffff', fontSize: '0.82rem' }}>🕒 Pembayaran Plan Pro Dalam Verifikasi (1x24 Jam)</strong>
+              <strong style={{ color: '#ffffff', fontSize: '0.82rem' }}>Pembayaran Plan Pro Dalam Verifikasi (1x24 Jam)</strong>
             </div>
             <p style={{ margin: 0, color: '#9ca3af', lineHeight: 1.35 }}>
               Bukti pembayaran telah kami terima. Akun Anda dapat digunakan dengan fitur Plan Free sementara sampai disetujui Tim Admin.
