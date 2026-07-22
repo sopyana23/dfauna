@@ -422,6 +422,46 @@ function App() {
   const [registerForm, setRegisterForm] = useState(initialRegState.form);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Reset top alert error & field errors when switching steps or tabs (Mobile)
+  useEffect(() => {
+    setRegisterError(null);
+    setFieldErrors({});
+  }, [registerStep, portalTab]);
+
+  const validateStep1 = () => {
+    const errors: Record<string, string> = {};
+    if (!registerForm.name || !registerForm.name.trim()) {
+      errors.name = 'Nama Lengkap Pemilik wajib diisi.';
+    }
+    if (!registerForm.email || !registerForm.email.trim()) {
+      errors.email = 'Alamat Email wajib diisi.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
+      errors.email = 'Format alamat email tidak valid (Contoh: nama@domain.com).';
+    }
+    if (!registerForm.password) {
+      errors.password = 'Kata Sandi wajib diisi.';
+    } else if (registerForm.password.length < 6) {
+      errors.password = 'Kata Sandi minimal 6 karakter.';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateStep2 = () => {
+    const errors: Record<string, string> = {};
+    if (!registerForm.store_name || !registerForm.store_name.trim()) {
+      errors.store_name = 'Nama Toko / Bisnis wajib diisi.';
+    }
+    if (!registerForm.store_slug || !registerForm.store_slug.trim()) {
+      errors.store_slug = 'Link Username Toko wajib diisi.';
+    } else if (registerForm.store_slug.length < 3) {
+      errors.store_slug = 'Link Username Toko minimal 3 karakter.';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // Store username (slug) real-time availability check state (Mobile)
   const [slugChecking, setSlugChecking] = useState<boolean>(false);
@@ -2737,13 +2777,19 @@ function App() {
                   </div>
 
                   <form 
+                    noValidate
                     onSubmit={(e) => {
                       e.preventDefault();
-                      if (!registerForm.name || !registerForm.email || !registerForm.password) {
-                        setRegisterError('Silakan isi Nama Pemilik, Email, dan Password.');
+                      if (!validateStep1()) {
+                        setRegisterError('Mohon periksa kembali isian Anda. Lengkapi bidang formulir yang belum diisi.');
+                        setTimeout(() => {
+                          const el = document.getElementById('register-error-banner-mobile');
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 50);
                         return;
                       }
                       setRegisterError(null);
+                      setFieldErrors({});
                       setRegisterStep(2);
                     }} 
                     style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
@@ -2754,11 +2800,19 @@ function App() {
                         type="text" 
                         className="form-input" 
                         placeholder="Contoh: Dzikri Muhammad" 
-                        required 
                         value={registerForm.name} 
-                        onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                        onChange={(e) => {
+                          setRegisterForm({ ...registerForm, name: e.target.value });
+                          if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: '' }));
+                        }}
+                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: fieldErrors.name ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.12)', boxShadow: fieldErrors.name ? '0 0 8px rgba(239, 68, 68, 0.25)' : 'none', color: '#fff' }}
                       />
+                      {fieldErrors.name && (
+                        <div style={{ fontSize: '0.68rem', color: '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                          <AlertTriangle size={12} style={{ color: '#f87171', flexShrink: 0 }} />
+                          <span>{fieldErrors.name}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="form-group">
@@ -2767,11 +2821,19 @@ function App() {
                         type="email" 
                         className="form-input" 
                         placeholder="nama@domain.com" 
-                        required 
                         value={registerForm.email} 
-                        onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                        onChange={(e) => {
+                          setRegisterForm({ ...registerForm, email: e.target.value });
+                          if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: '' }));
+                        }}
+                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: fieldErrors.email ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.12)', boxShadow: fieldErrors.email ? '0 0 8px rgba(239, 68, 68, 0.25)' : 'none', color: '#fff' }}
                       />
+                      {fieldErrors.email && (
+                        <div style={{ fontSize: '0.68rem', color: '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                          <AlertTriangle size={12} style={{ color: '#f87171', flexShrink: 0 }} />
+                          <span>{fieldErrors.email}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="form-group">
@@ -2780,11 +2842,19 @@ function App() {
                         type="password" 
                         className="form-input" 
                         placeholder="Minimal 6 karakter..." 
-                        required 
                         value={registerForm.password} 
-                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                        onChange={(e) => {
+                          setRegisterForm({ ...registerForm, password: e.target.value });
+                          if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
+                        }}
+                        style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: fieldErrors.password ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.12)', boxShadow: fieldErrors.password ? '0 0 8px rgba(239, 68, 68, 0.25)' : 'none', color: '#fff' }}
                       />
+                      {fieldErrors.password && (
+                        <div style={{ fontSize: '0.68rem', color: '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                          <AlertTriangle size={12} style={{ color: '#f87171', flexShrink: 0 }} />
+                          <span>{fieldErrors.password}</span>
+                        </div>
+                      )}
                     </div>
 
                     <button 
@@ -2816,15 +2886,15 @@ function App() {
               {/* STEP 2: Store Information Mobile */}
               {registerStep === 2 && (
                 <form 
+                  noValidate
                   onSubmit={async (e) => {
                     e.preventDefault();
-                    if (!registerForm.store_name || !registerForm.store_slug) {
-                      setRegisterError('Silakan lengkapi Nama Toko dan Link Username Toko.');
-                      return;
-                    }
-
-                    if (registerForm.store_slug.length < 3) {
-                      setRegisterError('Link Username Toko minimal 3 karakter.');
+                    if (!validateStep2()) {
+                      setRegisterError('Mohon periksa kembali isian Anda. Lengkapi bidang formulir yang belum diisi.');
+                      setTimeout(() => {
+                        const el = document.getElementById('register-error-banner-mobile');
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 50);
                       return;
                     }
 
@@ -2836,6 +2906,7 @@ function App() {
                       if (!data.available) {
                         const errMsg = 'Mohon periksa kembali isian Anda: Link username toko yang Anda masukkan sudah digunakan oleh toko lain. Silakan ganti dengan username lain yang masih tersedia.';
                         setRegisterError(errMsg);
+                        setFieldErrors(prev => ({ ...prev, store_slug: `Link username "${registerForm.store_slug}" sudah digunakan oleh toko lain.` }));
                         setSlugStatus({ available: false, message: `Link username "${registerForm.store_slug}" sudah digunakan oleh toko lain.` });
                         setTimeout(() => {
                           const el = document.getElementById('register-error-banner-mobile');
@@ -2844,6 +2915,7 @@ function App() {
                         return;
                       }
                       setRegisterError(null);
+                      setFieldErrors({});
                       setRegisterStep(3);
                     } catch (err) {
                       setRegisterError('Gagal memeriksa ketersediaan username. Silakan coba lagi.');
@@ -2874,24 +2946,34 @@ function App() {
                       type="text" 
                       className="form-input" 
                       placeholder="Contoh: DFauna Gallery" 
-                      required 
                       value={registerForm.store_name} 
-                      onChange={(e) => setRegisterForm({ ...registerForm, store_name: e.target.value })}
-                      style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+                      onChange={(e) => {
+                        setRegisterForm({ ...registerForm, store_name: e.target.value });
+                        if (fieldErrors.store_name) setFieldErrors(prev => ({ ...prev, store_name: '' }));
+                      }}
+                      style={{ borderRadius: '0.5rem', padding: '0.65rem 0.75rem', fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.3)', border: fieldErrors.store_name ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.12)', boxShadow: fieldErrors.store_name ? '0 0 8px rgba(239, 68, 68, 0.25)' : 'none', color: '#fff' }}
                     />
+                    {fieldErrors.store_name && (
+                      <div style={{ fontSize: '0.68rem', color: '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                        <AlertTriangle size={12} style={{ color: '#f87171', flexShrink: 0 }} />
+                        <span>{fieldErrors.store_name}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group">
                     <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Link Username Toko *</label>
-                    <div style={{ display: 'flex', alignItems: 'center', borderRadius: '0.5rem', backgroundColor: 'rgba(0,0,0,0.3)', border: slugStatus ? (slugStatus.available ? '1px solid #10b981' : '1px solid #ef4444') : '1px solid rgba(255,255,255,0.12)', overflow: 'hidden', paddingLeft: '0.65rem', transition: 'all 0.2s ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', borderRadius: '0.5rem', backgroundColor: 'rgba(0,0,0,0.3)', border: fieldErrors.store_slug ? '1px solid #ef4444' : (slugStatus ? (slugStatus.available ? '1px solid #10b981' : '1px solid #ef4444') : '1px solid rgba(255,255,255,0.12)'), boxShadow: fieldErrors.store_slug ? '0 0 8px rgba(239, 68, 68, 0.25)' : 'none', overflow: 'hidden', paddingLeft: '0.65rem', transition: 'all 0.2s ease' }}>
                       <span style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, userSelect: 'none' }}>catavor.com/</span>
                       <input 
                         type="text" 
                         className="form-input" 
                         placeholder="dfauna" 
-                        required 
                         value={registerForm.store_slug} 
-                        onChange={(e) => setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') })}
+                        onChange={(e) => {
+                          setRegisterForm({ ...registerForm, store_slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') });
+                          if (fieldErrors.store_slug) setFieldErrors(prev => ({ ...prev, store_slug: '' }));
+                        }}
                         style={{ flex: 1, padding: '0.65rem 0.5rem', fontSize: '0.8rem', border: 'none', backgroundColor: 'transparent', color: '#fff' }}
                       />
                     </div>
@@ -2905,6 +2987,12 @@ function App() {
                       <div style={{ fontSize: '0.68rem', color: slugStatus.available ? '#34d399' : '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
                         {slugStatus.available ? <Check size={12} style={{ color: '#34d399' }} /> : <AlertTriangle size={12} style={{ color: '#f87171' }} />}
                         <span>{slugStatus.message}</span>
+                      </div>
+                    )}
+                    {!slugChecking && !slugStatus && fieldErrors.store_slug && (
+                      <div style={{ fontSize: '0.68rem', color: '#f87171', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
+                        <AlertTriangle size={12} style={{ color: '#f87171', flexShrink: 0 }} />
+                        <span>{fieldErrors.store_slug}</span>
                       </div>
                     )}
                   </div>
