@@ -275,38 +275,59 @@ function App() {
 
   // Parse path for store slug: /u/{slug}
   const getStoreSlug = () => {
-    const path = window.location.pathname;
-    if (path === '/' || path === '') return null;
+    const path = window.location.pathname.toLowerCase();
+    if (path === '/' || path === '' || path === '/login' || path.startsWith('/register')) return null;
     const match = path.match(/^\/([a-zA-Z0-9\-]+)/);
-    const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets'];
+    const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets', 'login', 'register'];
     if (match && !reserved.includes(match[1])) {
       return match[1];
     }
     return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
-  // Persistent Onboarding Registration State across Page Refreshes & URL Query Sync
+
+  // Persistent Onboarding Registration State across Page Refreshes & Industry Standard Clean URLs
   const loadSavedRegistrationState = () => {
     try {
+      const path = window.location.pathname.toLowerCase();
       const urlParams = new URLSearchParams(window.location.search);
-      const urlTab = urlParams.get('tab');
-      const urlStep = urlParams.get('step');
       const urlPlan = urlParams.get('plan');
 
-      const savedTab = sessionStorage.getItem('catavor_portal_tab');
-      const savedStep = sessionStorage.getItem('catavor_register_step');
+      let pathTab: 'home' | 'login' | 'register' = 'home';
+      let pathStep: 1 | 2 | 3 = 1;
+
+      if (path === '/login') {
+        pathTab = 'login';
+      } else if (path === '/register' || path === '/register/step-1') {
+        pathTab = 'register';
+        pathStep = 1;
+      } else if (path === '/register/step-2') {
+        pathTab = 'register';
+        pathStep = 2;
+      } else if (path === '/register/step-3') {
+        pathTab = 'register';
+        pathStep = 3;
+      } else {
+        const queryTab = urlParams.get('tab');
+        const queryStep = urlParams.get('step');
+        if (queryTab === 'login' || queryTab === 'register') {
+          pathTab = queryTab;
+          if (queryStep) {
+            const stepNum = parseInt(queryStep, 10);
+            if (stepNum >= 1 && stepNum <= 3) pathStep = stepNum as 1 | 2 | 3;
+          }
+        }
+      }
+
       const savedPlan = sessionStorage.getItem('catavor_register_plan');
       const savedForm = sessionStorage.getItem('catavor_register_form');
 
-      const finalTab = (urlTab || savedTab || 'home') as 'home' | 'login' | 'register';
-      const parsedStep = urlStep ? parseInt(urlStep, 10) : (savedStep ? parseInt(savedStep, 10) : 1);
-      const validStep = (parsedStep >= 1 && parsedStep <= 3 ? parsedStep : 1) as 1 | 2 | 3;
       const finalPlan = (urlPlan || savedPlan || 'free') as 'free' | 'pro';
       const finalForm = savedForm ? JSON.parse(savedForm) : { name: '', email: '', password: '', store_name: '', store_slug: '' };
 
       return {
-        tab: finalTab,
-        step: validStep,
+        tab: pathTab,
+        step: pathStep,
         plan: finalPlan,
         form: finalForm
       };
@@ -597,7 +618,7 @@ function App() {
     }
   }, [showCrudModal])
 
-  // Listen to popstate for back navigation & gesture support across tabs & registration steps
+  // Listen to popstate for back navigation & gesture support across clean URL paths (/ , /login , /register/step-X)
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const slug = getStoreSlug();
@@ -611,25 +632,27 @@ function App() {
         return;
       }
 
-      // Handle Portal Tab & Registration Step navigation via browser Back/Forward or gesture
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab') as 'home' | 'login' | 'register' | null;
-      const stepParam = params.get('step');
-      const planParam = params.get('plan') as 'free' | 'pro' | null;
+      const path = window.location.pathname.toLowerCase();
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPlan = urlParams.get('plan');
 
-      const targetTab = tabParam || (event.state?.tab as 'home' | 'login' | 'register') || 'home';
-      setPortalTab(targetTab);
-
-      if (targetTab === 'register') {
-        const stepNum = stepParam ? parseInt(stepParam, 10) : (event.state?.step || 1);
-        if (stepNum >= 1 && stepNum <= 3) {
-          setRegisterStep(stepNum as 1 | 2 | 3);
-        }
-        if (planParam) {
-          setRegisterPlan(planParam);
-        } else if (event.state?.plan) {
-          setRegisterPlan(event.state.plan);
-        }
+      if (path === '/login') {
+        setPortalTab('login');
+      } else if (path === '/register' || path === '/register/step-1') {
+        setPortalTab('register');
+        setRegisterStep(1);
+      } else if (path === '/register/step-2') {
+        setPortalTab('register');
+        setRegisterStep(2);
+      } else if (path === '/register/step-3') {
+        setPortalTab('register');
+        setRegisterStep(3);
+        if (urlPlan === 'free' || urlPlan === 'pro') setRegisterPlan(urlPlan);
+      } else if (path === '/' || path === '') {
+        setPortalTab('home');
+      } else if (event.state?.tab) {
+        setPortalTab(event.state.tab);
+        if (event.state.step) setRegisterStep(event.state.step);
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -874,7 +897,7 @@ function App() {
   }, [view, storeSlug]);
 
 
-  // Sync Onboarding & Portal State to URL and sessionStorage to handle refresh, browser back button, and gestures
+  // Sync Onboarding & Portal State to Industry Standard Clean URLs (/ , /login , /register/step-X)
   useEffect(() => {
     if (storeSlug) return;
 
@@ -883,36 +906,22 @@ function App() {
     sessionStorage.setItem('catavor_register_plan', registerPlan);
     sessionStorage.setItem('catavor_register_form', JSON.stringify(registerForm));
 
-    const params = new URLSearchParams(window.location.search);
-    let updated = false;
-
-    if (params.get('tab') !== portalTab) {
-      params.set('tab', portalTab);
-      updated = true;
+    let targetPath = '/';
+    if (portalTab === 'login') {
+      targetPath = '/login';
+    } else if (portalTab === 'register') {
+      if (registerStep === 1) targetPath = '/register';
+      else if (registerStep === 2) targetPath = '/register/step-2';
+      else if (registerStep === 3) targetPath = `/register/step-3${registerPlan !== 'free' ? '?plan=' + registerPlan : ''}`;
     }
 
-    if (portalTab === 'register') {
-      if (params.get('step') !== registerStep.toString()) {
-        params.set('step', registerStep.toString());
-        updated = true;
-      }
-      if (params.get('plan') !== registerPlan) {
-        params.set('plan', registerPlan);
-        updated = true;
-      }
-    } else {
-      if (params.has('step')) { params.delete('step'); updated = true; }
-      if (params.has('plan')) { params.delete('plan'); updated = true; }
-    }
+    const currentFull = window.location.pathname + window.location.search;
 
-    const queryString = params.toString();
-    const targetUrl = window.location.pathname + (queryString ? '?' + queryString : '');
-
-    if (updated && window.location.search !== (queryString ? '?' + queryString : '')) {
+    if (currentFull !== targetPath) {
       window.history.pushState(
         { tab: portalTab, step: registerStep, plan: registerPlan },
         '',
-        targetUrl
+        targetPath
       );
     }
   }, [portalTab, registerStep, registerPlan, registerForm, storeSlug]);
