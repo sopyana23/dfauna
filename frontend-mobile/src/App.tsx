@@ -1266,6 +1266,26 @@ function App() {
     }
   }
 
+  // Handle Upgrade Plan to Pro
+  const handleUpgradeToPro = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/stores/upgrade-plan`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ plan: 'pro' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('Selamat! Toko Anda telah berhasil di-upgrade ke Plan Pro (Unlimited)!')
+        loadData()
+      } else {
+        showToast(data.message || 'Gagal upgrade plan', 'error')
+      }
+    } catch (err) {
+      showToast('Terjadi kesalahan saat upgrade plan', 'error')
+    }
+  }
+
   // Handle Profile Update
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -4746,6 +4766,68 @@ function App() {
                       Keluar
                     </button>
                   </div>
+
+                  {/* Premium SaaS Free Plan Promotional Upgrade Panel (Mobile) */}
+                  {settings.plan === 'free' && (
+                    <div 
+                      className="glass-panel animate-fade-in" 
+                      style={{ 
+                        padding: '1.2rem', 
+                        marginBottom: '0.5rem', 
+                        borderRadius: '0.85rem', 
+                        border: '1px solid rgba(245, 158, 11, 0.35)', 
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(239, 68, 68, 0.08) 100%)', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '0.85rem',
+                        boxShadow: '0 6px 24px rgba(0, 0, 0, 0.2)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.1rem', boxShadow: '0 3px 10px rgba(245,158,11,0.4)', flexShrink: 0 }}>
+                          ⚡
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#ffffff' }}>
+                            Status Akun: <span style={{ color: '#f59e0b', textTransform: 'uppercase' }}>Plan Gratis (Free)</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', lineHeight: 1.3, marginTop: '0.1rem' }}>
+                            Toko Anda saat ini dibatasi maksimal 10 postingan produk &amp; tanpa Halaman Tentang Kami.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.45rem', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid var(--border-light)' }}>
+                          ✨ Postingan Unlimited
+                        </span>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.45rem', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid var(--border-light)' }}>
+                          📖 Fitur Tentang Kami
+                        </span>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.45rem', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid var(--border-light)' }}>
+                          🚫 Bebas Watermark
+                        </span>
+                      </div>
+
+                      <button 
+                        type="button"
+                        className="btn-primary btn-full" 
+                        style={{ 
+                          fontSize: '0.78rem', 
+                          padding: '0.6rem', 
+                          background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', 
+                          border: 'none', 
+                          color: '#fff', 
+                          fontWeight: 800,
+                          borderRadius: '0.5rem',
+                          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)'
+                        }}
+                        onClick={handleUpgradeToPro}
+                      >
+                        🚀 Upgrade ke Plan Pro Sekarang
+                      </button>
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                     {/* Item 1: Inventaris */}
