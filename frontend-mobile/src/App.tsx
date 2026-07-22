@@ -2304,7 +2304,11 @@ function App() {
               <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(16,185,129,0.03)' }}>
                 <div>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Plan Pro / Premium</span>
-                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0' }}>Rp 49rb <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ bulan</span></div>
+                  <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#fff', margin: '0.35rem 0', display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '1.1rem', color: '#9ca3af', textDecoration: 'line-through', fontWeight: 600 }}>Rp 50rb</span>
+                    <span style={{ color: '#f59e0b' }}>Rp 30rb</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ bulan</span>
+                  </div>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
                   <li>✨ Postingan produk Unlimited</li>
@@ -2788,7 +2792,11 @@ function App() {
                           <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: registerPlan === 'pro' ? '4px solid #f59e0b' : '2px solid #6b7280', backgroundColor: registerPlan === 'pro' ? '#000' : 'transparent', transition: 'all 0.2s ease' }} />
                           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: registerPlan === 'pro' ? '#f59e0b' : '#ffffff' }}>Plan Pro (Premium)</span>
                         </div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#ffffff' }}>Rp 49rb <small style={{ fontSize: '0.6rem', color: '#9ca3af' }}>/bln</small></span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '0.7rem', fontWeight: 500 }}>Rp 50rb</span>
+                          <span style={{ color: '#f59e0b', fontWeight: 800 }}>Rp 30rb</span>
+                          <small style={{ fontSize: '0.6rem', color: '#9ca3af' }}>/bln</small>
+                        </span>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', paddingLeft: '1.4rem' }}>
                         <div style={{ fontSize: '0.68rem', color: '#e5e7eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
