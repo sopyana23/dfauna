@@ -2360,8 +2360,8 @@ function App() {
   if (!storeSlug) {
     return (
       <div className="portal-container ambient-glow-bg" style={{ minHeight: '100vh', color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}>
-        {/* Header (Hidden during registration for clean focus) */}
-        {portalTab !== 'register' && (
+        {/* Header (Only shown on home portal for clean focus on login/register) */}
+        {portalTab === 'home' && (
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'var(--header-bg)', position: 'sticky', top: 0, zIndex: 100 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
               <div style={{ 
@@ -2703,6 +2703,33 @@ function App() {
                 </div>
                 <button type="submit" className="btn-primary btn-full" disabled={loginLoading}>
                   {loginLoading ? 'Memproses...' : 'Masuk Dashboard'}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-secondary btn-full" 
+                  style={{ 
+                    marginTop: '0.65rem', 
+                    padding: '0.65rem', 
+                    fontWeight: 700, 
+                    fontSize: '0.78rem', 
+                    borderRadius: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    backgroundColor: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#d1d5db',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => {
+                    setPortalTab('home');
+                    setLoginError(null);
+                  }}
+                >
+                  <Home size={15} />
+                  <span>Kembali ke Halaman Utama</span>
                 </button>
               </form>
               <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
