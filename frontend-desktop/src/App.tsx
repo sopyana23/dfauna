@@ -10,6 +10,8 @@ import {
   Check,
   CheckCircle,
   Edit3, 
+  Edit3 as Edit,
+  Shield,
   FileText, 
   Loader,
   Lock,
@@ -68,6 +70,9 @@ import {
   Bell
 } from 'lucide-react'
 import './App.css'
+import logoHeaderImg from './assets/logo-header.png'
+import appLogoImg from './assets/logo.png'
+import { APP_LOGO_BASE64 } from './assets/logoBase64'
 
 interface Fauna {
   id: number
@@ -210,7 +215,7 @@ export const renderStoreLogo = (logoUrl: string | undefined, className = '', siz
       />
     );
   }
-  return <Compass className={className} size={size} style={mergedStyle} />;
+  return null;
 };
 
 interface ShopSettings {
@@ -291,12 +296,21 @@ function App() {
   // Parse path for store slug: /u/{slug}
   const getStoreSlug = () => {
     const path = window.location.pathname.toLowerCase();
-    if (path === '/' || path === '' || path === '/login' || path.startsWith('/register')) return null;
-    const match = path.match(/^\/([a-zA-Z0-9\-]+)/);
+    const parts = path.split('/').filter(Boolean);
     const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets', 'login', 'register'];
-    if (match && !reserved.includes(match[1])) {
-      return match[1];
+    
+    if (parts.length === 0) return null;
+    
+    if (parts.length === 1) {
+      if (!reserved.includes(parts[0])) return parts[0];
+      return null;
     }
+    
+    if (parts.length === 2 && (parts[1] === 'admin' || parts[1] === 'about')) {
+      if (!reserved.includes(parts[0])) return parts[0];
+      return null;
+    }
+    
     return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
@@ -308,7 +322,7 @@ function App() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlPlan = urlParams.get('plan');
 
-      let pathTab: 'home' | 'login' | 'register' = 'home';
+      let pathTab: 'home' | 'login' | 'register' | 'terms' | 'privacy' | 'acceptable_use' = 'home';
       let pathStep: 1 | 2 | 3 = 1;
 
       if (path === '/login') {
@@ -322,14 +336,25 @@ function App() {
       } else if (path === '/register/step-3') {
         pathTab = 'register';
         pathStep = 3;
+      } else if (path === '/terms' || path === '/syarat-ketentuan') {
+        pathTab = 'terms';
+      } else if (path === '/privacy' || path === '/kebijakan-privasi') {
+        pathTab = 'privacy';
+      } else if (path === '/acceptable-use' || path === '/acceptable_use' || path === '/ketentuan-penggunaan') {
+        pathTab = 'acceptable_use';
       } else {
         const queryTab = urlParams.get('tab');
         const queryStep = urlParams.get('step');
-        if (queryTab === 'login' || queryTab === 'register') {
-          pathTab = queryTab;
+        if (['login', 'register', 'terms', 'privacy', 'acceptable_use'].includes(queryTab || '')) {
+          pathTab = queryTab as any;
           if (queryStep) {
             const stepNum = parseInt(queryStep, 10);
             if (stepNum >= 1 && stepNum <= 3) pathStep = stepNum as 1 | 2 | 3;
+          }
+        } else {
+          const savedTab = sessionStorage.getItem('catavor_portal_tab');
+          if (['terms', 'privacy', 'acceptable_use'].includes(savedTab || '')) {
+            pathTab = savedTab as any;
           }
         }
       }
@@ -358,7 +383,7 @@ function App() {
 
   const initialRegState = loadSavedRegistrationState();
 
-  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register' | 'checkout'>(initialRegState.tab);
+  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register' | 'checkout' | 'terms' | 'privacy' | 'acceptable_use'>(initialRegState.tab as any);
   const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>(initialRegState.plan);
   const [registerStep, setRegisterStep] = useState<1 | 2 | 3>(initialRegState.step);
   const [paymentMethod, setPaymentMethod] = useState<'bank' | 'qris'>('bank');
@@ -372,7 +397,71 @@ function App() {
   ]);
   const [showNotificationModal, setShowNotificationModal] = useState<boolean>(false);
   const [heroEmailInput, setHeroEmailInput] = useState('');
-  const [featuredStores, setFeaturedStores] = useState<any[]>([]);
+  // Policy & Privacy System States
+  const [policies, setPolicies] = useState<{ [key: string]: { type: string, version: string, title: string, content: string, published_at?: string } }>({
+    terms: {
+      type: 'terms',
+      version: 'v1.0.0',
+      title: 'Syarat & Ketentuan Layanan',
+      content: '1. Ketentuan Umum Layanan Catavor\nCatavor adalah platform penyedia katalog digital dan biolink bisnis online bagi pemilik usaha (Merchant).\n\n2. Hak & Kewajiban Merchant\nMerchant bertanggung jawab penuh atas kebenaran informasi produk, stok, harga, dan foto yang diunggah.\n\n3. Batasan Tanggung Jawab Transaksi\nCatavor menyediakan sarana katalog digital & alat komunikasi pesanan (WhatsApp Direct/Rekber).\n\n4. Hak Cipta & Kekayaan Intelektual\nSeluruh desain platform, kode, dan merek dagang Catavor adalah milik PT Catavor Media Digital.'
+    },
+    privacy: {
+      type: 'privacy',
+      version: 'v1.0.0',
+      title: 'Kebijakan Privasi & Perlindungan Data',
+      content: '1. Pengumpulan & Penggunaan Data\nKami mengumpulkan informasi yang Anda berikan secara langsung saat mendaftar, seperti nama toko, alamat email, nomor WhatsApp bisnis.\n\n2. Keamanan & Enkripsi Data\nSeluruh data pengguna disimpan pada infrastruktur server terenkripsi sesuai Standar Keamanan & Privasi Data Global.\n\n3. Komitmen Kerahasiaan\nCatavor TIDAK AKAN PERNAH menjual, menyewakan, atau membagikan data pribadi atau data pelanggan toko Anda kepada pihak ketiga.\n\n4. Hak Pengguna Atas Data\nAnda berhak memperbarui, mengunduh, atau mengajukan penghapusan data toko Anda kapan saja.'
+    },
+    acceptable_use: {
+      type: 'acceptable_use',
+      version: 'v1.0.0',
+      title: 'Ketentuan Penggunaan & Komunitas',
+      content: '1. Larangan Konten & Barang Ilegal\nPengguna dilarang keras menampilkan, menawarkan, atau menjual narkotika, senjata api/tajam ilegal, satwa liar dilindungi, atau produk bajakan.\n\n2. Penangguhan & Pemblokiran Akun\nPelanggaran terhadap ketentuan penggunaan ini akan mengakibatkan penangguhan atau pemblokiran permanen.'
+    }
+  });
+
+  const [activePolicyModal, setActivePolicyModal] = useState<string | null>(null);
+  const [policyAuditLogs, setPolicyAuditLogs] = useState<any[]>([]);
+  const [editingPolicy, setEditingPolicy] = useState<{ type: string, version: string, title: string, content: string } | null>(null);
+  const [policySaveLoading, setPolicySaveLoading] = useState(false);
+  const [policySaveMsg, setPolicySaveMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const fetchPolicies = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/policies`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setPolicies(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch policies:', err);
+    }
+  };
+
+  const fetchPolicyAuditLogs = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/settings/policy-audit-logs`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setPolicyAuditLogs(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch policy audit logs:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
+
+  // Guarantee auto-scroll to top on page/tab navigation (Desktop & Tablet)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [portalTab, storeSlug, registerStep]);
 
   // Theme Mode (Temporarily defaulted to 'dark')
   const [themeMode, setThemeMode] = useState<'dark' | 'cream'>('dark');
@@ -405,16 +494,16 @@ function App() {
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
     if (!registerForm.name || !registerForm.name.trim()) {
-      errors.name = 'Nama Lengkap Pemilik wajib diisi.';
+      errors.name = 'Nama Lengkap Pemilik Usaha wajib diisi.';
     }
     if (!registerForm.email || !registerForm.email.trim()) {
       errors.email = 'Alamat Email wajib diisi.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email.trim())) {
       errors.email = 'Format alamat email tidak valid (Contoh: nama@domain.com).';
     }
     // Bypass password validation if user registered via Google SSO
     if (!registerForm.google_id) {
-      if (!registerForm.password) {
+      if (!registerForm.password || !registerForm.password.trim()) {
         errors.password = 'Kata Sandi wajib diisi.';
       } else if (registerForm.password.length < 6) {
         errors.password = 'Kata Sandi minimal 6 karakter.';
@@ -425,6 +514,10 @@ function App() {
   };
 
   const validateStep2 = () => {
+    if (!validateStep1()) {
+      setRegisterStep(1);
+      return false;
+    }
     const errors: Record<string, string> = {};
     if (!registerForm.store_name || !registerForm.store_name.trim()) {
       errors.store_name = 'Nama Toko / Bisnis wajib diisi.';
@@ -437,6 +530,24 @@ function App() {
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
+  const resetRegisterFormState = () => {
+    setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '', google_id: '', avatar: '' });
+    setRegisterStep(1);
+    setRegisterError(null);
+    setFieldErrors({});
+    setSlugStatus(null);
+    setSlugChecking(false);
+    sessionStorage.removeItem('catavor_register_form');
+    sessionStorage.removeItem('catavor_register_plan');
+  };
+
+  // Auto reset Google SSO & register form cache whenever returning to Step 1
+  useEffect(() => {
+    if (portalTab === 'register' && registerStep === 1 && registerForm.google_id) {
+      resetRegisterFormState();
+    }
+  }, [portalTab, registerStep]);
 
   // Store username (slug) real-time availability check state
   const [slugChecking, setSlugChecking] = useState<boolean>(false);
@@ -468,6 +579,72 @@ function App() {
     return () => clearTimeout(timer);
   }, [registerForm.store_slug]);
 
+  // Helper to cleanly format Markdown policy content into React Elements
+  const renderFormattedPolicyContent = (text: string) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return null;
+
+          // Check for headings: ### Header Title or ## Header Title or # Header Title
+          if (trimmed.startsWith('#')) {
+            const headerText = trimmed.replace(/^#+\s*/, '');
+            return (
+              <div key={idx} style={{ marginTop: idx > 0 ? '0.9rem' : '0.2rem', marginBottom: '0.3rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <span style={{ width: '4px', height: '18px', borderRadius: '4px', background: 'linear-gradient(180deg, #10b981 0%, #059669 100%)', flexShrink: 0, boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)' }} />
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif" }}>
+                    {headerText}
+                  </h4>
+                </div>
+              </div>
+            );
+          }
+
+          // Check for list items: - item or • item
+          if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+            const itemText = trimmed.replace(/^[-•]\s*/, '');
+            return (
+              <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', paddingLeft: '0.75rem', color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.65' }}>
+                <span style={{ color: '#10b981', fontSize: '0.95rem', lineHeight: '1.4', flexShrink: 0, fontWeight: 'bold' }}>•</span>
+                <span>{itemText}</span>
+              </div>
+            );
+          }
+
+          // Regular paragraph text
+          return (
+            <p key={idx} style={{ margin: 0, color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.7' }}>
+              {trimmed}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Dedicated Full-Page Legal & Policy Renderer for Desktop
+  const renderPolicyPage = (type: 'terms' | 'privacy' | 'acceptable_use') => {
+    const policy = policies[type] || {
+      title: 'Kebijakan Layanan',
+      version: 'v1.0.0',
+      content: 'Memuat kebijakan...'
+    };
+
+    return (
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2.5rem 1.5rem 5rem 1.5rem', animation: 'fadeIn 0.3s ease-in-out' }}>
+        {/* Main Content Card Panel */}
+        <div className="glass-panel" style={{ padding: '2.5rem 2rem', borderRadius: '1.25rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(9, 14, 26, 0.98) 100%)', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)' }}>
+          {renderFormattedPolicyContent(policy.content)}
+        </div>
+      </div>
+    );
+  };
+
+  const [featuredStores, setFeaturedStores] = useState<any[]>([]);
   const editorRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const savedRangeRef = useRef<Range | null>(null)
@@ -493,24 +670,37 @@ function App() {
   }
 
   const [faunas, setFaunas] = useState<Fauna[]>([])
-  const [settings, setSettings] = useState<ShopSettings>({
-    whatsapp_number: '628123456789',
-    store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
-    promo_banner: '',
-    articles_enabled: '1',
-    store_title: 'Catavor',
-    store_logo_url: '',
-    default_is_comments_enabled: '1',
-    default_require_comment_approval: '0',
-    default_require_comment_email: '0',
-    default_verify_comment_email_domain: '0'
+  const [isAppInitializing, setIsAppInitializing] = useState<boolean>(true)
+  const [settings, setSettings] = useState<ShopSettings>(() => {
+    try {
+      const cached = localStorage.getItem('catavor_settings');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return {
+      whatsapp_number: '628123456789',
+      store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
+      promo_banner: '',
+      articles_enabled: '1',
+      store_title: 'Catavor',
+      store_logo_url: '',
+      default_is_comments_enabled: '1',
+      default_require_comment_approval: '0',
+      default_require_comment_email: '0',
+      default_verify_comment_email_domain: '0'
+    };
   })
   const [selectedFauna, setSelectedFauna] = useState<Fauna | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+  const [agreeTerms, setAgreeTerms] = useState<boolean>(false)
+  const [agreeCheckoutTerms, setAgreeCheckoutTerms] = useState<boolean>(false)
+  const [previousPortalTab, setPreviousPortalTab] = useState<'login' | 'register' | 'home' | 'terms' | 'privacy' | 'acceptable_use' | 'checkout'>('home')
+  const [agreeTermsError, setAgreeTermsError] = useState<boolean>(false)
+  const [agreeCheckoutTermsError, setAgreeCheckoutTermsError] = useState<boolean>(false)
+  const [showQuickPolicyModal, setShowQuickPolicyModal] = useState<'terms' | 'privacy' | 'acceptable_use' | null>(null)
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
@@ -519,7 +709,7 @@ function App() {
 
   // Navigation: 'catalog' or 'admin' or 'article-editor'
   const [view, setView] = useState<'catalog' | 'admin' | 'article-editor'>('catalog')
-  const [adminTab, setAdminTab] = useState<'items' | 'settings' | 'profile' | 'articles'>('items')
+  const [adminTab, setAdminTab] = useState<'items' | 'settings' | 'profile' | 'articles' | 'policies'>('items')
 
   // Articles state
   const [articles, setArticles] = useState<Article[]>([])
@@ -598,6 +788,16 @@ function App() {
   const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(
     localStorage.getItem('catavor_password_changed') === 'true'
   )
+
+  const isStoreOwner = Boolean(
+    token &&
+    adminUser &&
+    storeSlug &&
+    (
+      (adminUser.store_slug && adminUser.store_slug.toLowerCase() === storeSlug.toLowerCase()) ||
+      ((adminUser as any).username && (adminUser as any).username.toLowerCase() === storeSlug.toLowerCase())
+    )
+  );
 
   const [masterClasses, setMasterClasses] = useState<string[]>(['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil'])
   const [masterHabitats, setMasterHabitats] = useState<string[]>(['Air Tawar', 'Air Laut', 'Darat'])
@@ -718,6 +918,7 @@ function App() {
   useEffect(() => {
     const slug = getStoreSlug();
     setStoreSlug(slug);
+
     if (window.location.pathname.endsWith('/admin')) {
       setView('admin');
     } else {
@@ -734,7 +935,7 @@ function App() {
       setAdminUser(null)
       setIsPasswordChanged(false)
     }
-  }, [])
+  }, [adminUser, token])
 
   // Redirect if article module is disabled
   useEffect(() => {
@@ -787,30 +988,87 @@ function App() {
         setPortalTab('register');
         setRegisterStep(3);
         if (urlPlan === 'free' || urlPlan === 'pro') setRegisterPlan(urlPlan);
+      } else if (path === '/terms' || path === '/syarat-ketentuan') {
+        setPortalTab('terms');
+      } else if (path === '/privacy' || path === '/kebijakan-privasi') {
+        setPortalTab('privacy');
+      } else if (path === '/acceptable-use' || path === '/acceptable_use' || path === '/ketentuan-penggunaan') {
+        setPortalTab('acceptable_use');
       } else if (path === '/' || path === '') {
         setPortalTab('home');
       } else if (event.state?.tab) {
         setPortalTab(event.state.tab);
         if (event.state.step) setRegisterStep(event.state.step);
       }
+
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Sync active portalTab to Browser Address Bar URL and Session Storage
+  useEffect(() => {
+    if (storeSlug) return;
+    let targetPath = '/';
+    if (portalTab === 'login') targetPath = '/login';
+    else if (portalTab === 'register') targetPath = `/register/step-${registerStep}`;
+    else if (portalTab === 'terms') targetPath = '/terms';
+    else if (portalTab === 'privacy') targetPath = '/privacy';
+    else if (portalTab === 'acceptable_use') targetPath = '/acceptable-use';
+
+    if (window.location.pathname.toLowerCase() !== targetPath.toLowerCase()) {
+      window.history.pushState({ tab: portalTab, step: registerStep }, '', targetPath);
+    }
+    sessionStorage.setItem('catavor_portal_tab', portalTab);
+  }, [portalTab, registerStep, storeSlug]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [view, adminTab]);
+
   // Fetch headers helper
   const getAuthHeaders = () => {
+    const slug = getStoreSlug();
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(slug ? { 'X-Store-Slug': slug } : {})
     }
   }
+
+  const isInvalidRoute = () => {
+    const path = window.location.pathname.toLowerCase();
+    const parts = path.split('/').filter(Boolean);
+    const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets', 'login', 'register'];
+    
+    if (parts.length === 0) return false;
+    if (parts.length === 1) return false;
+    if (parts[0] === 'register') return false;
+    
+    if (parts.length === 2 && (parts[1] === 'admin' || parts[1] === 'about')) {
+      if (!reserved.includes(parts[0])) return false;
+    }
+    
+    return true;
+  };
 
   // Load Initial Data
   const loadData = async () => {
     setLoading(true);
     setError(null);
+
+    if (isInvalidRoute()) {
+      setError('Halaman / Tautan Tidak Ditemukan.');
+      setLoading(false);
+      return;
+    }
+
     const slug = getStoreSlug();
     
     try {
@@ -846,28 +1104,33 @@ function App() {
           };
           
           setSettings(fetchedSettings);
-          setSettingsForm(fetchedSettings);
+          try {
+            localStorage.setItem('catavor_settings', JSON.stringify(fetchedSettings));
+          } catch {}
+          if (token && adminUser && slug && (adminUser.store_slug?.toLowerCase() === slug.toLowerCase() || (adminUser as any).username?.toLowerCase() === slug.toLowerCase())) {
+            setSettingsForm(fetchedSettings);
+          }
           
           if (store.master_classes) setMasterClasses(store.master_classes);
           if (store.master_habitats) setMasterHabitats(store.master_habitats);
           if (store.master_statuses) setMasterStatuses(store.master_statuses);
           if (store.master_shipping_coverages) setMasterShippingCoverages(store.master_shipping_coverages);
-        } else {
-          setError('Toko tidak ditemukan.');
-        }
 
-        // Fetch store-scoped fauna catalog
-        const params = new URLSearchParams();
-        if (search) params.append('search', search);
-        if (classFilter !== 'all') params.append('class', classFilter);
-        if (habitatFilter !== 'all') params.append('habitat', habitatFilter);
+          // Fetch store-scoped fauna catalog
+          const params = new URLSearchParams();
+          if (search) params.append('search', search);
+          if (classFilter !== 'all') params.append('class', classFilter);
+          if (habitatFilter !== 'all') params.append('habitat', habitatFilter);
 
-        const faunaRes = await fetch(`${API_BASE}/u/${slug}/fauna?${params.toString()}`);
-        const faunaData = await faunaRes.json();
-        if (faunaData.success) {
-          setFaunas(faunaData.data);
+          const faunaRes = await fetch(`${API_BASE}/u/${slug}/fauna?${params.toString()}`);
+          const faunaData = await faunaRes.json();
+          if (faunaData.success) {
+            setFaunas(faunaData.data);
+          } else {
+            setError(faunaData.message || 'Gagal memuat katalog.');
+          }
         } else {
-          setError('Gagal memuat katalog fauna.');
+          setError(settingsData.message || 'Katalog / Store tidak ditemukan.');
         }
       } else {
         // Portal mode: Fetch featured stores
@@ -882,6 +1145,7 @@ function App() {
       setError('Koneksi terputus. Pastikan server backend Laravel berjalan di http://localhost:8000.');
     } finally {
       setLoading(false);
+      setTimeout(() => setIsAppInitializing(false), 200);
     }
   };
 
@@ -1017,6 +1281,8 @@ function App() {
   }, [search, classFilter, habitatFilter, storeSlug])
   // Sync view state to browser URL pathname
   useEffect(() => {
+    if (error || isInvalidRoute()) return;
+
     if (!storeSlug) {
       if (window.location.pathname !== '/') {
         window.history.pushState({}, '', '/');
@@ -1033,12 +1299,12 @@ function App() {
     if (currentPath !== targetPath) {
       window.history.pushState({}, '', targetPath);
     }
-  }, [view, storeSlug]);
+  }, [view, storeSlug, error]);
 
 
   // Sync Onboarding & Portal State to Industry Standard Clean URLs (/ , /login , /register/step-X)
   useEffect(() => {
-    if (storeSlug) return;
+    if (storeSlug || error || isInvalidRoute()) return;
 
     sessionStorage.setItem('catavor_portal_tab', portalTab);
     sessionStorage.setItem('catavor_register_step', registerStep.toString());
@@ -1063,7 +1329,7 @@ function App() {
         targetPath
       );
     }
-  }, [portalTab, registerStep, registerPlan, registerForm, storeSlug]);
+  }, [portalTab, registerStep, registerPlan, registerForm, storeSlug, error]);
 
   // Reset displayLimit on search or filter change
   useEffect(() => {
@@ -1134,33 +1400,44 @@ function App() {
 
       const data = await res.json();
       if (data.success) {
-        if (data.token) {
+        if (data.token && data.user && data.user.store_slug) {
+          // Existing User with complete store -> Immediate Auto Login to Admin Dashboard
           localStorage.setItem('catavor_token', data.token);
           localStorage.setItem('catavor_user', JSON.stringify(data.user));
           localStorage.setItem('catavor_password_changed', 'true');
           setToken(data.token);
           setAdminUser(data.user);
           setIsPasswordChanged(true);
-          showToast('Login SSO Google Berhasil!', 'success');
+          setStoreSlug(data.user.store_slug);
+          setView('admin');
+          setPortalTab('home');
+          showToast('Selamat datang kembali! Akun Google Anda telah terdaftar, otomatis masuk ke Dashboard.', 'success');
           sessionStorage.clear();
-          if (data.user.store_slug) {
-            setStoreSlug(data.user.store_slug);
-            setView('admin');
+        } else {
+          // New User OR User without completed store_slug -> Redirect to Store Setup Screen (Step 2)
+          if (data.token && data.user) {
+            localStorage.setItem('catavor_token', data.token);
+            localStorage.setItem('catavor_user', JSON.stringify(data.user));
+            setToken(data.token);
+            setAdminUser(data.user);
           }
-        } else if (data.requires_store_info) {
-          const suggestedSlug = (googleUser.email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
+          const userEmail = data.user?.email || googleUser.email;
+          const userName = data.user?.name || googleUser.name;
+          const userGoogleId = data.user?.google_id || googleUser.google_id;
+          const userAvatar = data.user?.avatar || googleUser.avatar;
+
           setRegisterForm((prev: any) => ({
             ...prev,
-            email: googleUser.email,
-            name: googleUser.name,
-            google_id: googleUser.google_id,
-            avatar: googleUser.avatar,
-            store_name: '',
-            store_slug: ''
+            email: userEmail,
+            name: userName,
+            google_id: userGoogleId,
+            avatar: userAvatar,
+            store_name: prev.store_name || '',
+            store_slug: prev.store_slug || ''
           }));
           setRegisterStep(2);
           setPortalTab('register');
-          showToast('Otentikasi Google Berhasil! Silakan tentukan Nama Toko & Link Username Anda.', 'success');
+          showToast('Otentikasi Google Berhasil! Silakan lengkapi Informasi Toko & Link Username Anda di Langkah 2.', 'info');
         }
       } else {
         showToast(data.message || 'Gagal otentikasi Google SSO.', 'error');
@@ -1260,6 +1537,12 @@ function App() {
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeTerms) {
+      setAgreeTermsError(true);
+      showToast('Silakan centang persetujuan Syarat & Ketentuan serta Kebijakan Privasi terlebih dahulu.', 'error');
+      return;
+    }
+    setAgreeTermsError(false);
     if (registerPlan === 'pro') {
       // Defer API registration & token storage until checkout submission!
       setPortalTab('checkout');
@@ -2312,75 +2595,208 @@ function App() {
   }
 
 
+  // Render App Readiness Loader Gate Screen
+  if (isAppInitializing) {
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        backgroundColor: '#060907',
+        backgroundImage: 'radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.15) 0%, transparent 65%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        color: '#ffffff',
+        fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+      }}>
+        <style>{`
+          @keyframes loaderSlide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+          }
+          @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.45)); }
+            50% { transform: scale(1.08); opacity: 0.85; filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.75)); }
+          }
+        `}</style>
+        <div style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '1.35rem'
+        }}>
+          <div style={{
+            width: '96px',
+            height: '96px',
+            borderRadius: '1.25rem',
+            backgroundColor: '#ffffff',
+            border: '2px solid #10b981',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.8rem',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(16, 185, 129, 0.5)',
+            animation: 'pulseGlow 1.8s infinite ease-in-out'
+          }}>
+            <img 
+              src={APP_LOGO_BASE64} 
+              alt="Catavor Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} 
+            />
+          </div>
+        </div>
+
+        <h3 style={{
+          margin: '0 0 0.35rem 0',
+          fontSize: '1.3rem',
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
+          background: 'linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          Catavor
+        </h3>
+        
+        <p style={{
+          margin: 0,
+          fontSize: '0.85rem',
+          color: '#9ca3af',
+          fontWeight: 500,
+          letterSpacing: '0.01em'
+        }}>
+          Mempersiapkan Halaman...
+        </p>
+
+        <div style={{
+          width: '150px',
+          height: '3.5px',
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '4px',
+          marginTop: '1.35rem',
+          overflow: 'hidden',
+          position: 'relative'
+        }}>
+          <div style={{
+            width: '40%',
+            height: '100%',
+            backgroundColor: '#10b981',
+            borderRadius: '4px',
+            boxShadow: '0 0 12px #10b981',
+            animation: 'loaderSlide 1.2s infinite ease-in-out'
+          }} />
+        </div>
+      </div>
+    );
+  }
+
   // Render Landing Portal Page
-  if (!storeSlug) {
+  if (!storeSlug && !error) {
     return (
       <div className="portal-container ambient-glow-bg" style={{ minHeight: '100vh', color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}>
-        {/* Header (Only shown on home portal for clean focus on login/register) */}
-        {portalTab === 'home' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'var(--header-bg)', position: 'sticky', top: 0, zIndex: 100 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <div style={{ 
-                width: '38px', 
-                height: '38px', 
-                borderRadius: '10px', 
-                background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                border: '1px solid var(--border-light)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                boxShadow: '0 4px 12px var(--primary-glow)',
-                padding: '5px'
-              }}>
-                <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </div>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em' }}>
-                Catavor
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {token ? (
-                <button className="btn-primary" style={{ padding: '0.6rem 1.4rem', fontSize: '0.85rem' }} onClick={() => {
-                  const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
-                  if (user.store_slug) {
-                    setStoreSlug(user.store_slug);
-                    setView('admin');
-                  }
-                }}>
-                  <span>Masuk Dashboard</span>
-                  <ArrowRight size={16} />
-                </button>
-              ) : (
-                <>
-                  <button 
+        {/* Header (Shown on Home and Policy Pages) */}
+        {(portalTab === 'home' || ['terms', 'privacy', 'acceptable_use'].includes(portalTab)) && (
+          <header className="app-header">
+            <div className="container header-content">
+              {['terms', 'privacy', 'acceptable_use'].includes(portalTab) ? (
+                /* Specialized Policy Page Header: Back Button + Policy Page Title Only */
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <button
                     type="button"
-                    onClick={() => setPortalTab('login')} 
-                    style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      color: 'var(--text-secondary)', 
-                      fontSize: '0.85rem', 
-                      fontWeight: 600, 
-                      padding: '0.45rem 0.85rem', 
+                    onClick={() => setPortalTab('home')}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#ffffff',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: '0.55rem',
                       cursor: 'pointer',
-                      transition: 'color 0.2s ease'
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      transition: 'all 0.2s ease'
                     }}
                   >
-                    Masuk
+                    <ArrowLeft size={16} />
+                    <span>Kembali</span>
                   </button>
-                  <button 
-                    type="button"
-                    className="btn-primary" 
-                    onClick={() => { setRegisterStep(1); setPortalTab('register'); }} 
-                    style={{ 
-                      padding: '0.55rem 1.25rem', 
-                      fontSize: '0.85rem',
-                      fontWeight: 800,
-                      borderRadius: '0.6rem'
-                    }}
-                  >
-                    Buat Link Katalog
-                  </button>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
+                  <span style={{ 
+                    fontSize: '1.05rem', 
+                    fontWeight: 800, 
+                    color: '#ffffff', 
+                    letterSpacing: '-0.01em',
+                    fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+                  }}>
+                    {portalTab === 'terms' ? 'Syarat & Ketentuan' : portalTab === 'privacy' ? 'Kebijakan Privasi' : portalTab === 'acceptable_use' ? 'Ketentuan Penggunaan' : 'Kebijakan Layanan'}
+                  </span>
+                </div>
+              ) : (
+                /* Standard Desktop Landing Page Header */
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
+                    <span style={{ 
+                      fontSize: '1.45rem', 
+                      fontWeight: 800, 
+                      color: '#ffffff', 
+                      letterSpacing: '-0.01em',
+                      fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+                    }}>
+                      Catavor
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {token ? (
+                      <button className="btn-primary" style={{ padding: '0.6rem 1.4rem', fontSize: '0.85rem' }} onClick={() => {
+                        const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
+                        if (user.store_slug) {
+                          setStoreSlug(user.store_slug);
+                          setView('admin');
+                        }
+                      }}>
+                        <span>Masuk Dashboard</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          type="button"
+                          onClick={() => setPortalTab('login')} 
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            color: 'var(--text-secondary)', 
+                            fontSize: '0.85rem', 
+                            fontWeight: 600, 
+                            padding: '0.45rem 0.85rem', 
+                            cursor: 'pointer',
+                            transition: 'color 0.2s ease'
+                          }}
+                        >
+                          Masuk
+                        </button>
+                        <button 
+                          type="button"
+                          className="btn-primary" 
+                          onClick={() => { setRegisterStep(1); setPortalTab('register'); }} 
+                          style={{ 
+                            padding: '0.55rem 1.25rem', 
+                            fontSize: '0.85rem',
+                            fontWeight: 800,
+                            borderRadius: '0.6rem'
+                          }}
+                        >
+                          Buat Link Katalog
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -2388,7 +2804,8 @@ function App() {
         )}
 
         {portalTab === 'home' && (
-          <main style={{ padding: '4.5rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+          <>
+            <main style={{ padding: '4.5rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
             {/* Multi-Genre Niche Badges Showcase */}
             <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '2rem' }}>
               <span className="genre-tag-pill"><Utensils size={14} style={{ color: '#f97316' }} /> Kuliner</span>
@@ -2552,7 +2969,30 @@ function App() {
               </div>
             </div>
           </main>
-        )}
+          
+          {/* Portal Footer with Dynamic Policy Links */}
+          <footer style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '2rem 0', background: 'rgba(8, 12, 20, 0.95)', marginTop: '4rem' }}>
+            <div className="container header-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
+                © 2026 <strong>Catavor</strong> Inc. All rights reserved. • Privasi &amp; Data Terlindungi
+              </div>
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', fontSize: '0.8rem' }}>
+                <button type="button" onClick={() => setPortalTab('terms')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontWeight: 600 }}>
+                  Syarat & Ketentuan ({policies.terms?.version || 'v1.0.0'})
+                </button>
+                <span style={{ color: '#475569' }}>•</span>
+                <button type="button" onClick={() => setPortalTab('privacy')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontWeight: 600 }}>
+                  Kebijakan Privasi ({policies.privacy?.version || 'v1.0.0'})
+                </button>
+                <span style={{ color: '#475569' }}>•</span>
+                <button type="button" onClick={() => setPortalTab('acceptable_use')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontWeight: 600 }}>
+                  Ketentuan Penggunaan ({policies.acceptable_use?.version || 'v1.0.0'})
+                </button>
+              </div>
+            </div>
+          </footer>
+        </>
+      )}
 
         {portalTab === 'login' && (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '6rem 2rem' }}>
@@ -2672,22 +3112,7 @@ function App() {
             <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '480px', padding: '2rem 1.75rem', borderRadius: '1.25rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding */}
               <div style={{ textAlign: 'center', marginBottom: '1.5rem', position: 'relative' }}>
-                <div style={{ 
-                  width: '62px', 
-                  height: '62px', 
-                  borderRadius: '18px', 
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                  border: '1px solid rgba(255, 255, 255, 0.95)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  margin: '0 auto 0.85rem auto', 
-                  boxShadow: '0 0 20px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(16, 185, 129, 0.3)', 
-                  padding: '7px'
-                }}>
-                  <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
+                <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif", margin: '0 0 0.35rem 0' }}>
                   Daftar Katalog Catavor
                 </h2>
                 <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>
@@ -2897,6 +3322,18 @@ function App() {
                       <span>Lanjut ke Informasi Katalog</span>
                       <ChevronRight size={16} />
                     </button>
+
+                    <div style={{ textAlign: 'center', marginTop: '0.85rem', fontSize: '0.75rem', color: '#9ca3af', lineHeight: 1.5 }}>
+                      Dengan mendaftar, Anda menyetujui{' '}
+                      <button type="button" onClick={() => setActivePolicyModal('terms')} style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700, padding: 0 }}>
+                        Syarat & Ketentuan ({policies.terms?.version || 'v1.0.0'})
+                      </button>{' '}
+                      dan{' '}
+                      <button type="button" onClick={() => setActivePolicyModal('privacy')} style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700, padding: 0 }}>
+                        Kebijakan Privasi ({policies.privacy?.version || 'v1.0.0'})
+                      </button>{' '}
+                      Catavor.
+                    </div>
                     <button 
                       type="button" 
                       className="btn-secondary btn-full" 
@@ -2916,9 +3353,8 @@ function App() {
                         transition: 'all 0.2s ease'
                       }}
                       onClick={() => {
+                        resetRegisterFormState();
                         setPortalTab('home');
-                        setRegisterError(null);
-                        setFieldErrors({});
                       }}
                     >
                       <Home size={16} />
@@ -3059,7 +3495,11 @@ function App() {
                         cursor: 'pointer',
                         fontWeight: 600
                       }}
-                      onClick={() => window.history.back()}
+                      onClick={() => {
+                        resetRegisterFormState();
+                        setPortalTab('register');
+                        setRegisterStep(1);
+                      }}
                     >
                       <ChevronLeft size={16} />
                       <span>Kembali</span>
@@ -3178,6 +3618,30 @@ function App() {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div style={{ margin: '1rem 0 0.35rem 0', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.78rem', color: '#cbd5e1', lineHeight: 1.5, backgroundColor: agreeTermsError && !agreeTerms ? 'rgba(239, 68, 68, 0.12)' : 'rgba(0,0,0,0.25)', padding: '0.75rem 0.85rem', borderRadius: '0.6rem', border: agreeTermsError && !agreeTerms ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.08)', transition: 'all 0.2s ease' }}>
+                      <input 
+                        type="checkbox" 
+                        id="desktop-register-agree" 
+                        checked={agreeTerms} 
+                        onChange={(e) => { setAgreeTerms(e.target.checked); if (e.target.checked) setAgreeTermsError(false); }} 
+                        onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Harap centang kotak ini untuk menyetujui Syarat & Ketentuan serta Kebijakan Privasi.')}
+                        onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+                        style={{ marginTop: '0.15rem', accentColor: '#10b981', cursor: 'pointer', flexShrink: 0, width: '16px', height: '16px' }} 
+                        required 
+                      />
+                      <label htmlFor="desktop-register-agree" style={{ cursor: 'pointer' }}>
+                        Saya menyetujui <span style={{ color: '#34d399', fontWeight: 700, textDecoration: 'underline' }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviousPortalTab('register'); setPortalTab('terms'); }}>Syarat &amp; Ketentuan</span> serta <span style={{ color: '#34d399', fontWeight: 700, textDecoration: 'underline' }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviousPortalTab('register'); setPortalTab('privacy'); }}>Kebijakan Privasi</span> Catavor.
+                      </label>
+                    </div>
+                    {agreeTermsError && !agreeTerms && (
+                      <div style={{ fontSize: '0.72rem', color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, paddingLeft: '0.2rem' }}>
+                        <AlertTriangle size={13} style={{ color: '#f87171', flexShrink: 0 }} />
+                        <span>Anda harus mencentang persetujuan kebijakan terlebih dahulu.</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.65rem', marginTop: '0.5rem' }}>
@@ -3633,7 +4097,7 @@ function App() {
                           <div className="form-group">
                             <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e5e7eb' }}>Nomor WhatsApp / Catatan Pengirim (Opsional)</label>
                             <input 
-                              type="text" 
+                            type="text" 
                               className="form-input" 
                               placeholder="Contoh: WA 08123456789 - a.n Dzikri" 
                               value={paymentProofNote} 
@@ -3694,6 +4158,8 @@ function App() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
             {/* Modal Sukses Konfirmasi Pembayaran */}
             {showPaymentSuccessModal && (
@@ -3740,11 +4206,11 @@ function App() {
                 </div>
               </div>
             )}
-          </div>
-        )}
-      </div>
-    );
-  }
+
+          {['terms', 'privacy', 'acceptable_use'].includes(portalTab) && renderPolicyPage(portalTab as any)}
+        </div>
+      );
+    }
 
   return (
     <>
@@ -4108,68 +4574,105 @@ function App() {
         </div>
       ) : (
         <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <header className="app-header">
-        <div className="container header-content">
-          <div className="logo-area">
-            {renderStoreLogo(settings.store_logo_url, 'logo-icon', 28)}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {(() => {
-                const titleText = settings.store_title || 'Catavor';
-                const scale = getDesktopHeaderScale(titleText);
-                return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
-                    {renderStoreLogo(settings.store_logo_url, 'logo-icon', scale.iconSize)}
-                    <h1 
-                      className="logo-text" 
-                      style={{ margin: 0, fontSize: scale.titleFontSize, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: scale.maxWidth, transition: 'font-size 0.2s ease' }} 
-                      title={titleText}
-                    >
-                      {titleText}
-                    </h1>
-                    {settings.plan === 'free' && (
-                      <span style={{ fontSize: scale.badgeFontSize, fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '12px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                        Free by Catavor
-                      </span>
-                    )}
-                  </div>
-                );
-              })()}
-              <button
+      {/* Header (Shows stylish Catavor brand header on 404 error pages, and store header on valid pages) */}
+      {error ? (
+        <header className="app-header">
+          <div className="container header-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <span style={{ 
+                fontSize: '1.45rem', 
+                fontWeight: 800, 
+                color: '#ffffff',
+                letterSpacing: '-0.01em',
+                fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+              }}>
+                Catavor
+              </span>
+            </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <button 
                 type="button"
-                onClick={handleShareStore}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
+                className="btn-primary" 
+                onClick={() => { window.location.href = window.location.origin; }}
+                style={{ 
+                  padding: '0.5rem 1.15rem', 
+                  fontSize: '0.82rem', 
+                  fontWeight: 800, 
+                  borderRadius: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
-                  padding: '0.25rem',
-                  borderRadius: '4px',
-                  transition: 'all 0.2s',
-                  lineHeight: 1
+                  gap: '0.45rem',
+                  cursor: 'pointer'
                 }}
-                title="Bagikan Link Toko"
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
               >
-                <Share2 size={16} />
+                <Globe size={15} />
+                <span>Portal Utama</span>
               </button>
             </div>
           </div>
-          <div className="nav-actions">
-            {view !== 'catalog' && (
-              <button 
-                className="btn-primary" 
-                onClick={goToCatalog}
-              >
-                Lihat Katalog
-              </button>
-            )}
+        </header>
+      ) : (
+        <header className="app-header">
+          <div className="container header-content">
+            <div className="logo-area">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {(() => {
+                  const titleText = settings.store_title || 'Catavor';
+                  const scale = getDesktopHeaderScale(titleText);
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
+                      {renderStoreLogo(settings.store_logo_url, 'logo-icon', scale.iconSize)}
+                      <h1 
+                        className="logo-text" 
+                        style={{ margin: 0, fontSize: scale.titleFontSize, fontWeight: 800, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: scale.maxWidth, transition: 'font-size 0.2s ease' }} 
+                        title={titleText}
+                      >
+                        {titleText}
+                      </h1>
+                      {settings.plan === 'free' && (
+                        <span style={{ fontSize: scale.badgeFontSize, fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '12px', backgroundColor: 'rgba(16,185,129,0.15)', color: 'var(--primary)', border: '1px solid rgba(16,185,129,0.3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          Free by Catavor
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+                <button
+                  type="button"
+                  onClick={handleShareStore}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.25rem',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s',
+                    lineHeight: 1
+                  }}
+                  title="Bagikan Link Toko"
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                >
+                  <Share2 size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="nav-actions">
+              {view !== 'catalog' && (
+                <button 
+                  className="btn-primary" 
+                  onClick={goToCatalog}
+                >
+                  Lihat Katalog
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Container */}
       <main className="container" style={{ paddingBottom: '4rem' }}>
@@ -4178,6 +4681,56 @@ function App() {
              CUSTOMER VIEW
              ======================================================== */
           <>
+            {/* Catavor SaaS Floating Banner for Free Plan Stores */}
+            {settings.plan === 'free' && (
+              <div 
+                className="glass-panel animate-fade-in"
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  borderRadius: '0.75rem',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(56, 189, 248, 0.08) 100%)',
+                  border: '1px solid rgba(16, 185, 129, 0.28)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  marginBottom: '1.5rem',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', flexShrink: 0 }}>
+                    <Sparkles size={16} />
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#e5e7eb' }}>
+                    <span>Ingin membuat katalog digital seperti <strong>{settings.store_title || 'toko ini'}</strong>?</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStoreSlug(null);
+                    setPortalTab('register');
+                    setRegisterStep(1);
+                  }}
+                  style={{
+                    padding: '0.45rem 1rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    borderRadius: '0.5rem',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                  }}
+                >
+                  Buat Katalog Anda Gratis ⚡
+                </button>
+              </div>
+            )}
+
             {/* Hero Section */}
             <section className="hero-section">
               <h2 className="hero-title">
@@ -4236,13 +4789,92 @@ function App() {
             )}
 
             {error && (
-              <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                <ShieldAlert size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Masalah Sambungan</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>{error}</p>
-                <button className="btn-secondary" style={{ marginTop: '1.5rem', display: 'inline-flex' }} onClick={loadData}>
-                  Hubungkan Ulang
-                </button>
+              <div 
+                className="glass-panel animate-fade-in" 
+                style={{ 
+                  padding: '5rem 2.5rem 3.5rem 2.5rem', 
+                  textAlign: 'center', 
+                  borderRadius: '1.5rem',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(9, 14, 12, 0.95) 100%)',
+                  boxShadow: '0 24px 60px rgba(0, 0, 0, 0.6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1.35rem',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  maxWidth: '680px',
+                  margin: '2rem auto'
+                }}
+              >
+                {/* Ambient Glow Background */}
+                <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '180px', height: '180px', borderRadius: '50%', backgroundColor: 'rgba(245, 158, 11, 0.12)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '180px', height: '180px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.12)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+
+                {/* 404 Status Pill */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.35rem 1rem', borderRadius: '20px', backgroundColor: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#f59e0b', boxShadow: '0 0 10px #f59e0b' }} />
+                  404 • Halaman / Katalog Tidak Ditemukan
+                </div>
+
+                {/* Glowing Icon Container */}
+                <div 
+                  style={{ 
+                    width: '92px', 
+                    height: '92px', 
+                    borderRadius: '50%', 
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)', 
+                    border: '2px solid rgba(245, 158, 11, 0.35)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: '#f59e0b',
+                    boxShadow: '0 0 36px rgba(245, 158, 11, 0.28)'
+                  }}
+                >
+                  {storeSlug ? <Store size={46} /> : <Globe size={46} />}
+                </div>
+
+                {/* Text Content */}
+                <div>
+                  <h3 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.6rem', letterSpacing: '-0.02em' }}>
+                    {storeSlug ? 'Katalog Tidak Ditemukan' : 'Halaman Tidak Ditemukan'}
+                  </h3>
+                  <p style={{ fontSize: '0.94rem', color: '#9ca3af', maxWidth: '480px', margin: '0 auto', lineHeight: 1.65 }}>
+                    {storeSlug 
+                      ? <>Tautan atau username katalog <strong style={{ color: '#e5e7eb' }}>catavor.com/{storeSlug}</strong> tidak terdaftar atau belum diaktifkan di platform Catavor.</>
+                      : <>Alamat tautan URL <strong style={{ color: '#e5e7eb' }}>{window.location.pathname}</strong> tidak terdaftar atau salah ketik.</>}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={() => { window.location.href = window.location.origin; }}
+                    style={{ padding: '0.85rem 1.75rem', fontSize: '0.9rem', fontWeight: 800, borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 18px rgba(16, 185, 129, 0.35)' }}
+                  >
+                    <Sparkles size={18} />
+                    Buat Katalog Anda Gratis ⚡
+                  </button>
+                  <button 
+                    className="btn-secondary" 
+                    onClick={() => { window.location.href = window.location.origin; }}
+                    style={{ padding: '0.85rem 1.5rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.45rem', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)' }}
+                  >
+                    <Globe size={16} />
+                    Ke Halaman Utama Portal
+                  </button>
+                </div>
+
+                {/* Brand Platform Footer */}
+                <div style={{ borderTop: '1px dashed rgba(255, 255, 255, 0.1)', paddingTop: '1rem', width: '100%', marginTop: '0.75rem' }}>
+                  <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>
+                    Powered by <strong style={{ color: '#9ca3af' }}>Catavor</strong> • Multi-Tenant Digital Catalog Platform
+                  </p>
+                </div>
               </div>
             )}
 
@@ -4288,10 +4920,10 @@ function App() {
                         Katalog Masih Kosong
                       </h3>
                       <p style={{ fontSize: '0.9rem', color: '#9ca3af', maxWidth: '460px', margin: '0 auto', lineHeight: 1.55 }}>
-                        Pemilik toko <strong>{settings.store_title || 'ini'}</strong> belum mengunggah postingan produk ke dalam katalog ini. Silakan kunjungi kembali nanti!
+                        Pemilik catalog <strong>{settings.store_title || 'ini'}</strong> belum mengunggah data ke dalam katalog ini. Silakan kunjungi kembali nanti!
                       </p>
                     </div>
-                    {token && (
+                    {isStoreOwner && (
                       <button 
                         className="btn-primary" 
                         onClick={() => setView('admin')}
@@ -4458,9 +5090,58 @@ function App() {
           </>
         ) : view === 'admin' ? (
           /* ========================================================
-             ADMIN SYSTEM WITH STRICT LOGIN
+             ADMIN SYSTEM WITH STRICT MULTI-TENANT GUARD
              ======================================================== */
-          !token ? (
+          token && !isStoreOwner ? (
+            /* 403 FORBIDDEN ACCESS CARD FOR OTHER STORE OWNER */
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '520px', margin: '4rem auto', padding: '2.5rem', textAlign: 'center' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: '#ef4444' }}>
+                <ShieldAlert size={32} />
+              </div>
+              
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.25rem' }}>
+                403 • Akses Admin Ditolak
+              </span>
+              
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.75rem' }}>
+                Izin Pengelola Tidak Ditemukan
+              </h2>
+              
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+                Anda terautentikasi sebagai pengelola katalog <strong style={{ color: 'var(--primary)' }}>"{adminUser?.store_slug || 'lain'}"</strong>, tetapi mencoba mengakses panel admin katalog <strong style={{ color: '#ef4444' }}>"{storeSlug}"</strong>. Anda tidak memiliki wewenang untuk mengelola atau melihat data sensitif katalog ini.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {adminUser?.store_slug && (
+                  <button 
+                    type="button" 
+                    className="btn-primary" 
+                    onClick={() => window.location.href = `/${adminUser.store_slug}/admin`}
+                    style={{ padding: '0.75rem', fontSize: '0.88rem', fontWeight: 700, width: '100%' }}
+                  >
+                    Ke Dashboard Katalog Saya ({adminUser.store_slug}) &rarr;
+                  </button>
+                )}
+                
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={handleLogout}
+                  style={{ padding: '0.75rem', fontSize: '0.85rem', fontWeight: 600, width: '100%' }}
+                >
+                  Keluar Sesi / Ganti Akun
+                </button>
+                
+                <button 
+                  type="button" 
+                  onClick={() => window.location.href = `/${storeSlug}`}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.25rem', textDecoration: 'underline' }}
+                >
+                  Kembali ke Katalog Publik {storeSlug}
+                </button>
+              </div>
+            </div>
+          ) : !token ? (
             /* ADMIN LOGIN SCREEN (SOLID DESIGN) */
             <div className="glass-panel animate-fade-in" style={{ maxWidth: '420px', margin: '4rem auto', padding: '2.5rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
@@ -4786,6 +5467,12 @@ function App() {
                     Artikel & Edukasi
                   </button>
                 )}
+                <button 
+                  className={`admin-tab ${adminTab === 'policies' ? 'active' : ''}`}
+                  onClick={() => { setAdminTab('policies'); fetchPolicies(); fetchPolicyAuditLogs(); }}
+                >
+                  Legal & Kebijakan Platform
+                </button>
               </div>
 
               {/* Admin Tabs Content */}
@@ -5627,6 +6314,236 @@ function App() {
                     {profileLoading ? 'Memproses...' : 'Perbarui Profil Admin'}
                   </button>
                 </form>
+              )}
+
+              {adminTab === 'policies' && (
+                <div className="glass-panel animate-fade-in" style={{ padding: '2rem', marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+                        Manajemen Kebijakan, Privasi & Audit Trail Pengguna
+                      </h2>
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>
+                        Kelola isi kebijakan platform, terbitkan versi baru (immutable versioning), dan pantau log bukti persetujuan pengguna.
+                      </p>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', backgroundColor: 'rgba(16,185,129,0.12)', padding: '0.35rem 0.75rem', borderRadius: '999px', border: '1px solid rgba(16,185,129,0.25)' }}>
+                        UU PDP & Consumer Protection Compliant
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Policy Cards Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
+                    {[
+                      { key: 'terms', name: 'Syarat & Ketentuan', icon: FileText },
+                      { key: 'privacy', name: 'Kebijakan Privasi', icon: Shield },
+                      { key: 'acceptable_use', name: 'Ketentuan Penggunaan', icon: Lock }
+                    ].map(item => {
+                      const pol = policies[item.key] || { version: 'v1.0.0', title: item.name, content: '' };
+                      const IconComp = item.icon;
+                      return (
+                        <div key={item.key} style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-light)', borderRadius: '0.85rem', padding: '1.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                              <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <IconComp size={18} color="var(--primary)" />
+                              </div>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#34d399', backgroundColor: 'rgba(16,185,129,0.12)', padding: '0.15rem 0.55rem', borderRadius: '999px' }}>
+                                Versi {pol.version}
+                              </span>
+                            </div>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: '#ffffff' }}>
+                              {pol.title}
+                            </h3>
+                            <p style={{ fontSize: '0.78rem', color: '#94a3b8', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0, lineHeight: 1.4 }}>
+                              {pol.content}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => {
+                              setEditingPolicy({
+                                type: item.key,
+                                version: pol.version,
+                                title: pol.title,
+                                content: pol.content
+                              });
+                            }}
+                            style={{ marginTop: '1.25rem', padding: '0.45rem 0.85rem', fontSize: '0.78rem', width: '100%', justifyContent: 'center' }}
+                          >
+                            <Edit size={14} />
+                            <span>Edit & Terbitkan Versi Baru</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Policy Edit Form */}
+                  {editingPolicy && (
+                    <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--primary)', borderRadius: '1rem', padding: '1.5rem', marginBottom: '2rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>
+                          Edit & Terbitkan Versi Baru: {editingPolicy.title}
+                        </h3>
+                        <button type="button" onClick={() => setEditingPolicy(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                          <X size={18} />
+                        </button>
+                      </div>
+
+                      {policySaveMsg && (
+                        <div style={{ padding: '0.65rem 1rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.82rem', backgroundColor: policySaveMsg.type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)', color: policySaveMsg.type === 'success' ? '#34d399' : '#f87171', border: '1px solid currentColor' }}>
+                          {policySaveMsg.text}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e5e7eb', display: 'block', marginBottom: '0.35rem' }}>Judul Dokumen</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            value={editingPolicy.title}
+                            onChange={(e) => setEditingPolicy({ ...editingPolicy, title: e.target.value })}
+                            style={{ borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e5e7eb', display: 'block', marginBottom: '0.35rem' }}>Nomor Versi Baru (Misal v1.1.0)</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            value={editingPolicy.version}
+                            onChange={(e) => setEditingPolicy({ ...editingPolicy, version: e.target.value })}
+                            placeholder="v1.1.0"
+                            style={{ borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e5e7eb', display: 'block', marginBottom: '0.35rem' }}>Isi Dokumen Kebijakan</label>
+                        <textarea
+                          className="form-input"
+                          rows={8}
+                          value={editingPolicy.content}
+                          onChange={(e) => setEditingPolicy({ ...editingPolicy, content: e.target.value })}
+                          style={{ borderRadius: '0.5rem', padding: '0.75rem', fontSize: '0.85rem', lineHeight: '1.6', width: '100%' }}
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                        <button type="button" className="btn-secondary" onClick={() => setEditingPolicy(null)} style={{ padding: '0.5rem 1rem', fontSize: '0.82rem' }}>
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          disabled={policySaveLoading}
+                          onClick={async () => {
+                            setPolicySaveLoading(true);
+                            setPolicySaveMsg(null);
+                            try {
+                              const res = await fetch(`${API_BASE}/settings/policies`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                  policy_type: editingPolicy.type,
+                                  version: editingPolicy.version,
+                                  title: editingPolicy.title,
+                                  content: editingPolicy.content
+                                })
+                              });
+                              const data = await res.json();
+                              if (data.success) {
+                                setPolicySaveMsg({ type: 'success', text: data.message });
+                                fetchPolicies();
+                                setTimeout(() => setEditingPolicy(null), 1200);
+                              } else {
+                                setPolicySaveMsg({ type: 'error', text: 'Gagal memperbarui kebijakan.' });
+                              }
+                            } catch (err) {
+                              setPolicySaveMsg({ type: 'error', text: 'Koneksi gagal. Coba lagi.' });
+                            } finally {
+                              setPolicySaveLoading(false);
+                            }
+                          }}
+                          style={{ padding: '0.5rem 1.25rem', fontSize: '0.82rem' }}
+                        >
+                          {policySaveLoading ? 'Mempublikasikan...' : 'Publikasikan Versi Baru'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Audit Trail Log Section */}
+                  <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+                          Log Audit Persetujuan Pengguna (Immutable Audit Trail)
+                        </h3>
+                        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0.2rem 0 0 0' }}>
+                          Catatan permanen persetujuan pengguna saat registrasi. Teks versi lama tersimpan tak terubah walau ada kebijakan baru.
+                        </p>
+                      </div>
+                      <button type="button" className="btn-secondary" onClick={fetchPolicyAuditLogs} style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
+                        Muat Ulang Log
+                      </button>
+                    </div>
+
+                    <div style={{ overflowX: 'auto', borderRadius: '0.75rem', border: '1px solid var(--border-light)' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#cbd5e1', borderBottom: '1px solid var(--border-light)' }}>
+                            <th style={{ padding: '0.75rem 1rem' }}>ID / Waktu</th>
+                            <th style={{ padding: '0.75rem 1rem' }}>Pengguna / Toko</th>
+                            <th style={{ padding: '0.75rem 1rem' }}>Jenis Kebijakan</th>
+                            <th style={{ padding: '0.75rem 1rem' }}>Versi Disetujui</th>
+                            <th style={{ padding: '0.75rem 1rem' }}>IP Address</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {policyAuditLogs.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                                Belum ada log pendaftaran persetujuan pengguna.
+                              </td>
+                            </tr>
+                          ) : (
+                            policyAuditLogs.map((log: any) => (
+                              <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0' }}>
+                                <td style={{ padding: '0.75rem 1rem', fontFamily: 'monospace' }}>
+                                  #{log.id} • {new Date(log.agreed_at || log.created_at).toLocaleString('id-ID')}
+                                </td>
+                                <td style={{ padding: '0.75rem 1rem', fontWeight: 700, color: '#ffffff' }}>
+                                  {log.store_slug || `User #${log.user_id}`}
+                                </td>
+                                <td style={{ padding: '0.75rem 1rem', textTransform: 'capitalize' }}>
+                                  {log.policy_type === 'terms' ? 'Syarat & Ketentuan' : log.policy_type === 'privacy' ? 'Kebijakan Privasi' : 'Ketentuan Penggunaan'}
+                                </td>
+                                <td style={{ padding: '0.75rem 1rem' }}>
+                                  <span style={{ fontWeight: 800, color: '#34d399', backgroundColor: 'rgba(16,185,129,0.15)', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                                    {log.version}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '0.75rem 1rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                  {log.ip_address || '127.0.0.1'}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {adminTab === 'articles' && (
@@ -6524,61 +7441,6 @@ function App() {
           </div>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="app-footer" style={{ padding: '2rem 0', borderTop: '1px solid var(--border-light)' }}>
-        <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', textAlign: 'center' }}>
-          <p style={{ margin: 0, fontSize: '0.85rem' }}>&copy; {new Date().getFullYear()} {settings.store_title || 'Catavor'} - Galeri Hewan Hias Premium. Dibuat dengan React & Laravel.</p>
-          {settings.about_disclaimer && (
-            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)', maxWidth: '650px', lineHeight: '1.4' }}>
-              <strong>Disclaimer:</strong> {settings.about_disclaimer}
-            </p>
-          )}
-
-          {/* Social Media Links */}
-          {(() => {
-            const parsedLinks = (() => {
-              try {
-                return settings.social_links ? JSON.parse(settings.social_links) : [];
-              } catch (e) {
-                return [];
-              }
-            })();
-
-            if (!Array.isArray(parsedLinks) || parsedLinks.length === 0) return null;
-
-            return (
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '0.75rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                {parsedLinks.map((link: any, idx: number) => (
-                  <a
-                    key={idx}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                      borderRadius: '0.25rem',
-                      backgroundColor: 'rgba(255,255,255,0.02)',
-                      border: '1px solid var(--border-light)',
-                      color: 'var(--text-primary)',
-                      transition: 'var(--transition-smooth)'
-                    }}
-                  >
-                    {renderSocialIcon(link.platform, 14, 'var(--primary)')}
-                    <span>{link.platform}</span>
-                  </a>
-                ))}
-              </div>
-            );
-          })()}
-        </div>
-      </footer>
     </div>
     )}
       {/* CUSTOM CONFIRMATION DIALOG FOR MASTER OPTION DELETION */}
@@ -7526,6 +8388,77 @@ function App() {
                 Perbarui
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Glassmorphism Policy Modal Popup */}
+      {activePolicyModal && policies[activePolicyModal] && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '680px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', borderRadius: '1.25rem', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.12)', boxShadow: '0 25px 60px rgba(0,0,0,0.7)', background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 15, 26, 0.98) 100%)' }}>
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(15, 23, 42, 0.95)' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
+                  {policies[activePolicyModal].title}
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#34d399', background: 'rgba(16, 185, 129, 0.15)', padding: '0.15rem 0.6rem', borderRadius: '999px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    Versi {policies[activePolicyModal].version}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                    Resmi • PT Catavor Media Digital
+                  </span>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setActivePolicyModal(null)} 
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ padding: '1.75rem 1.5rem', overflowY: 'auto', flex: 1, color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
+              {policies[activePolicyModal].content}
+            </div>
+            <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(15, 23, 42, 0.95)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                Perlindungan Data & UU PDP Compliant
+              </span>
+              <button 
+                type="button"
+                className="btn-primary" 
+                onClick={() => setActivePolicyModal(null)} 
+                style={{ padding: '0.5rem 1.35rem', fontSize: '0.82rem', borderRadius: '0.5rem' }}
+              >
+                Tutup & Mengerti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK POLICY POPOVER MODAL FOR FORMS */}
+      {showQuickPolicyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => setShowQuickPolicyModal(null)}>
+          <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '560px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', padding: '1.5rem', borderRadius: '1.25rem', border: '1px solid rgba(255,255,255,0.15)', background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(9, 14, 26, 0.99) 100%)', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.85rem', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ShieldCheck size={20} style={{ color: '#10b981' }} />
+                <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff' }}>
+                  {showQuickPolicyModal === 'terms' ? 'Syarat & Ketentuan' : showQuickPolicyModal === 'privacy' ? 'Kebijakan Privasi' : 'Ketentuan Penggunaan'}
+                </span>
+              </div>
+              <button type="button" onClick={() => setShowQuickPolicyModal(null)} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+            
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.35rem', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {policies[showQuickPolicyModal]?.content || 'Memuat dokumen...'}
+            </div>
+
+            <button type="button" className="btn-primary btn-full" onClick={() => setShowQuickPolicyModal(null)} style={{ marginTop: '1.25rem', padding: '0.75rem', fontSize: '0.85rem', fontWeight: 800 }}>
+              Saya Mengerti &amp; Tutup
+            </button>
           </div>
         </div>
       )}

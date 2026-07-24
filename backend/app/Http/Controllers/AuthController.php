@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Store;
+use App\Models\PolicyVersion;
+use App\Models\UserPolicyAgreement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -90,6 +92,24 @@ class AuthController extends Controller
             'master_statuses' => ['Tersedia (Ready Stock)', 'Habis Terjual (Out of Stock)', 'Pre-Order'],
             'master_shipping_coverages' => ['Bisa Kirim se-Indonesia', 'Pulau Jawa Saja', 'Ambil Sendiri di Toko (Pickup)']
         ]);
+
+        // Log immutable Policy Agreement Audit Trail for Terms & Privacy
+        foreach (['terms', 'privacy'] as $pType) {
+            $latestPolicy = PolicyVersion::where('policy_type', $pType)->orderBy('id', 'desc')->first();
+            $versionStr = $latestPolicy ? $latestPolicy->version : 'v1.0.0';
+            $snapshotContent = $latestPolicy ? $latestPolicy->content : 'Default Catavor Legal Policy v1.0.0';
+
+            UserPolicyAgreement::create([
+                'user_id' => $user->id,
+                'store_slug' => $store->slug,
+                'policy_type' => $pType,
+                'version' => $versionStr,
+                'content_snapshot' => $snapshotContent,
+                'ip_address' => $request->ip(),
+                'user_agent' => substr($request->userAgent() ?? 'Web Browser', 0, 250),
+                'agreed_at' => now()
+            ]);
+        }
 
         $token = $user->createToken('admin-token')->plainTextToken;
 

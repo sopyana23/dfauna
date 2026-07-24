@@ -139,10 +139,13 @@ class CommentController extends Controller
         ]);
     }
 
-    // Admin: List all comments in the system
-    public function getAdminComments()
+    // Admin: List comments for articles belonging to the authenticated user
+    public function getAdminComments(Request $request)
     {
-        $comments = Comment::with([
+        $user = $request->user();
+        $comments = Comment::whereHas('article', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->with([
             'article:id,title,slug',
             'parent:id,name'
         ])->latest()->get();
@@ -154,14 +157,22 @@ class CommentController extends Controller
     }
 
     // Admin: Approve a comment
-    public function approveComment($id)
+    public function approveComment(Request $request, $id)
     {
-        $comment = Comment::find($id);
+        $user = $request->user();
+        $comment = Comment::with('article')->find($id);
         if (!$comment) {
             return response()->json([
                 'success' => false,
                 'message' => 'Komentar tidak ditemukan.'
             ], 404);
+        }
+
+        if ($comment->article && $comment->article->user_id && $comment->article->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Komentar ini bukan milik artikel Anda.'
+            ], 403);
         }
 
         $comment->update(['status' => 'approved']);
@@ -173,14 +184,22 @@ class CommentController extends Controller
     }
 
     // Admin: Delete a comment
-    public function destroyComment($id)
+    public function destroyComment(Request $request, $id)
     {
-        $comment = Comment::find($id);
+        $user = $request->user();
+        $comment = Comment::with('article')->find($id);
         if (!$comment) {
             return response()->json([
                 'success' => false,
                 'message' => 'Komentar tidak ditemukan.'
             ], 404);
+        }
+
+        if ($comment->article && $comment->article->user_id && $comment->article->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Komentar ini bukan milik artikel Anda.'
+            ], 403);
         }
 
         $comment->delete();

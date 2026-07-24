@@ -6,6 +6,7 @@ import {
   Info, 
   BookOpen, 
   Settings, 
+  ShieldAlert,
   Trash2, 
   Edit3, 
   Loader,
@@ -68,6 +69,9 @@ import {
   Bell
 } from 'lucide-react'
 import './App.css'
+import logoHeaderImg from './assets/logo-header.png'
+import appLogoImg from './assets/logo.png'
+import { APP_LOGO_BASE64 } from './assets/logoBase64'
 
 interface ShopSettings {
   plan?: string
@@ -383,12 +387,21 @@ function App() {
   // Parse path for store slug: /u/{slug}
   const getStoreSlug = () => {
     const path = window.location.pathname.toLowerCase();
-    if (path === '/' || path === '' || path === '/login' || path.startsWith('/register')) return null;
-    const match = path.match(/^\/([a-zA-Z0-9\-]+)/);
+    const parts = path.split('/').filter(Boolean);
     const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets', 'login', 'register'];
-    if (match && !reserved.includes(match[1])) {
-      return match[1];
+    
+    if (parts.length === 0) return null;
+    
+    if (parts.length === 1) {
+      if (!reserved.includes(parts[0])) return parts[0];
+      return null;
     }
+    
+    if (parts.length === 2 && (parts[1] === 'admin' || parts[1] === 'about')) {
+      if (!reserved.includes(parts[0])) return parts[0];
+      return null;
+    }
+    
     return null;
   };
   const [storeSlug, setStoreSlug] = useState<string | null>(getStoreSlug());
@@ -400,7 +413,7 @@ function App() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlPlan = urlParams.get('plan');
 
-      let pathTab: 'home' | 'login' | 'register' = 'home';
+      let pathTab: 'home' | 'login' | 'register' | 'terms' | 'privacy' | 'acceptable_use' = 'home';
       let pathStep: 1 | 2 | 3 = 1;
 
       if (path === '/login') {
@@ -414,14 +427,25 @@ function App() {
       } else if (path === '/register/step-3') {
         pathTab = 'register';
         pathStep = 3;
+      } else if (path === '/terms' || path === '/syarat-ketentuan') {
+        pathTab = 'terms';
+      } else if (path === '/privacy' || path === '/kebijakan-privasi') {
+        pathTab = 'privacy';
+      } else if (path === '/acceptable-use' || path === '/acceptable_use' || path === '/ketentuan-penggunaan') {
+        pathTab = 'acceptable_use';
       } else {
         const queryTab = urlParams.get('tab');
         const queryStep = urlParams.get('step');
-        if (queryTab === 'login' || queryTab === 'register') {
-          pathTab = queryTab;
+        if (['login', 'register', 'terms', 'privacy', 'acceptable_use'].includes(queryTab || '')) {
+          pathTab = queryTab as any;
           if (queryStep) {
             const stepNum = parseInt(queryStep, 10);
             if (stepNum >= 1 && stepNum <= 3) pathStep = stepNum as 1 | 2 | 3;
+          }
+        } else {
+          const savedTab = sessionStorage.getItem('catavor_portal_tab');
+          if (['terms', 'privacy', 'acceptable_use'].includes(savedTab || '')) {
+            pathTab = savedTab as any;
           }
         }
       }
@@ -450,7 +474,7 @@ function App() {
 
   const initialRegState = loadSavedRegistrationState();
 
-  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register' | 'checkout'>(initialRegState.tab);
+  const [portalTab, setPortalTab] = useState<'home' | 'login' | 'register' | 'checkout' | 'terms' | 'privacy' | 'acceptable_use'>(initialRegState.tab as any);
   const [registerPlan, setRegisterPlan] = useState<'free' | 'pro'>(initialRegState.plan);
   const [registerStep, setRegisterStep] = useState<1 | 2 | 3>(initialRegState.step);
   const [paymentMethod, setPaymentMethod] = useState<'bank' | 'qris'>('bank');
@@ -465,6 +489,273 @@ function App() {
   const [showNotificationModal, setShowNotificationModal] = useState<boolean>(false);
   const [heroEmailInput, setHeroEmailInput] = useState('');
   const [featuredStores, setFeaturedStores] = useState<any[]>([]);
+  // Policy & Privacy System States
+  const [policies, setPolicies] = useState<{ [key: string]: { type: string, version: string, title: string, content: string, published_at?: string } }>({
+    terms: {
+      type: 'terms',
+      version: 'v1.0.0',
+      title: 'Syarat & Ketentuan Layanan',
+      content: '### 1. Ketentuan Umum Layanan Catavor\nCatavor adalah platform penyedia katalog digital dan biolink bisnis online bagi pemilik usaha (Merchant).\n\n### 2. Hak & Kewajiban Merchant\n- Merchant bertanggung jawab penuh atas kebenaran informasi produk, stok, harga, dan foto yang diunggah.\n- Dilarang menjual barang atau jasa ilegal yang melanggar hukum Republik Indonesia.\n\n### 3. Batasan Tanggung Jawab Transaksi\nCatavor menyediakan sarana katalog digital & alat komunikasi pesanan (WhatsApp Direct/Rekber).\n\n### 4. Hak Cipta & Kekayaan Intelektual\nSeluruh desain platform, kode, dan merek dagang Catavor adalah milik PT Catavor Media Digital.'
+    },
+    privacy: {
+      type: 'privacy',
+      version: 'v1.0.0',
+      title: 'Kebijakan Privasi & Perlindungan Data',
+      content: '### 1. Pengumpulan & Penggunaan Data\nKami mengumpulkan informasi yang Anda berikan secara langsung saat mendaftar, seperti nama toko, alamat email, nomor WhatsApp bisnis.\n\n### 2. Keamanan & Enkripsi Data\nSeluruh data pengguna disimpan pada infrastruktur server terenkripsi sesuai Standar Keamanan & Privasi Data Global.\n\n### 3. Komitmen Kerahasiaan\nCatavor TIDAK AKAN PERNAH menjual, menyewakan, atau membagikan data pribadi atau data pelanggan toko Anda kepada pihak ketiga.\n\n### 4. Hak Pengguna Atas Data\nAnda berhak memperbarui, mengunduh, atau mengajukan penghapusan data toko Anda kapan saja.'
+    },
+    acceptable_use: {
+      type: 'acceptable_use',
+      version: 'v1.0.0',
+      title: 'Ketentuan Penggunaan & Komunitas',
+      content: '### 1. Larangan Konten & Barang Ilegal\nPengguna dilarang keras menampilkan, menawarkan, atau menjual narkotika, senjata api/tajam ilegal, satwa liar dilindungi, atau produk bajakan.\n\n### 2. Penangguhan & Pemblokiran Akun\nPelanggaran terhadap ketentuan penggunaan ini akan mengakibatkan penangguhan atau pemblokiran permanen.'
+    }
+  });
+
+  const fetchPolicies = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/policies`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setPolicies(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch policies:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
+
+  // Guarantee auto-scroll to top on page/tab navigation (Mobile & Tablet)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [portalTab, storeSlug, registerStep]);
+
+  // Helper to cleanly format Markdown policy content into React Elements
+  const renderFormattedPolicyContent = (text: string) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return null;
+
+          // Check for headings: ### Header Title or ## Header Title or # Header Title
+          if (trimmed.startsWith('#')) {
+            const headerText = trimmed.replace(/^#+\s*/, '');
+            return (
+              <div key={idx} style={{ marginTop: idx > 0 ? '0.85rem' : '0.2rem', marginBottom: '0.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                  <span style={{ width: '4px', height: '16px', borderRadius: '4px', background: 'linear-gradient(180deg, #10b981 0%, #059669 100%)', flexShrink: 0, boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }} />
+                  <h4 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif" }}>
+                    {headerText}
+                  </h4>
+                </div>
+              </div>
+            );
+          }
+
+          // Check for list items: - item or • item
+          if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+            const itemText = trimmed.replace(/^[-•]\s*/, '');
+            return (
+              <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', paddingLeft: '0.6rem', color: '#cbd5e1', fontSize: '0.82rem', lineHeight: '1.6' }}>
+                <span style={{ color: '#10b981', fontSize: '0.9rem', lineHeight: '1.4', flexShrink: 0, fontWeight: 'bold' }}>•</span>
+                <span>{itemText}</span>
+              </div>
+            );
+          }
+
+          // Regular paragraph text
+          return (
+            <p key={idx} style={{ margin: 0, color: '#cbd5e1', fontSize: '0.82rem', lineHeight: '1.65' }}>
+              {trimmed}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Universal Mobile Footer with Touch-Optimized & Premium Styling
+  const renderMobileFooter = () => (
+    <footer style={{ 
+      borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
+      padding: '2.25rem 1rem 2.5rem 1rem', 
+      background: 'linear-gradient(180deg, rgba(8, 12, 20, 0.85) 0%, rgba(5, 8, 14, 0.98) 100%)', 
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      marginTop: '3rem', 
+      textAlign: 'center',
+      position: 'relative',
+      zIndex: 20,
+      boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.4)'
+    }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', maxWidth: '480px', margin: '0 auto' }}>
+        
+        {/* Brand & Badge Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ 
+            fontSize: '1.15rem', 
+            fontWeight: 900, 
+            color: '#ffffff', 
+            letterSpacing: '-0.02em',
+            fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+          }}>
+            Catavor
+          </span>
+          <span style={{
+            fontSize: '0.62rem',
+            fontWeight: 800,
+            padding: '0.15rem 0.55rem',
+            borderRadius: '999px',
+            background: 'rgba(16, 185, 129, 0.12)',
+            color: '#34d399',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase'
+          }}>
+            Katalog & Biolink
+          </span>
+        </div>
+
+        {/* Clean Interactive Policy Links (Inline & Separated with Dots) */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          flexWrap: 'wrap', 
+          gap: '0.4rem 0.75rem', 
+          fontSize: '0.74rem', 
+          color: '#94a3b8',
+          margin: '0.2rem 0'
+        }}>
+          <button 
+            type="button" 
+            onClick={(e) => { e.stopPropagation(); setPortalTab('terms'); }}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: '#cbd5e1', 
+              cursor: 'pointer', 
+              fontWeight: 600, 
+              padding: '0.25rem 0.4rem',
+              borderRadius: '0.35rem',
+              fontSize: '0.74rem',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              transition: 'all 0.2s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <span>Syarat & Ketentuan</span>
+            <span style={{ fontSize: '0.62rem', opacity: 0.75, color: '#34d399', background: 'rgba(16,185,129,0.12)', padding: '0.05rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(16,185,129,0.2)' }}>
+              {policies.terms?.version || 'v1.0.0'}
+            </span>
+          </button>
+
+          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.6rem' }}>•</span>
+
+          <button 
+            type="button" 
+            onClick={(e) => { e.stopPropagation(); setPortalTab('privacy'); }}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: '#cbd5e1', 
+              cursor: 'pointer', 
+              fontWeight: 600, 
+              padding: '0.25rem 0.4rem',
+              borderRadius: '0.35rem',
+              fontSize: '0.74rem',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              transition: 'all 0.2s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <span>Kebijakan Privasi</span>
+            <span style={{ fontSize: '0.62rem', opacity: 0.75, color: '#34d399', background: 'rgba(16,185,129,0.12)', padding: '0.05rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(16,185,129,0.2)' }}>
+              {policies.privacy?.version || 'v1.0.0'}
+            </span>
+          </button>
+
+          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.6rem' }}>•</span>
+
+          <button 
+            type="button" 
+            onClick={(e) => { e.stopPropagation(); setPortalTab('acceptable_use'); }}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: '#cbd5e1', 
+              cursor: 'pointer', 
+              fontWeight: 600, 
+              padding: '0.25rem 0.4rem',
+              borderRadius: '0.35rem',
+              fontSize: '0.74rem',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              transition: 'all 0.2s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <span>Ketentuan Penggunaan</span>
+            <span style={{ fontSize: '0.62rem', opacity: 0.75, color: '#34d399', background: 'rgba(16,185,129,0.12)', padding: '0.05rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(16,185,129,0.2)' }}>
+              {policies.acceptable_use?.version || 'v1.0.0'}
+            </span>
+          </button>
+        </div>
+
+        {/* Security & Compliance Badges */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#64748b', fontSize: '0.68rem', fontWeight: 600 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <ShieldCheck size={13} style={{ color: '#10b981' }} />
+            Privasi &amp; Data Terlindungi
+          </span>
+          <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <Lock size={12} style={{ color: '#38bdf8' }} />
+            256-Bit Enkripsi SSL
+          </span>
+        </div>
+
+        {/* Copyright notice */}
+        <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.2rem', fontWeight: 500 }}>
+          © 2026 <strong>PT Catavor Global Teknologi</strong>. Hak Cipta Dilindungi.
+        </div>
+
+      </div>
+    </footer>
+  );
+
+  // Dedicated Full-Page Legal & Policy Renderer for Mobile
+  const renderPolicyPage = (type: 'terms' | 'privacy' | 'acceptable_use') => {
+    const policy = policies[type] || {
+      title: 'Kebijakan Layanan',
+      version: 'v1.0.0',
+      content: 'Memuat kebijakan...'
+    };
+
+    return (
+      <div style={{ maxWidth: '850px', margin: '0 auto', padding: '2.5rem 1.25rem 4rem 1.25rem', animation: 'fadeIn 0.3s ease-in-out' }}>
+        {/* Main Formatted Content Card */}
+        <div className="glass-panel" style={{ padding: '1.75rem 1.35rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(9, 14, 26, 0.98) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)' }}>
+          {renderFormattedPolicyContent(policy.content)}
+        </div>
+      </div>
+    );
+  };
 
   // Theme Mode (Temporarily defaulted to 'dark')
   const [themeMode, setThemeMode] = useState<'dark' | 'cream'>('dark');
@@ -497,16 +788,16 @@ function App() {
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
     if (!registerForm.name || !registerForm.name.trim()) {
-      errors.name = 'Nama Lengkap Pemilik wajib diisi.';
+      errors.name = 'Nama Lengkap Pemilik Usaha wajib diisi.';
     }
     if (!registerForm.email || !registerForm.email.trim()) {
       errors.email = 'Alamat Email wajib diisi.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email.trim())) {
       errors.email = 'Format alamat email tidak valid (Contoh: nama@domain.com).';
     }
     // Bypass password validation if user registered via Google SSO
     if (!registerForm.google_id) {
-      if (!registerForm.password) {
+      if (!registerForm.password || !registerForm.password.trim()) {
         errors.password = 'Kata Sandi wajib diisi.';
       } else if (registerForm.password.length < 6) {
         errors.password = 'Kata Sandi minimal 6 karakter.';
@@ -517,6 +808,10 @@ function App() {
   };
 
   const validateStep2 = () => {
+    if (!validateStep1()) {
+      setRegisterStep(1);
+      return false;
+    }
     const errors: Record<string, string> = {};
     if (!registerForm.store_name || !registerForm.store_name.trim()) {
       errors.store_name = 'Nama Toko / Bisnis wajib diisi.';
@@ -529,6 +824,24 @@ function App() {
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
+  const resetRegisterFormState = () => {
+    setRegisterForm({ name: '', email: '', password: '', store_name: '', store_slug: '', google_id: '', avatar: '' });
+    setRegisterStep(1);
+    setRegisterError(null);
+    setFieldErrors({});
+    setSlugStatus(null);
+    setSlugChecking(false);
+    sessionStorage.removeItem('catavor_register_form');
+    sessionStorage.removeItem('catavor_register_plan');
+  };
+
+  // Auto reset Google SSO & register form cache whenever returning to Step 1
+  useEffect(() => {
+    if (portalTab === 'register' && registerStep === 1 && registerForm.google_id) {
+      resetRegisterFormState();
+    }
+  }, [portalTab, registerStep]);
 
   // Store username (slug) real-time availability check state (Mobile)
   const [slugChecking, setSlugChecking] = useState<boolean>(false);
@@ -561,24 +874,31 @@ function App() {
   }, [registerForm.store_slug]);
 
   const [faunas, setFaunas] = useState<Fauna[]>([])
-  const [settings, setSettings] = useState<ShopSettings>({
-    whatsapp_number: '628123456789',
-    store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
-    promo_banner: '',
-    articles_enabled: '1',
-    store_title: 'Catavor',
-    store_logo_url: '',
-    default_is_comments_enabled: '1',
-    default_require_comment_approval: '0',
-    default_require_comment_email: '0',
-    default_verify_comment_email_domain: '0'
+  const [isAppInitializing, setIsAppInitializing] = useState<boolean>(true)
+  const [settings, setSettings] = useState<ShopSettings>(() => {
+    try {
+      const cached = localStorage.getItem('catavor_settings');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return {
+      whatsapp_number: '628123456789',
+      store_slogan: 'Memudahkan pelanggan menjelajahi produk dan informasi bisnis. & Pengiriman Seluruh Indonesia',
+      promo_banner: '',
+      articles_enabled: '1',
+      store_title: 'Catavor',
+      store_logo_url: '',
+      default_is_comments_enabled: '1',
+      default_require_comment_approval: '0',
+      default_require_comment_email: '0',
+      default_verify_comment_email_domain: '0'
+    };
   })
   const [selectedFauna, setSelectedFauna] = useState<Fauna | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
@@ -612,7 +932,14 @@ function App() {
   // Mobile navigation views: 'tabs' | 'article-editor'
   const [view, setView] = useState<'tabs' | 'article-editor' | 'fauna-editor'>('tabs')
   const [activeTab, setActiveTab] = useState<'catalog' | 'about' | 'articles' | 'admin'>('catalog')
-  const [adminSubTab, setAdminSubTab] = useState<'menu' | 'items' | 'settings' | 'profile' | 'articles'>('menu')
+  const [adminSubTab, setAdminSubTab] = useState<'menu' | 'items' | 'settings' | 'profile' | 'articles' | 'policies'>('menu')
+  const [mobilePolicyTab, setMobilePolicyTab] = useState<'terms' | 'privacy' | 'acceptable_use'>('terms')
+  const [agreeTerms, setAgreeTerms] = useState<boolean>(false)
+  const [agreeCheckoutTerms, setAgreeCheckoutTerms] = useState<boolean>(false)
+  const [previousPortalTab, setPreviousPortalTab] = useState<'login' | 'register' | 'home' | 'terms' | 'privacy' | 'acceptable_use' | 'checkout'>('home')
+  const [agreeTermsError, setAgreeTermsError] = useState<boolean>(false)
+  const [agreeCheckoutTermsError, setAgreeCheckoutTermsError] = useState<boolean>(false)
+  const [showQuickPolicyModal, setShowQuickPolicyModal] = useState<'terms' | 'privacy' | 'acceptable_use' | null>(null)
   const [faunasPage, setFaunasPage] = useState(1)
   const [articlesPage, setArticlesPage] = useState(1)
   const [itemsPage, setItemsPage] = useState<number>(1)
@@ -705,6 +1032,16 @@ function App() {
   const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(
     localStorage.getItem('catavor_password_changed') === 'true'
   )
+
+  const isStoreOwner = Boolean(
+    token &&
+    adminUser &&
+    storeSlug &&
+    (
+      (adminUser.store_slug && adminUser.store_slug.toLowerCase() === storeSlug.toLowerCase()) ||
+      ((adminUser as any).username && (adminUser as any).username.toLowerCase() === storeSlug.toLowerCase())
+    )
+  );
 
   const [masterClasses, setMasterClasses] = useState<string[]>(['Ikan Hias', 'Mamalia', 'Mamalia Kecil', 'Reptil'])
   const [masterHabitats, setMasterHabitats] = useState<string[]>(['Air Tawar', 'Air Laut', 'Darat'])
@@ -830,6 +1167,7 @@ function App() {
   useEffect(() => {
     const slug = getStoreSlug();
     setStoreSlug(slug);
+
     if (window.location.pathname.endsWith('/admin')) {
       setActiveTab('admin');
     } else {
@@ -846,7 +1184,7 @@ function App() {
       setAdminUser(null)
       setIsPasswordChanged(false)
     }
-  }, [])
+  }, [adminUser, token])
 
   // Lock scroll when bottom sheets are open
   useEffect(() => {
@@ -860,36 +1198,120 @@ function App() {
     }
   }, [showCrudSheet])
 
-  // Listen to popstate
+  // Listen to popstate for clean policy & portal routes
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (event: PopStateEvent) => {
       const slug = getStoreSlug();
       setStoreSlug(slug);
-      if (window.location.pathname.endsWith('/admin')) {
-        setActiveTab('admin');
-      } else if (window.location.pathname.endsWith('/about')) {
-        setActiveTab('about');
-      } else {
-        setActiveTab('catalog');
+
+      if (slug) {
+        if (window.location.pathname.endsWith('/admin')) {
+          setActiveTab('admin');
+        } else if (window.location.pathname.endsWith('/about')) {
+          setActiveTab('about');
+        } else {
+          setActiveTab('catalog');
+        }
+        return;
       }
+
+      const path = window.location.pathname.toLowerCase();
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPlan = urlParams.get('plan');
+
+      if (path === '/login') {
+        setPortalTab('login');
+      } else if (path === '/register' || path === '/register/step-1') {
+        setPortalTab('register');
+        setRegisterStep(1);
+      } else if (path === '/register/step-2') {
+        setPortalTab('register');
+        setRegisterStep(2);
+      } else if (path === '/register/step-3') {
+        setPortalTab('register');
+        setRegisterStep(3);
+        if (urlPlan === 'free' || urlPlan === 'pro') setRegisterPlan(urlPlan);
+      } else if (path === '/terms' || path === '/syarat-ketentuan') {
+        setPortalTab('terms');
+      } else if (path === '/privacy' || path === '/kebijakan-privasi') {
+        setPortalTab('privacy');
+      } else if (path === '/acceptable-use' || path === '/acceptable_use' || path === '/ketentuan-penggunaan') {
+        setPortalTab('acceptable_use');
+      } else if (path === '/' || path === '') {
+        setPortalTab('home');
+      } else if (event.state?.tab) {
+        setPortalTab(event.state.tab);
+        if (event.state.step) setRegisterStep(event.state.step);
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Sync active portalTab to Browser Address Bar URL and Session Storage
+  useEffect(() => {
+    if (storeSlug) return;
+    let targetPath = '/';
+    if (portalTab === 'login') targetPath = '/login';
+    else if (portalTab === 'register') targetPath = `/register/step-${registerStep}`;
+    else if (portalTab === 'terms') targetPath = '/terms';
+    else if (portalTab === 'privacy') targetPath = '/privacy';
+    else if (portalTab === 'acceptable_use') targetPath = '/acceptable-use';
+
+    if (window.location.pathname.toLowerCase() !== targetPath.toLowerCase()) {
+      window.history.pushState({ tab: portalTab, step: registerStep }, '', targetPath);
+    }
+    sessionStorage.setItem('catavor_portal_tab', portalTab);
+  }, [portalTab, registerStep, storeSlug]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [activeTab]);
+
   // Get headers helper
   const getAuthHeaders = () => {
+    const slug = getStoreSlug();
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(slug ? { 'X-Store-Slug': slug } : {})
     }
   }
+
+  const isInvalidRoute = () => {
+    const path = window.location.pathname.toLowerCase();
+    const parts = path.split('/').filter(Boolean);
+    const reserved = ['api', 'sanctum', 'desktop', 'mobile', 'assets', 'login', 'register'];
+    
+    if (parts.length === 0) return false;
+    if (parts.length === 1) return false;
+    if (parts[0] === 'register') return false;
+    
+    if (parts.length === 2 && (parts[1] === 'admin' || parts[1] === 'about')) {
+      if (!reserved.includes(parts[0])) return false;
+    }
+    
+    return true;
+  };
 
   // Load Data
   const loadData = async () => {
     setLoading(true);
     setError(null);
+
+    if (isInvalidRoute()) {
+      setError('Halaman / Tautan Tidak Ditemukan.');
+      setLoading(false);
+      return;
+    }
+
     const slug = getStoreSlug();
     
     try {
@@ -925,28 +1347,33 @@ function App() {
           };
           
           setSettings(fetchedSettings);
-          setSettingsForm(fetchedSettings);
+          try {
+            localStorage.setItem('catavor_settings', JSON.stringify(fetchedSettings));
+          } catch {}
+          if (token && adminUser && slug && (adminUser.store_slug?.toLowerCase() === slug.toLowerCase() || (adminUser as any).username?.toLowerCase() === slug.toLowerCase())) {
+            setSettingsForm(fetchedSettings);
+          }
           
           if (store.master_classes) setMasterClasses(store.master_classes);
           if (store.master_habitats) setMasterHabitats(store.master_habitats);
           if (store.master_statuses) setMasterStatuses(store.master_statuses);
           if (store.master_shipping_coverages) setMasterShippingCoverages(store.master_shipping_coverages);
-        } else {
-          setError('Toko tidak ditemukan.');
-        }
 
-        // Fetch store-scoped fauna catalog
-        const params = new URLSearchParams();
-        if (search) params.append('search', search);
-        if (classFilter !== 'all') params.append('class', classFilter);
-        if (habitatFilter !== 'all') params.append('habitat', habitatFilter);
+          // Fetch store-scoped fauna catalog
+          const params = new URLSearchParams();
+          if (search) params.append('search', search);
+          if (classFilter !== 'all') params.append('class', classFilter);
+          if (habitatFilter !== 'all') params.append('habitat', habitatFilter);
 
-        const faunaRes = await fetch(`${API_BASE}/u/${slug}/fauna?${params.toString()}`);
-        const faunaData = await faunaRes.json();
-        if (faunaData.success) {
-          setFaunas(faunaData.data);
+          const faunaRes = await fetch(`${API_BASE}/u/${slug}/fauna?${params.toString()}`);
+          const faunaData = await faunaRes.json();
+          if (faunaData.success) {
+            setFaunas(faunaData.data);
+          } else {
+            setError(faunaData.message || 'Gagal memuat produk.');
+          }
         } else {
-          setError('Gagal memuat produk.');
+          setError(settingsData.message || 'Katalog / Store tidak ditemukan.');
         }
       } else {
         // Portal mode: Fetch featured stores
@@ -961,6 +1388,7 @@ function App() {
       setError('Koneksi terputus. Pastikan server backend Laravel aktif.');
     } finally {
       setLoading(false);
+      setTimeout(() => setIsAppInitializing(false), 200);
     }
   };
 
@@ -1252,6 +1680,8 @@ function App() {
   }, [search, classFilter, habitatFilter, storeSlug])
   // Sync activeTab state to browser URL pathname
   useEffect(() => {
+    if (error || isInvalidRoute()) return;
+
     if (!storeSlug) {
       return;
     }
@@ -1267,11 +1697,11 @@ function App() {
     if (currentPath !== targetPath) {
       window.history.pushState({}, '', targetPath);
     }
-  }, [activeTab, storeSlug]);
+  }, [activeTab, storeSlug, error]);
 
   // Sync Onboarding & Portal State to Industry Standard Clean URLs in Mobile (/ , /login , /register/step-X)
   useEffect(() => {
-    if (storeSlug) return;
+    if (storeSlug || error || isInvalidRoute()) return;
 
     sessionStorage.setItem('catavor_portal_tab', portalTab);
     sessionStorage.setItem('catavor_register_step', registerStep.toString());
@@ -1296,7 +1726,7 @@ function App() {
         targetPath
       );
     }
-  }, [portalTab, registerStep, registerPlan, registerForm, storeSlug]);
+  }, [portalTab, registerStep, registerPlan, registerForm, storeSlug, error]);
 
   // Mobile PopState listener for Back/Forward & gesture back navigation across clean paths
   useEffect(() => {
@@ -1403,35 +1833,45 @@ function App() {
 
       const data = await res.json();
       if (data.success) {
-        if (data.token) {
-          // Existing User -> Immediate Login to Admin Dashboard
+        if (data.token && data.user && data.user.store_slug) {
+          // Existing User with complete store -> Immediate Auto Login to Admin Dashboard
           localStorage.setItem('catavor_token', data.token);
           localStorage.setItem('catavor_user', JSON.stringify(data.user));
           localStorage.setItem('catavor_password_changed', 'true');
           setToken(data.token);
           setAdminUser(data.user);
           setIsPasswordChanged(true);
-          showToast('Login SSO Google Berhasil!', 'success');
+          setStoreSlug(data.user.store_slug);
+          setView('tabs');
+          setActiveTab('admin');
+          setPortalTab('home');
+          showToast('Selamat datang kembali! Akun Google Anda telah terdaftar, otomatis masuk ke Dashboard.', 'success');
           sessionStorage.clear();
-          if (data.user.store_slug) {
-            setStoreSlug(data.user.store_slug);
-            setActiveTab('admin');
+        } else {
+          // New User OR User without completed store_slug -> Redirect to Store Setup Screen (Step 2)
+          if (data.token && data.user) {
+            localStorage.setItem('catavor_token', data.token);
+            localStorage.setItem('catavor_user', JSON.stringify(data.user));
+            setToken(data.token);
+            setAdminUser(data.user);
           }
-        } else if (data.requires_store_info) {
-          // New User -> Redirect to Dedicated Store Setup Screen (Step 2)
-          const suggestedSlug = (googleUser.email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9\-]/g, '');
+          const userEmail = data.user?.email || googleUser.email;
+          const userName = data.user?.name || googleUser.name;
+          const userGoogleId = data.user?.google_id || googleUser.google_id;
+          const userAvatar = data.user?.avatar || googleUser.avatar;
+
           setRegisterForm((prev: any) => ({
             ...prev,
-            email: googleUser.email,
-            name: googleUser.name,
-            google_id: googleUser.google_id,
-            avatar: googleUser.avatar,
-            store_name: '',
-            store_slug: ''
+            email: userEmail,
+            name: userName,
+            google_id: userGoogleId,
+            avatar: userAvatar,
+            store_name: prev.store_name || '',
+            store_slug: prev.store_slug || ''
           }));
           setRegisterStep(2);
           setPortalTab('register');
-          showToast('Otentikasi Google Berhasil! Silakan tentukan Nama Toko & Link Username Anda.', 'success');
+          showToast('Otentikasi Google Berhasil! Silakan lengkapi Informasi Toko & Link Username Anda di Langkah 2.', 'info');
         }
       } else {
         showToast(data.message || 'Gagal otentikasi Google SSO.', 'error');
@@ -1533,6 +1973,12 @@ function App() {
   
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeTerms) {
+      setAgreeTermsError(true);
+      showToast('Silakan centang persetujuan Syarat & Ketentuan serta Kebijakan Privasi terlebih dahulu.', 'error');
+      return;
+    }
+    setAgreeTermsError(false);
     if (registerPlan === 'pro') {
       // Defer API registration & token storage until checkout submission!
       setPortalTab('checkout');
@@ -2590,83 +3036,221 @@ function App() {
     return combined.slice(0, 4)
   }
 
+  // Render App Readiness Loader Gate Screen
+  if (isAppInitializing) {
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        backgroundColor: '#060907',
+        backgroundImage: 'radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.15) 0%, transparent 65%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        color: '#ffffff',
+        fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+      }}>
+        <style>{`
+          @keyframes loaderSlide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+          }
+          @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4)); }
+            50% { transform: scale(1.08); opacity: 0.85; filter: drop-shadow(0 0 25px rgba(16, 185, 129, 0.7)); }
+          }
+        `}</style>
+        <div style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '1.25rem'
+        }}>
+          <div style={{
+            width: '88px',
+            height: '88px',
+            borderRadius: '1.25rem',
+            backgroundColor: '#ffffff',
+            border: '2px solid #10b981',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.75rem',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(16, 185, 129, 0.5)',
+            animation: 'pulseGlow 1.8s infinite ease-in-out'
+          }}>
+            <img 
+              src={APP_LOGO_BASE64} 
+              alt="Catavor Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} 
+            />
+          </div>
+        </div>
+
+        <h3 style={{
+          margin: '0 0 0.35rem 0',
+          fontSize: '1.15rem',
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
+          background: 'linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          Catavor
+        </h3>
+        
+        <p style={{
+          margin: 0,
+          fontSize: '0.78rem',
+          color: '#9ca3af',
+          fontWeight: 500,
+          letterSpacing: '0.01em'
+        }}>
+          Mempersiapkan Halaman...
+        </p>
+
+        <div style={{
+          width: '130px',
+          height: '3px',
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '3px',
+          marginTop: '1.25rem',
+          overflow: 'hidden',
+          position: 'relative'
+        }}>
+          <div style={{
+            width: '40%',
+            height: '100%',
+            backgroundColor: '#10b981',
+            borderRadius: '3px',
+            boxShadow: '0 0 10px #10b981',
+            animation: 'loaderSlide 1.2s infinite ease-in-out'
+          }} />
+        </div>
+      </div>
+    );
+  }
+
   // Render Landing Portal Page (Mobile Responsive Layout)
-  if (!storeSlug) {
+  if (!storeSlug && !error) {
     return (
       <div className="portal-container ambient-glow-bg" style={{ minHeight: '100vh', color: 'var(--text-primary)', fontFamily: "var(--font-body)" }}>
-        {/* Header (Only shown on home portal for clean focus on login/register) */}
-        {portalTab === 'home' && (
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-light)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', backgroundColor: 'var(--header-bg)', position: 'sticky', top: 0, zIndex: 100 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
-              <div style={{ 
-                width: '34px', 
-                height: '34px', 
-                borderRadius: '9px', 
-                background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                border: '1px solid var(--border-light)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                boxShadow: '0 4px 12px var(--primary-glow)',
-                padding: '4px'
-              }}>
-                <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </div>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.025em' }}>
-                Catavor
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {token ? (
-                <button className="btn-primary btn-small" onClick={() => {
-                  const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
-                  if (user.store_slug) {
-                    setStoreSlug(user.store_slug);
-                    setActiveTab('admin');
-                  }
-                }} style={{ padding: '0.4rem 0.85rem', fontSize: '0.75rem' }}>
-                  <span>Dashboard</span>
-                  <ArrowRight size={14} />
-                </button>
-              ) : (
-                <>
-                  <button 
+        {/* Header (Shown on Home and Policy Pages) */}
+        {(portalTab === 'home' || ['terms', 'privacy', 'acceptable_use'].includes(portalTab)) && (
+          <header className="mobile-header sticky-header">
+            <div className="container">
+              {['terms', 'privacy', 'acceptable_use'].includes(portalTab) ? (
+                /* Specialized Policy Page Header: Back Button + Policy Page Title Only */
+                <div className="mobile-header-bar" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <button
                     type="button"
-                    onClick={() => setPortalTab('login')} 
-                    style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      color: 'var(--text-secondary)', 
-                      fontSize: '0.8rem', 
-                      fontWeight: 600, 
-                      padding: '0.35rem 0.6rem', 
-                      cursor: 'pointer',
-                      transition: 'color 0.2s ease'
-                    }}
-                  >
-                    Masuk
-                  </button>
-                  <button 
-                    type="button"
-                    className="btn-primary btn-small" 
-                    onClick={() => { setRegisterStep(1); setPortalTab('register'); }} 
-                    style={{ 
-                      padding: '0.4rem 0.85rem', 
+                    onClick={() => setPortalTab(previousPortalTab || 'home')}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#ffffff',
                       fontSize: '0.78rem',
-                      fontWeight: 800,
-                      borderRadius: '0.5rem'
+                      fontWeight: 700,
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: '0.5rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation'
                     }}
                   >
-                    Buat Katalog
+                    <ArrowLeft size={15} />
+                    <span>Kembali</span>
                   </button>
-                </>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
+                  <span style={{ 
+                    fontSize: '0.92rem', 
+                    fontWeight: 800, 
+                    color: '#ffffff', 
+                    letterSpacing: '-0.01em',
+                    fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif",
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {portalTab === 'terms' ? 'Syarat & Ketentuan' : portalTab === 'privacy' ? 'Kebijakan Privasi' : portalTab === 'acceptable_use' ? 'Ketentuan Penggunaan' : 'Kebijakan Layanan'}
+                  </span>
+                </div>
+              ) : (
+                /* Standard Landing Page Header */
+                <div className="mobile-header-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setPortalTab('home')}>
+                    <span style={{ 
+                      fontSize: '1.25rem', 
+                      fontWeight: 800, 
+                      color: '#ffffff', 
+                      letterSpacing: '-0.01em',
+                      fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+                    }}>
+                      Catavor
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {token ? (
+                      <button className="btn-primary btn-small" onClick={() => {
+                        const user = JSON.parse(localStorage.getItem('catavor_user') || '{}');
+                        if (user.store_slug) {
+                          setStoreSlug(user.store_slug);
+                          setActiveTab('admin');
+                        }
+                      }} style={{ padding: '0.4rem 0.85rem', fontSize: '0.75rem' }}>
+                        <span>Dashboard</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          type="button"
+                          onClick={() => setPortalTab('login')} 
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            color: 'var(--text-secondary)', 
+                            fontSize: '0.8rem', 
+                            fontWeight: 600, 
+                            padding: '0.35rem 0.6rem', 
+                            cursor: 'pointer',
+                            transition: 'color 0.2s ease'
+                          }}
+                        >
+                          Masuk
+                        </button>
+                        <button 
+                          type="button"
+                          className="btn-primary btn-small" 
+                          onClick={() => { setRegisterStep(1); setPortalTab('register'); }} 
+                          style={{ 
+                            padding: '0.4rem 0.85rem', 
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            borderRadius: '0.5rem'
+                          }}
+                        >
+                          Buat Katalog
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </header>
         )}
 
         {portalTab === 'home' && (
-          <main style={{ padding: '2.5rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <>
+            <main style={{ padding: '2.5rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
             {/* Multi-Genre Niche Badges Showcase Mobile */}
             <div style={{ display: 'flex', overflowX: 'auto', gap: '0.45rem', paddingBottom: '0.25rem', scrollbarWidth: 'none' }}>
               <span className="genre-tag-pill"><Utensils size={13} style={{ color: '#f97316' }} /> Kuliner</span>
@@ -2858,10 +3442,13 @@ function App() {
               </div>
             </div>
           </main>
-        )}
+          
+          {renderMobileFooter()}
+        </>
+      )}
 
         {portalTab === 'login' && (
-          <div style={{ padding: '3rem 1.25rem' }}>
+          <div style={{ padding: '2.5rem 1.25rem' }}>
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={28} style={{ color: 'var(--primary)', marginBottom: '0.5rem' }} />
@@ -2974,26 +3561,11 @@ function App() {
         )}
 
         {portalTab === 'register' && (
-          <div style={{ padding: '1.5rem 1rem' }}>
+          <div style={{ padding: '2.5rem 1.25rem' }}>
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem 1.25rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)' }}>
               {/* Premium Header Icon & Branding Mobile */}
               <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
-                <div style={{ 
-                  width: '54px', 
-                  height: '54px', 
-                  borderRadius: '16px', 
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', 
-                  border: '1px solid rgba(255, 255, 255, 0.95)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  margin: '0 auto 0.65rem auto', 
-                  boxShadow: '0 0 16px rgba(255, 255, 255, 0.4), 0 6px 20px rgba(16, 185, 129, 0.3)', 
-                  padding: '6px'
-                }}>
-                  <img src="/img/logo.png" alt="Catavor Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 0.25rem 0' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif", margin: '0 0 0.25rem 0' }}>
                   Daftar Katalog Catavor
                 </h2>
                 <p style={{ color: '#9ca3af', fontSize: '0.75rem', margin: 0, lineHeight: 1.3 }}>
@@ -3222,9 +3794,8 @@ function App() {
                         transition: 'all 0.2s ease'
                       }}
                       onClick={() => {
+                        resetRegisterFormState();
                         setPortalTab('home');
-                        setRegisterError(null);
-                        setFieldErrors({});
                       }}
                     >
                       <Home size={15} />
@@ -3365,7 +3936,11 @@ function App() {
                         cursor: 'pointer',
                         fontWeight: 600
                       }}
-                      onClick={() => window.history.back()}
+                      onClick={() => {
+                        resetRegisterFormState();
+                        setPortalTab('register');
+                        setRegisterStep(1);
+                      }}
                     >
                       <ChevronLeft size={15} />
                       <span>Kembali</span>
@@ -3486,6 +4061,30 @@ function App() {
                     </div>
                   </div>
 
+                  <div style={{ margin: '0.85rem 0 0.35rem 0', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.45, backgroundColor: agreeTermsError && !agreeTerms ? 'rgba(239, 68, 68, 0.12)' : 'rgba(0,0,0,0.25)', padding: '0.65rem 0.75rem', borderRadius: '0.5rem', border: agreeTermsError && !agreeTerms ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.08)', transition: 'all 0.2s ease' }}>
+                      <input 
+                        type="checkbox" 
+                        id="mobile-register-agree" 
+                        checked={agreeTerms} 
+                        onChange={(e) => { setAgreeTerms(e.target.checked); if (e.target.checked) setAgreeTermsError(false); }} 
+                        onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Harap centang kotak ini untuk menyetujui Syarat & Ketentuan serta Kebijakan Privasi.')}
+                        onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+                        style={{ marginTop: '0.15rem', accentColor: '#10b981', cursor: 'pointer', flexShrink: 0, width: '15px', height: '15px' }} 
+                        required 
+                      />
+                      <label htmlFor="mobile-register-agree" style={{ cursor: 'pointer' }}>
+                        Saya menyetujui <span style={{ color: '#34d399', fontWeight: 700, textDecoration: 'underline' }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviousPortalTab('register'); setPortalTab('terms'); }}>Syarat &amp; Ketentuan</span> serta <span style={{ color: '#34d399', fontWeight: 700, textDecoration: 'underline' }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviousPortalTab('register'); setPortalTab('privacy'); }}>Kebijakan Privasi</span> Catavor.
+                      </label>
+                    </div>
+                    {agreeTermsError && !agreeTerms && (
+                      <div style={{ fontSize: '0.68rem', color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600, paddingLeft: '0.2rem' }}>
+                        <AlertTriangle size={12} style={{ color: '#f87171', flexShrink: 0 }} />
+                        <span>Anda harus mencentang persetujuan kebijakan terlebih dahulu.</span>
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem' }}>
                     <button 
                       type="button" 
@@ -3543,7 +4142,7 @@ function App() {
         )}
 
         {portalTab === 'checkout' && (
-          <div style={{ padding: '1.5rem 1rem', animation: 'fadeIn 0.3s ease-in-out' }}>
+          <div style={{ padding: '2.5rem 1.25rem', animation: 'fadeIn 0.3s ease-in-out' }}>
             <div className="glass-panel" style={{ padding: '1.25rem 1rem', borderRadius: '1.15rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(180deg, rgba(17, 24, 21, 0.95) 0%, rgba(9, 14, 12, 0.98) 100%)', boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Header Title Checkout Mobile */}
               <div style={{ textAlign: 'center' }}>
@@ -4036,6 +4635,8 @@ function App() {
             )}
           </div>
         )}
+
+        {['terms', 'privacy', 'acceptable_use'].includes(portalTab) && renderPolicyPage(portalTab as any)}
       </div>
     );
   }
@@ -5802,55 +6403,89 @@ function App() {
       ) : (
         <>
           <div className="animate-fade-in" style={{ paddingBottom: '80px' }}>
-      {/* Mobile Top Header */}
-      <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
-        <div className="container">
-          {(() => {
-            const titleText = settings.store_title || 'Catavor';
-            const scale = getMobileHeaderScale(titleText);
-            return (
-              <div className="mobile-header-bar" style={{ gap: scale.gap }}>
-                <div className="mobile-header-brand" style={{ gap: scale.gap }}>
-                  {settings.store_logo_url ? (
-                    <img 
-                      src={settings.store_logo_url} 
-                      alt="Logo" 
-                      style={{ height: `${scale.iconSize}px`, width: 'auto', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 }} 
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  ) : (
-                    <Compass className="logo-icon" style={{ width: `${scale.iconSize}px`, height: `${scale.iconSize}px`, flexShrink: 0, color: 'var(--primary)' }} />
-                  )}
-                  <div className="mobile-header-title-wrapper" style={{ gap: '0.35rem' }}>
-                    <h1 
-                      className="logo-title" 
-                      style={{ fontSize: scale.titleFontSize }}
-                      title={titleText}
+      {/* Mobile Top Header (Shows Catavor brand header on 404 error pages, and store header on valid pages) */}
+      {error ? (
+        <header className="mobile-header sticky-header">
+          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <span style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: 800, 
+                color: '#ffffff',
+                letterSpacing: '-0.01em',
+                fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif"
+              }}>
+                Catavor
+              </span>
+            </a>
+            <button 
+              type="button"
+              className="btn-primary" 
+              onClick={() => { window.location.href = window.location.origin; }}
+              style={{ 
+                padding: '0.35rem 0.8rem', 
+                fontSize: '0.72rem', 
+                fontWeight: 800, 
+                borderRadius: '0.45rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                cursor: 'pointer'
+              }}
+            >
+              <Globe size={13} />
+              <span>Portal Utama</span>
+            </button>
+          </div>
+        </header>
+      ) : (
+        <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
+          <div className="container">
+            {(() => {
+              const titleText = settings.store_title || 'Catavor';
+              const scale = getMobileHeaderScale(titleText);
+              return (
+                <div className="mobile-header-bar" style={{ gap: scale.gap }}>
+                  <div className="mobile-header-brand" style={{ gap: scale.gap }}>
+                    {settings.store_logo_url ? (
+                      <img 
+                        src={settings.store_logo_url} 
+                        alt="Logo" 
+                        style={{ height: `${scale.iconSize}px`, width: 'auto', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 }} 
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : null}
+                    <div className="mobile-header-title-wrapper" style={{ gap: '0.35rem' }}>
+                      <h1 
+                        className="logo-title" 
+                        style={{ fontSize: scale.titleFontSize, color: '#ffffff' }}
+                        title={titleText}
+                      >
+                        {titleText}
+                      </h1>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <button
+                      type="button"
+                      className="header-share-btn"
+                      onClick={handleShareStore}
+                      title="Bagikan Link Toko"
                     >
-                      {titleText}
-                    </h1>
+                      <Share2 size={16} style={{ color: 'var(--primary)' }} />
+                    </button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <button
-                    type="button"
-                    className="header-share-btn"
-                    onClick={handleShareStore}
-                    title="Bagikan Link Toko"
-                  >
-                    <Share2 size={16} style={{ color: 'var(--primary)' }} />
-                  </button>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </header>
+              );
+            })()}
+          </div>
+        </header>
+      )}
 
       {/* Tabs Content */}
       <main className="container" style={{ marginTop: '0.5rem' }}>
         {/* Catavor SaaS Floating Banner for Free Plan Stores */}
-        {settings.plan === 'free' && (
+        {activeTab === 'catalog' && settings.plan === 'free' && (
           <div 
             className="glass-panel animate-fade-in"
             style={{
@@ -5985,12 +6620,83 @@ function App() {
             )}
 
             {error && (
-              <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
-                <Info size={32} style={{ color: 'var(--danger)', marginBottom: '0.5rem' }} />
-                <p style={{ fontSize: '0.85rem' }}>{error}</p>
-                <button className="btn-secondary btn-full" style={{ marginTop: '1rem', padding: '0.5rem' }} onClick={loadData}>
-                  Hubungkan Ulang
-                </button>
+              <div 
+                className="glass-panel animate-fade-in" 
+                style={{ 
+                  padding: '3.5rem 1.5rem 2.5rem 1.5rem', 
+                  textAlign: 'center', 
+                  borderRadius: '1.5rem',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(9, 14, 12, 0.95) 100%)',
+                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '1.25rem',
+                  margin: '1rem 0',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Ambient Glow Background */}
+                <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '120px', height: '120px', borderRadius: '50%', backgroundColor: 'rgba(245, 158, 11, 0.12)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '120px', height: '120px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.12)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+
+                {/* 404 Status Pill */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.85rem', borderRadius: '20px', backgroundColor: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', boxShadow: '0 0 8px #f59e0b' }} />
+                  404 • Halaman Tidak Ditemukan
+                </div>
+
+                {/* Glowing Icon Container */}
+                <div 
+                  style={{ 
+                    width: '80px', 
+                    height: '80px', 
+                    borderRadius: '50%', 
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)', 
+                    border: '2px solid rgba(245, 158, 11, 0.35)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: '#f59e0b',
+                    boxShadow: '0 0 30px rgba(245, 158, 11, 0.25)'
+                  }}
+                >
+                  {storeSlug ? <Store size={40} /> : <Globe size={40} />}
+                </div>
+
+                {/* Text Content */}
+                <div>
+                  <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+                    {storeSlug ? 'Katalog Tidak Ditemukan' : 'Halaman Tidak Ditemukan'}
+                  </h3>
+                  <p style={{ fontSize: '0.84rem', color: '#9ca3af', maxWidth: '320px', margin: '0 auto', lineHeight: 1.6 }}>
+                    {storeSlug 
+                      ? <>Tautan atau username katalog <strong style={{ color: '#e5e7eb' }}>catavor.com/{storeSlug}</strong> tidak terdaftar di sistem Catavor.</>
+                      : <>Alamat tautan URL <strong style={{ color: '#e5e7eb' }}>{window.location.pathname}</strong> tidak terdaftar atau salah ketik.</>}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%', maxWidth: '290px', marginTop: '0.5rem' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={() => { window.location.href = window.location.origin; }}
+                    style={{ padding: '0.8rem 1.25rem', fontSize: '0.84rem', fontWeight: 800, borderRadius: '0.75rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}
+                  >
+                    <Sparkles size={16} />
+                    Buat Katalog Anda Gratis ⚡
+                  </button>
+                  <button 
+                    className="btn-secondary" 
+                    onClick={() => { window.location.href = window.location.origin; }}
+                    style={{ padding: '0.7rem 1.25rem', fontSize: '0.82rem', fontWeight: 700, borderRadius: '0.75rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)' }}
+                  >
+                    <Globe size={15} />
+                    Ke Halaman Utama Portal
+                  </button>
+                </div>
               </div>
             )}
 
@@ -6036,10 +6742,10 @@ function App() {
                         Katalog Masih Kosong
                       </h3>
                       <p style={{ fontSize: '0.78rem', color: '#9ca3af', maxWidth: '320px', margin: '0 auto', lineHeight: 1.5 }}>
-                        Pemilik toko <strong>{settings.store_title || 'ini'}</strong> belum mengunggah postingan produk ke dalam katalog ini. Silakan kunjungi kembali nanti!
+                        Pemilik catalog <strong>{settings.store_title || 'ini'}</strong> belum mengunggah data ke dalam katalog ini. Silakan kunjungi kembali nanti!
                       </p>
                     </div>
-                    {token && (
+                    {isStoreOwner && (
                       <button 
                         className="btn-primary" 
                         onClick={() => { setView('tabs'); setActiveTab('admin'); setAdminSubTab('items'); }}
@@ -6478,10 +7184,59 @@ function App() {
         )}
 
         {/* ==========================================================
-           TAB 3: ADMIN PANEL (MOBILE) WITH LOGIN
+           TAB 3: ADMIN PANEL (MOBILE) WITH STRICT MULTI-TENANT GUARD
            ========================================================== */}
         {activeTab === 'admin' && (
-          !token ? (
+          token && !isStoreOwner ? (
+            /* 403 FORBIDDEN ACCESS CARD FOR OTHER STORE OWNER */
+            <div className="glass-panel animate-fade-in" style={{ padding: '1.75rem 1.25rem', marginTop: '2rem', textAlign: 'center' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#ef4444' }}>
+                <ShieldAlert size={28} />
+              </div>
+              
+              <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.2rem' }}>
+                403 • Akses Admin Ditolak
+              </span>
+              
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+                Izin Pengelola Tidak Ditemukan
+              </h2>
+              
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+                Anda terautentikasi sebagai pengelola katalog <strong style={{ color: 'var(--primary)' }}>"{adminUser?.store_slug || 'lain'}"</strong>, tetapi mencoba mengakses panel admin katalog <strong style={{ color: '#ef4444' }}>"{storeSlug}"</strong>. Anda tidak memiliki wewenang untuk mengelola atau melihat data sensitif katalog ini.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {adminUser?.store_slug && (
+                  <button 
+                    type="button" 
+                    className="btn-full btn-primary" 
+                    onClick={() => window.location.href = `/${adminUser.store_slug}/admin`}
+                    style={{ padding: '0.7rem', fontSize: '0.82rem', fontWeight: 700 }}
+                  >
+                    Ke Dashboard Katalog Saya ({adminUser.store_slug}) &rarr;
+                  </button>
+                )}
+                
+                <button 
+                  type="button" 
+                  className="btn-full btn-secondary" 
+                  onClick={handleLogout}
+                  style={{ padding: '0.7rem', fontSize: '0.8rem', fontWeight: 600 }}
+                >
+                  Keluar Sesi / Ganti Akun
+                </button>
+                
+                <button 
+                  type="button" 
+                  onClick={() => window.location.href = `/${storeSlug}`}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', marginTop: '0.25rem', textDecoration: 'underline' }}
+                >
+                  Kembali ke Katalog Publik {storeSlug}
+                </button>
+              </div>
+            </div>
+          ) : !token ? (
             /* ADMIN LOGIN (MOBILE) */
             <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginTop: '2rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
@@ -6828,6 +7583,22 @@ function App() {
                       </div>
                       <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
                     </div>
+
+                    {/* Item 5: Legal & Kebijakan Platform */}
+                    <div 
+                      className="glass-panel" 
+                      onClick={() => { setAdminSubTab('policies'); fetchPolicies(); }}
+                      style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid var(--border-light)', borderRadius: '0.75rem', transition: 'var(--transition-smooth)' }}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '0.5rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                        <ShieldCheck size={20} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Legal &amp; Kebijakan Platform</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>Lihat Syarat, Privasi, &amp; Ketentuan Layanan</p>
+                      </div>
+                      <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -6872,6 +7643,7 @@ function App() {
                     {adminSubTab === 'articles' && 'Kelola Artikel'}
                     {adminSubTab === 'settings' && 'Pengaturan Toko'}
                     {adminSubTab === 'profile' && 'Profil Admin'}
+                    {adminSubTab === 'policies' && 'Legal & Kebijakan Platform'}
                   </span>
                   <div>
                     {adminSubTab === 'items' && (
@@ -7915,6 +8687,85 @@ function App() {
                   )}
                 </div>
               )}
+
+              {adminSubTab === 'policies' && (
+                <div style={{ paddingTop: '3.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {/* Quick Switcher Tabs */}
+                  <div style={{ display: 'flex', gap: '0.35rem', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '0.65rem', border: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <button
+                      type="button"
+                      onClick={() => setMobilePolicyTab('terms')}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '0.45rem',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        backgroundColor: mobilePolicyTab === 'terms' ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                        color: mobilePolicyTab === 'terms' ? '#34d399' : '#94a3b8',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Syarat &amp; Ketentuan
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobilePolicyTab('privacy')}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '0.45rem',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        backgroundColor: mobilePolicyTab === 'privacy' ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                        color: mobilePolicyTab === 'privacy' ? '#34d399' : '#94a3b8',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Kebijakan Privasi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobilePolicyTab('acceptable_use')}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '0.45rem',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        backgroundColor: mobilePolicyTab === 'acceptable_use' ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                        color: mobilePolicyTab === 'acceptable_use' ? '#34d399' : '#94a3b8',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Ketentuan Penggunaan
+                    </button>
+                  </div>
+
+                  {/* Document Card Panel */}
+                  <div className="glass-panel" style={{ padding: '1.25rem', borderRadius: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(15, 23, 42, 0.95)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ffffff' }}>
+                        {policies[mobilePolicyTab]?.title || 'Dokumen Resmi Platform'}
+                      </span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#34d399', background: 'rgba(16, 185, 129, 0.15)', padding: '0.15rem 0.5rem', borderRadius: '999px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                        {policies[mobilePolicyTab]?.version || 'v1.0.0'}
+                      </span>
+                    </div>
+
+                    {renderFormattedPolicyContent(policies[mobilePolicyTab]?.content || '')}
+                  </div>
+                </div>
+              )}
             </div>
           )
         )}
@@ -8439,7 +9290,7 @@ function App() {
 
 
       {/* Fixed Bottom Navigation Bar */}
-      {!(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && !(settings.plan === 'free' && !token) && (
+      {!error && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle) && !(settings.plan === 'free' && !isStoreOwner) && (
         <nav className="bottom-nav">
           <button 
             className={`nav-item ${activeTab === 'catalog' ? 'active' : ''}`}
@@ -8466,7 +9317,7 @@ function App() {
               <span>Artikel</span>
             </button>
           )}
-          {token && (
+          {isStoreOwner && (
             <button 
               className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
               onClick={() => setActiveTab('admin')}
@@ -8940,6 +9791,31 @@ function App() {
                 Perbarui
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK POLICY POPOVER MODAL FOR FORMS */}
+      {showQuickPolicyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => setShowQuickPolicyModal(null)}>
+          <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '440px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', padding: '1.25rem', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.15)', background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(9, 14, 26, 0.99) 100%)', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <ShieldCheck size={18} style={{ color: '#10b981' }} />
+                <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#ffffff' }}>
+                  {showQuickPolicyModal === 'terms' ? 'Syarat & Ketentuan' : showQuickPolicyModal === 'privacy' ? 'Kebijakan Privasi' : 'Ketentuan Penggunaan'}
+                </span>
+              </div>
+              <button type="button" onClick={() => setShowQuickPolicyModal(null)} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
+            </div>
+            
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.25rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
+              {renderFormattedPolicyContent(policies[showQuickPolicyModal]?.content || '')}
+            </div>
+
+            <button type="button" className="btn-primary btn-full" onClick={() => setShowQuickPolicyModal(null)} style={{ marginTop: '1rem', padding: '0.65rem', fontSize: '0.8rem', fontWeight: 800 }}>
+              Saya Mengerti &amp; Tutup
+            </button>
           </div>
         </div>
       )}

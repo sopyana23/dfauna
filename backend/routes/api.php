@@ -14,6 +14,7 @@ use App\Http\Controllers\StoreController;
 Route::get('/fauna', [FaunaController::class, 'index']);
 Route::get('/fauna/{id}', [FaunaController::class, 'show']);
 Route::get('/settings', [SettingController::class, 'index']);
+Route::get('/policies', [SettingController::class, 'getPolicies']);
 Route::get('/articles', [ArticleController::class, 'index']);
 Route::get('/articles/{id}', [ArticleController::class, 'show']);
 Route::get('/articles/{id}/comments', [CommentController::class, 'getArticleComments']);
@@ -31,8 +32,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [AuthController::class, 'googleAuth']);
 
-// Guarded Admin Endpoints (Require Sanctum token)
-Route::middleware('auth:sanctum')->group(function () {
+// Guarded Admin Endpoints (Require Sanctum token + Store ownership check)
+Route::middleware(['auth:sanctum', 'store.owner'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/profile', [AuthController::class, 'updateProfile']);
     
@@ -50,6 +51,8 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Legacy global settings write (kept for safety)
     Route::post('/settings', [SettingController::class, 'store']);
+    Route::post('/settings/policies', [SettingController::class, 'updatePolicy']);
+    Route::get('/settings/policy-audit-logs', [SettingController::class, 'getPolicyAuditLogs']);
 
     // Article CRUD
     Route::post('/articles', [ArticleController::class, 'store']);
@@ -58,6 +61,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Comment admin moderation
     Route::get('/admin/comments', [CommentController::class, 'getAdminComments']);
-    Route::put('/admin/comments/{id}/approve', [CommentController::class, 'approveComment']);
-    Route::delete('/admin/comments/{id}', [CommentController::class, 'destroyComment']);
+    Route::post('/admin/comments/{id}/approve', [CommentController::class, 'approveComment']);
+    Route::delete('/admin/comments/{id}', [CommentController::class, 'deleteComment']);
 });

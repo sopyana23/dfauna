@@ -11,8 +11,8 @@
 .container {
   width: 100%;
   max-width: 100%;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
   margin-left: auto;
   margin-right: auto;
   box-sizing: border-box !important;
@@ -21,10 +21,15 @@
 /* Mobile Header - Solid Premium Dark */
 .mobile-header {
   background: var(--header-bg);
-  padding: 0.75rem 1rem !important;
+  padding: 0.75rem 1.25rem !important;
   text-align: center;
   border-bottom: 1px solid var(--border-light);
   box-sizing: border-box;
+}
+
+.mobile-header .container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .logo-container {
@@ -118,22 +123,22 @@
   line-height: 1.3;
 }
 
-/* Mobile bottom nav - Solid Premium Dark */
+/* Mobile bottom nav - Solid Premium Opaque Background */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 65px;
-  background: var(--header-bg);
+  background-color: var(--bg-deep) !important;
+  background-image: none !important;
   border-top: 1px solid var(--border-light);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 45;
   padding: 0 0.5rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .nav-item {
@@ -168,8 +173,8 @@
   z-index: 80;
   background: var(--header-bg);
   backdrop-filter: blur(10px);
-  padding: 0.75rem 1rem;
-  margin: 0 -1rem 1rem -1rem;
+  padding: 0.75rem 1.25rem;
+  margin: 0 -1.25rem 1rem -1.25rem;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
@@ -928,5 +933,17 @@ select option {
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
   background: rgba(255, 255, 255, 0.04);
 }
+
+@keyframes slideUpBottomSheet {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 
 

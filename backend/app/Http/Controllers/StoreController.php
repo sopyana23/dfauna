@@ -31,9 +31,11 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'success' => false,
-                'message' => 'Toko tidak ditemukan.'
+                'message' => 'Katalog / Store tidak ditemukan.'
             ], 404);
         }
+
+        $store->makeHidden(['payment_proof_url']);
 
         return response()->json([
             'success' => true,
@@ -84,7 +86,7 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'success' => false,
-                'message' => 'Toko tidak ditemukan.'
+                'message' => 'Katalog / Store tidak ditemukan.'
             ], 404);
         }
 
@@ -128,7 +130,7 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'success' => false,
-                'message' => 'Toko tidak ditemukan.'
+                'message' => 'Katalog / Store tidak ditemukan.'
             ], 404);
         }
 
@@ -184,7 +186,7 @@ class StoreController extends Controller
         $store = $user->store;
 
         if (!$store) {
-            return response()->json(['success' => false, 'message' => 'Toko tidak ditemukan.'], 404);
+            return response()->json(['success' => false, 'message' => 'Katalog / Store tidak ditemukan.'], 404);
         }
 
         $targetPlan = $request->input('plan', 'pro');
@@ -206,7 +208,7 @@ class StoreController extends Controller
         $store = $user->store;
 
         if (!$store) {
-            return response()->json(['success' => false, 'message' => 'Toko tidak ditemukan.'], 404);
+            return response()->json(['success' => false, 'message' => 'Katalog / Store tidak ditemukan.'], 404);
         }
 
         $request->validate([
@@ -248,7 +250,7 @@ class StoreController extends Controller
         $store = $user->store;
 
         if (!$store) {
-            return response()->json(['success' => false, 'message' => 'Toko tidak ditemukan.'], 404);
+            return response()->json(['success' => false, 'message' => 'Katalog / Store tidak ditemukan.'], 404);
         }
 
         $request->validate([

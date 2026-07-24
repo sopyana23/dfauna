@@ -116,6 +116,7 @@ class ArticleController extends Controller
         }
 
         $article = Article::create([
+            'user_id' => $request->user()?->id,
             'title' => $request->title,
             'content' => $request->content,
             'image_url' => $request->image_url,
@@ -145,6 +146,14 @@ class ArticleController extends Controller
                 'success' => false,
                 'message' => 'Artikel tidak ditemukan.'
             ], 404);
+        }
+
+        $user = $request->user();
+        if ($article->user_id && $article->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Anda tidak memiliki izin untuk mengedit artikel ini.'
+            ], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -203,7 +212,7 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $article = Article::find($id);
 
@@ -212,6 +221,14 @@ class ArticleController extends Controller
                 'success' => false,
                 'message' => 'Artikel tidak ditemukan.'
             ], 404);
+        }
+
+        $user = $request->user();
+        if ($article->user_id && $article->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Anda tidak memiliki izin untuk menghapus artikel ini.'
+            ], 403);
         }
 
         $article->delete();
