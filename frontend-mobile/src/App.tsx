@@ -6593,7 +6593,7 @@ function App() {
       )}
 
       {/* Tabs Content */}
-      <main className="container" style={{ marginTop: '0.5rem' }}>
+      <main className="container" style={{ marginTop: '1.25rem', paddingTop: '0.25rem' }}>
         {/* Catavor SaaS Floating Banner for Free Plan Stores */}
         {activeTab === 'catalog' && settings.plan === 'free' && (
           <div 
@@ -6817,7 +6817,7 @@ function App() {
                   <div 
                     className="glass-panel animate-fade-in" 
                     style={{ 
-                      padding: '3rem 1.25rem', 
+                      padding: '3.25rem 1.5rem', 
                       textAlign: 'center', 
                       borderRadius: '1rem',
                       border: '1px solid var(--border-light)',
@@ -6827,8 +6827,8 @@ function App() {
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '0.85rem',
-                      margin: '0.5rem 0'
+                      gap: '1rem',
+                      margin: '1.25rem 0 1rem 0'
                     }}
                   >
                     <div 
