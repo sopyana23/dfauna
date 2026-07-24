@@ -6439,9 +6439,119 @@ function App() {
           </div>
         </header>
       ) : (
-        <header className={`mobile-header ${(activeTab !== 'catalog' && !(activeTab === 'admin' && adminSubTab !== 'menu') && !(activeTab === 'articles' && selectedArticle)) ? 'sticky-header' : ''}`}>
+        <header className="mobile-header sticky-header">
           <div className="container">
             {(() => {
+              // Admin Panel Sub-Pages Header (Hides store title & share button, shows back button + menu title + action button)
+              if (activeTab === 'admin' && adminSubTab !== 'menu') {
+                return (
+                  <div className="mobile-header-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (adminSubTab === 'settings' && mobileSettingsTab && mobileSettingsTab !== 'menu') {
+                          setMobileSettingsTab('menu');
+                        } else {
+                          setAdminSubTab('menu');
+                        }
+                      }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#ffffff',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        padding: '0.35rem 0.65rem',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                        flexShrink: 0
+                      }}
+                    >
+                      <ArrowLeft size={15} style={{ color: '#10b981' }} />
+                      <span>Kembali</span>
+                    </button>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                      <span style={{ 
+                        fontSize: '0.92rem', 
+                        fontWeight: 800, 
+                        color: '#ffffff', 
+                        letterSpacing: '-0.01em',
+                        fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif",
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        textAlign: 'center'
+                      }}>
+                        {adminSubTab === 'items' && 'Kelola Inventaris'}
+                        {adminSubTab === 'articles' && 'Kelola Artikel'}
+                        {adminSubTab === 'settings' && (
+                          mobileSettingsTab === 'general' ? 'Informasi Toko' :
+                          mobileSettingsTab === 'about' ? 'Tentang Kami' :
+                          mobileSettingsTab === 'social' ? 'Media Sosial' :
+                          mobileSettingsTab === 'master' ? 'Master Data' : 'Pengaturan Toko'
+                        )}
+                        {adminSubTab === 'profile' && 'Profil Admin'}
+                        {adminSubTab === 'policies' && 'Legal & Kebijakan'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, minWidth: '70px' }}>
+                      {adminSubTab === 'items' && (
+                        <button 
+                          type="button"
+                          className="btn-primary" 
+                          style={{ 
+                            padding: '0.35rem 0.65rem', 
+                            borderRadius: '0.5rem', 
+                            fontSize: '0.72rem', 
+                            fontWeight: 800,
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.25rem',
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)',
+                            cursor: 'pointer'
+                          }}
+                          onClick={openCreateSheet}
+                        >
+                          <Plus size={13} />
+                          <span>Tambah</span>
+                        </button>
+                      )}
+                      {adminSubTab === 'articles' && (
+                        <button 
+                          type="button"
+                          className="btn-primary" 
+                          style={{ 
+                            padding: '0.35rem 0.65rem', 
+                            borderRadius: '0.5rem', 
+                            fontSize: '0.72rem', 
+                            fontWeight: 800,
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.25rem',
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)',
+                            cursor: 'pointer'
+                          }}
+                          onClick={openAddArticleSheet}
+                        >
+                          <Plus size={13} />
+                          <span>Baru</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Standard Store Header (Shown on Store Catalog, About, Articles, and Main Admin Dashboard Menu)
               const titleText = settings.store_title || 'Catavor';
               const scale = getMobileHeaderScale(titleText);
               return (
@@ -7394,7 +7504,7 @@ function App() {
           ) : (
             /* ADMIN DASHBOARD (MOBILE - LOGGED IN & PASSWORD CHANGED) */
             <div className="animate-fade-in" style={{ marginTop: '1rem' }}>
-              {adminSubTab === 'menu' ? (
+              {adminSubTab === 'menu' && (
                 /* MENU DASHBOARD VIEW */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
@@ -7601,68 +7711,11 @@ function App() {
                     </div>
                   </div>
                 </div>
-              ) : (
-                /* BACK BAR FOR SUB-VIEWS */
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  marginBottom: '1.25rem', 
-                  borderBottom: '1px solid var(--border-light)', 
-                  paddingBottom: '0.75rem',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 99,
-                  backgroundColor: 'rgba(11, 14, 12, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  paddingTop: '0.75rem',
-                  marginTop: '-1rem'
-                }}>
-                  <button 
-                    onClick={() => setAdminSubTab('menu')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.8rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      padding: '0.35rem 0.65rem',
-                      borderRadius: '0.35rem',
-                      backgroundColor: 'var(--border-light)',
-                      transition: 'var(--transition-smooth)'
-                    }}
-                  >
-                    <ArrowLeft size={14} /> Kembali
-                  </button>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 800 }}>
-                    {adminSubTab === 'items' && 'Kelola Inventaris'}
-                    {adminSubTab === 'articles' && 'Kelola Artikel'}
-                    {adminSubTab === 'settings' && 'Pengaturan Toko'}
-                    {adminSubTab === 'profile' && 'Profil Admin'}
-                    {adminSubTab === 'policies' && 'Legal & Kebijakan Platform'}
-                  </span>
-                  <div>
-                    {adminSubTab === 'items' && (
-                      <button 
-                        className="btn-primary" 
-                        style={{ padding: '0.35rem 0.65rem', borderRadius: '0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.15rem' }}
-                        onClick={openCreateSheet}
-                      >
-                        <Plus size={12} /> Tambah
-                      </button>
-                    )}
-                    {adminSubTab !== 'items' && <div style={{ width: '48px' }} />}
-                  </div>
-                </div>
               )}
 
               {adminSubTab === 'items' && (
                 /* TAB 1: LISTING */
-                <div style={{ paddingTop: '4rem' }}>
+                <div style={{ paddingTop: '0.25rem' }}>
                   {faunas.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center', padding: '2rem' }}>Belum ada hewan terdaftar.</p>
                   ) : (
@@ -7773,7 +7826,7 @@ function App() {
               )}
 
                {adminSubTab === 'settings' && (
-                <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '4rem' }}>
+                <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '0.25rem' }}>
                   {settingsSuccess && (
                     <div className="alert-box alert-success" style={{ marginBottom: '1rem' }}>
                       {settingsSuccess}
@@ -7863,25 +7916,6 @@ function App() {
                   ) : (
                     /* Active Settings Sub-Tab View */
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {/* Back Navigation Bar */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-light)', marginBottom: '0.5rem' }}>
-                        <button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => setMobileSettingsTab('menu')}
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                        >
-                          <ArrowLeft size={14} /> Kembali
-                        </button>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                          {mobileSettingsTab === 'general' ? 'Informasi Toko' :
-                           mobileSettingsTab === 'features' ? 'Fitur & Diskusi' :
-                           mobileSettingsTab === 'about' ? 'Tentang Kami' :
-                           mobileSettingsTab === 'social' ? 'Media Sosial' :
-                           'Master Data'}
-                        </span>
-                      </div>
-
                       {mobileSettingsTab !== 'master' ? (
                         <form onSubmit={handleSettingsSave} className="glass-panel animate-fade-in" style={{ padding: '1rem', border: '1px solid var(--border-light)' }}>
                           {mobileSettingsTab === 'general' && (
@@ -8576,7 +8610,7 @@ function App() {
 
               {adminSubTab === 'profile' && (
                 /* TAB 3: ADMIN PROFILE FORM */
-                <div style={{ paddingTop: '4rem' }}>
+                <div style={{ paddingTop: '0.25rem' }}>
                   <form onSubmit={handleProfileUpdate} className="glass-panel" style={{ padding: '1.25rem' }}>
                   {profileSuccess && (
                     <div className="alert-box alert-success">
@@ -8689,7 +8723,7 @@ function App() {
               )}
 
               {adminSubTab === 'policies' && (
-                <div style={{ paddingTop: '3.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ paddingTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {/* Quick Switcher Tabs */}
                   <div style={{ display: 'flex', gap: '0.35rem', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '0.65rem', border: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                     <button
